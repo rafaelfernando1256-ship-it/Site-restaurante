@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 680" width="900" height="680" role="img" aria-label="Foto do restaurante: salao">
+<defs>
+  <radialGradient id="luz200" cx="50%" cy="42%" r="72%">
+    <stop offset="0" stop-color="#6A2028"/><stop offset=".45" stop-color="#2C1014"/>
+    <stop offset="1" stop-color="#141110"/>
+  </radialGradient>
+  <radialGradient id="vinheta200" cx="50%" cy="48%" r="70%">
+    <stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".72"/>
+  </radialGradient>
+  <filter id="grao200" x="0" y="0" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" stitchTiles="stitch"/>
+    <feColorMatrix type="saturate" values="0"/>
+  </filter>
+</defs>
+<rect width="900" height="680" fill="url(#luz200)"/><rect width="900" height="680" fill="url(#vinheta200)"/><rect width="900" height="680" filter="url(#grao200)" opacity=".2" style="mix-blend-mode:overlay"/>
+<g fill="none" stroke="#C9A227" stroke-width="1.8" stroke-linecap="round" opacity=".8"><path d="M411 505.0 v38"/><path d="M420 505.0 v38"/><path d="M429 505.0 v38"/><path d="M411 543 q9 17 9 30 q0 -13 9 -30"/><path d="M419.6 573 v114"/><path d="M480.4 505.0 q17 19 10 65 q-10 10 -10 0 z"/><path d="M480.4 585 v103"/></g><g fill="none" stroke="#C9A227" stroke-width="2.0"><circle cx="450" cy="300" r="165" opacity=".9"/><circle cx="450" cy="300" r="145.2" opacity=".45" stroke-width="1.2"/><circle cx="450" cy="300" r="118.8" opacity=".25" stroke-width="1.0"/></g><g fill="none" stroke="#C9A227" stroke-width="1.6" opacity=".7" stroke-linecap="round"><path d="M320.0 560 h94 M486 560 h94"/><path d="M450 553 l7 7 -7 7 -7 -7 z"/></g><g fill="none" stroke="#E4C766" stroke-width="1.6" opacity="0.3"><ellipse cx="161" cy="243" rx="9" ry="4" transform="rotate(-69 161 243)"/><ellipse cx="299" cy="171" rx="9" ry="4" transform="rotate(70 299 171)"/><ellipse cx="196" cy="220" rx="9" ry="4" transform="rotate(-62 196 220)"/><ellipse cx="206" cy="193" rx="9" ry="4" transform="rotate(27 206 193)"/><ellipse cx="134" cy="241" rx="9" ry="4" transform="rotate(36 134 241)"/><ellipse cx="174" cy="210" rx="9" ry="4" transform="rotate(-21 174 210)"/><ellipse cx="287" cy="194" rx="9" ry="4" transform="rotate(-43 287 194)"/><ellipse cx="262" cy="248" rx="9" ry="4" transform="rotate(-9 262 248)"/><ellipse cx="303" cy="150" rx="9" ry="4" transform="rotate(23 303 150)"/><ellipse cx="200" cy="215" rx="9" ry="4" transform="rotate(-35 200 215)"/><ellipse cx="193" cy="116" rx="9" ry="4" transform="rotate(-28 193 116)"/><ellipse cx="265" cy="186" rx="9" ry="4" transform="rotate(-15 265 186)"/></g>
+</svg>

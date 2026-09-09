@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 680" width="900" height="680" role="img" aria-label="Foto do restaurante: panela">
+<defs>
+  <radialGradient id="luz201" cx="50%" cy="42%" r="72%">
+    <stop offset="0" stop-color="#6B2A1C"/><stop offset=".45" stop-color="#2E1410"/>
+    <stop offset="1" stop-color="#141110"/>
+  </radialGradient>
+  <radialGradient id="vinheta201" cx="50%" cy="48%" r="70%">
+    <stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".72"/>
+  </radialGradient>
+  <filter id="grao201" x="0" y="0" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" stitchTiles="stitch"/>
+    <feColorMatrix type="saturate" values="0"/>
+  </filter>
+</defs>
+<rect width="900" height="680" fill="url(#luz201)"/><rect width="900" height="680" fill="url(#vinheta201)"/><rect width="900" height="680" filter="url(#grao201)" opacity=".2" style="mix-blend-mode:overlay"/>
+<g fill="none" stroke="#C9A227" stroke-width="2.4" stroke-linecap="round"><path d="M260 288.2 a190 190 0 0 0 380 0 z"/><ellipse cx="450" cy="288.2" rx="190" ry="49"/><ellipse cx="450" cy="288.2" rx="156" ry="40" opacity=".4" stroke-width="1.4"/><path d="M346 467 h209" opacity=".5"/></g><g fill="none" stroke="#E4C766" stroke-width="2.8" stroke-linecap="round" opacity=".55"><path d="M390.0 82.0 c-14 -36 14 -39 0 -75 c-14 -34 12 -31 2 -55"/><path d="M450.0 90.0 c-14 -36 14 -39 0 -75 c-14 -34 12 -31 2 -55"/><path d="M510.0 82.0 c-14 -36 14 -39 0 -75 c-14 -34 12 -31 2 -55"/></g><g fill="none" stroke="#E4C766" stroke-width="1.6" opacity="0.5"><ellipse cx="526" cy="442" rx="10" ry="4" transform="rotate(69 526 442)"/><ellipse cx="405" cy="451" rx="10" ry="4" transform="rotate(-18 405 451)"/><ellipse cx="444" cy="402" rx="10" ry="4" transform="rotate(14 444 402)"/><ellipse cx="541" cy="426" rx="10" ry="4" transform="rotate(-22 541 426)"/><ellipse cx="386" cy="449" rx="10" ry="4" transform="rotate(27 386 449)"/><ellipse cx="467" cy="460" rx="10" ry="4" transform="rotate(-7 467 460)"/><ellipse cx="455" cy="420" rx="10" ry="4" transform="rotate(-26 455 420)"/><ellipse cx="521" cy="432" rx="10" ry="4" transform="rotate(-34 521 432)"/><ellipse cx="420" cy="443" rx="10" ry="4" transform="rotate(49 420 443)"/><ellipse cx="407" cy="415" rx="10" ry="4" transform="rotate(-0 407 415)"/><ellipse cx="493" cy="460" rx="10" ry="4" transform="rotate(57 493 460)"/><ellipse cx="411" cy="424" rx="10" ry="4" transform="rotate(63 411 424)"/><ellipse cx="455" cy="438" rx="10" ry="4" transform="rotate(-11 455 438)"/><ellipse cx="377" cy="452" rx="10" ry="4" transform="rotate(-49 377 452)"/><ellipse cx="518" cy="438" rx="10" ry="4" transform="rotate(-64 518 438)"/><ellipse cx="410" cy="410" rx="10" ry="4" transform="rotate(52 410 410)"/></g>
+</svg>

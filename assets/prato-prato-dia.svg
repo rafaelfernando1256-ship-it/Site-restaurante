@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 680" width="900" height="680" role="img" aria-label="Ilustracao do prato prato-dia">
+<defs>
+  <radialGradient id="luz105" cx="50%" cy="42%" r="72%">
+    <stop offset="0" stop-color="#7C3420"/><stop offset=".45" stop-color="#361611"/>
+    <stop offset="1" stop-color="#141110"/>
+  </radialGradient>
+  <radialGradient id="vinheta105" cx="50%" cy="48%" r="70%">
+    <stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".72"/>
+  </radialGradient>
+  <filter id="grao105" x="0" y="0" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" stitchTiles="stitch"/>
+    <feColorMatrix type="saturate" values="0"/>
+  </filter>
+</defs>
+<rect width="900" height="680" fill="url(#luz105)"/><rect width="900" height="680" fill="url(#vinheta105)"/><rect width="900" height="680" filter="url(#grao105)" opacity=".2" style="mix-blend-mode:overlay"/>
+<g fill="none" stroke="#C9A227" stroke-width="2.0"><circle cx="450" cy="334" r="190" opacity=".9"/><circle cx="450" cy="334" r="167.2" opacity=".45" stroke-width="1.2"/><circle cx="450" cy="334" r="136.8" opacity=".25" stroke-width="1.0"/></g><g fill="none" stroke="#E4C766" stroke-width="1.6" opacity="0.7"><ellipse cx="372" cy="375" rx="10" ry="4" transform="rotate(-47 372 375)"/><ellipse cx="383" cy="325" rx="10" ry="4" transform="rotate(7 383 325)"/><ellipse cx="405" cy="332" rx="10" ry="4" transform="rotate(66 405 332)"/><ellipse cx="365" cy="312" rx="10" ry="4" transform="rotate(18 365 312)"/><ellipse cx="338" cy="330" rx="10" ry="4" transform="rotate(70 338 330)"/><ellipse cx="319" cy="369" rx="10" ry="4" transform="rotate(49 319 369)"/><ellipse cx="401" cy="348" rx="10" ry="4" transform="rotate(-3 401 348)"/><ellipse cx="380" cy="327" rx="10" ry="4" transform="rotate(16 380 327)"/><ellipse cx="333" cy="373" rx="10" ry="4" transform="rotate(60 333 373)"/><ellipse cx="372" cy="325" rx="10" ry="4" transform="rotate(36 372 325)"/><ellipse cx="318" cy="359" rx="10" ry="4" transform="rotate(-4 318 359)"/><ellipse cx="421" cy="320" rx="10" ry="4" transform="rotate(45 421 320)"/><ellipse cx="396" cy="309" rx="10" ry="4" transform="rotate(13 396 309)"/><ellipse cx="398" cy="383" rx="10" ry="4" transform="rotate(-5 398 383)"/><ellipse cx="411" cy="347" rx="10" ry="4" transform="rotate(-12 411 347)"/><ellipse cx="388" cy="385" rx="10" ry="4" transform="rotate(-54 388 385)"/><ellipse cx="408" cy="326" rx="10" ry="4" transform="rotate(-45 408 326)"/><ellipse cx="344" cy="367" rx="10" ry="4" transform="rotate(-54 344 367)"/></g><g fill="none" stroke="#C9A227" stroke-width="2.2"><path d="M466 278 a72 72 0 0 1 0 118 z" opacity=".85"/></g><g transform="translate(480 418) rotate(-8) scale(1.0)" fill="none" stroke="#E4C766" stroke-width="2" stroke-linecap="round"><path d="M0 0 c26 -14 48 -6 56 12 c-24 16 -46 10 -56 -12 z"/><path d="M2 2 l50 10" opacity=".5"/></g><g fill="none" stroke="#E4C766" stroke-width="2.2" stroke-linecap="round" opacity=".55"><path d="M408.0 114.0 c-14 -22 14 -24 0 -46 c-14 -21 12 -19 2 -34"/><path d="M450.0 122.0 c-14 -22 14 -24 0 -46 c-14 -21 12 -19 2 -34"/><path d="M492.0 114.0 c-14 -22 14 -24 0 -46 c-14 -21 12 -19 2 -34"/></g>
+</svg>

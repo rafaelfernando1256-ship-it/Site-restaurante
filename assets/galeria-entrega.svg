@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 680" width="900" height="680" role="img" aria-label="Foto do restaurante: entrega">
+<defs>
+  <radialGradient id="luz205" cx="50%" cy="42%" r="72%">
+    <stop offset="0" stop-color="#6B2A1C"/><stop offset=".45" stop-color="#2E1410"/>
+    <stop offset="1" stop-color="#141110"/>
+  </radialGradient>
+  <radialGradient id="vinheta205" cx="50%" cy="48%" r="70%">
+    <stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".72"/>
+  </radialGradient>
+  <filter id="grao205" x="0" y="0" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" stitchTiles="stitch"/>
+    <feColorMatrix type="saturate" values="0"/>
+  </filter>
+</defs>
+<rect width="900" height="680" fill="url(#luz205)"/><rect width="900" height="680" fill="url(#vinheta205)"/><rect width="900" height="680" filter="url(#grao205)" opacity=".2" style="mix-blend-mode:overlay"/>
+<g fill="none" stroke="#C9A227" stroke-width="2.4" stroke-linejoin="round"><path d="M310.0 230.0 h280 l-25 200 h-230 z"/><path d="M318.0 256.0 h264" opacity=".45"/><path d="M450 230.0 v200" opacity=".35"/></g><g fill="none" stroke="#E4C766" stroke-width="2.4" stroke-linecap="round" opacity=".55"><path d="M398.0 162.0 c-14 -27 14 -29 0 -56 c-14 -25 12 -23 2 -40"/><path d="M450.0 170.0 c-14 -27 14 -29 0 -56 c-14 -25 12 -23 2 -40"/><path d="M502.0 162.0 c-14 -27 14 -29 0 -56 c-14 -25 12 -23 2 -40"/></g><g fill="none" stroke="#C9A227" stroke-width="1.6" opacity=".7" stroke-linecap="round"><path d="M340.0 560 h79 M481 560 h79"/><path d="M450 553 l7 7 -7 7 -7 -7 z"/></g>
+</svg>

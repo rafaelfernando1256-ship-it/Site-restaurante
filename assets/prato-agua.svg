@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 680" width="900" height="680" role="img" aria-label="Ilustracao do prato agua">
+<defs>
+  <radialGradient id="luz108" cx="50%" cy="42%" r="72%">
+    <stop offset="0" stop-color="#7C3420"/><stop offset=".45" stop-color="#361611"/>
+    <stop offset="1" stop-color="#141110"/>
+  </radialGradient>
+  <radialGradient id="vinheta108" cx="50%" cy="48%" r="70%">
+    <stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".72"/>
+  </radialGradient>
+  <filter id="grao108" x="0" y="0" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" stitchTiles="stitch"/>
+    <feColorMatrix type="saturate" values="0"/>
+  </filter>
+</defs>
+<rect width="900" height="680" fill="url(#luz108)"/><rect width="900" height="680" fill="url(#vinheta108)"/><rect width="900" height="680" filter="url(#grao108)" opacity=".2" style="mix-blend-mode:overlay"/>
+<g fill="none" stroke="#C9A227" stroke-width="2.4" stroke-linejoin="round"><path d="M404 214 h92 v18 l14 26 v190 a20 20 0 0 1 -20 20 h-80 a20 20 0 0 1 -20 -20 v-190 l14 -26 z"/><path d="M398 344 h104" opacity=".4" stroke-width="1.6"/></g>
+</svg>

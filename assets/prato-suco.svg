@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 680" width="900" height="680" role="img" aria-label="Ilustracao do prato suco">
+<defs>
+  <radialGradient id="luz106" cx="50%" cy="42%" r="72%">
+    <stop offset="0" stop-color="#7C3420"/><stop offset=".45" stop-color="#361611"/>
+    <stop offset="1" stop-color="#141110"/>
+  </radialGradient>
+  <radialGradient id="vinheta106" cx="50%" cy="48%" r="70%">
+    <stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".72"/>
+  </radialGradient>
+  <filter id="grao106" x="0" y="0" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" stitchTiles="stitch"/>
+    <feColorMatrix type="saturate" values="0"/>
+  </filter>
+</defs>
+<rect width="900" height="680" fill="url(#luz106)"/><rect width="900" height="680" fill="url(#vinheta106)"/><rect width="900" height="680" filter="url(#grao106)" opacity=".2" style="mix-blend-mode:overlay"/>
+<g fill="none" stroke="#C9A227" stroke-width="2.4" stroke-linejoin="round"><path d="M384.0 227.0 l13 214 h106 l13 -214 z"/><path d="M392 295 l116 0" opacity=".55"/><ellipse cx="450" cy="227.0" rx="66.0" ry="17" opacity=".8"/></g><g transform="translate(542 264) rotate(-40) scale(0.8)" fill="none" stroke="#E4C766" stroke-width="2" stroke-linecap="round"><path d="M0 0 c26 -14 48 -6 56 12 c-24 16 -46 10 -56 -12 z"/><path d="M2 2 l50 10" opacity=".5"/></g><g fill="none" stroke="#E4C766" stroke-width="1.6" opacity="0.4"><ellipse cx="398" cy="474" rx="8" ry="3" transform="rotate(43 398 474)"/><ellipse cx="433" cy="482" rx="8" ry="3" transform="rotate(27 433 482)"/><ellipse cx="408" cy="475" rx="8" ry="3" transform="rotate(-13 408 475)"/><ellipse cx="436" cy="480" rx="8" ry="3" transform="rotate(18 436 480)"/><ellipse cx="496" cy="466" rx="8" ry="3" transform="rotate(19 496 466)"/><ellipse cx="426" cy="483" rx="8" ry="3" transform="rotate(-50 426 483)"/><ellipse cx="445" cy="465" rx="8" ry="3" transform="rotate(-29 445 465)"/><ellipse cx="491" cy="473" rx="8" ry="3" transform="rotate(67 491 473)"/></g>
+</svg>
