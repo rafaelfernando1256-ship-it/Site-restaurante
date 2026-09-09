@@ -98,3 +98,14 @@ sem bibliotecas externas.
 Serve qualquer hospedagem estática (GitHub Pages, Netlify, Vercel, Hostinger).
 Para o GitHub Pages: **Settings → Pages → Deploy from a branch**, escolha a branch e
 a pasta `/ (root)`.
+
+## PDF para apresentar o site
+
+Na raiz do projeto há duas versões em PDF, geradas a partir do site real:
+
+- `Tempero-D-Familia-site.pdf` — 5 páginas A4, visual de computador
+- `Tempero-D-Familia-celular.pdf` — 17 telas, visual de celular
+
+Servem para mostrar o site a alguém antes de publicar. São imagens estáticas:
+não têm os links, o menu nem as animações. Depois de alterar o site, os PDFs
+ficam desatualizados — é preciso gerá-los de novo.
