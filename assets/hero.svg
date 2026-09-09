@@ -1,0 +1,83 @@
+<!-- Imagem provisória do banner (prato de comida caseira).
+     Substitua por uma foto real do restaurante:
+     troque o src no index.html por assets/hero.jpg, por exemplo. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 520" width="640" height="520" role="img" aria-label="Ilustração de um prato de comida caseira">
+  <defs>
+    <linearGradient id="fundo" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F6E7D3"/>
+      <stop offset="1" stop-color="#EBD3B4"/>
+    </linearGradient>
+    <radialGradient id="prato" cx="42%" cy="35%">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#EFE6DA"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="640" height="520" fill="url(#fundo)"/>
+
+  <!-- toalha xadrez -->
+  <g opacity=".35" fill="#C0392B">
+    <rect y="380" width="640" height="140"/>
+  </g>
+  <g opacity=".18" fill="#FDF6EC">
+    <rect y="380" width="640" height="14"/><rect y="420" width="640" height="14"/>
+    <rect y="460" width="640" height="14"/><rect y="500" width="640" height="14"/>
+    <rect x="40" y="380" width="14" height="140"/><rect x="120" y="380" width="14" height="140"/>
+    <rect x="200" y="380" width="14" height="140"/><rect x="280" y="380" width="14" height="140"/>
+    <rect x="360" y="380" width="14" height="140"/><rect x="440" y="380" width="14" height="140"/>
+    <rect x="520" y="380" width="14" height="140"/><rect x="600" y="380" width="14" height="140"/>
+  </g>
+
+  <!-- sombra do prato -->
+  <ellipse cx="320" cy="300" rx="212" ry="196" fill="#4A2C1A" opacity=".12"/>
+
+  <!-- prato -->
+  <circle cx="320" cy="288" r="206" fill="url(#prato)"/>
+  <circle cx="320" cy="288" r="206" fill="none" stroke="#E0D2C0" stroke-width="4"/>
+  <circle cx="320" cy="288" r="172" fill="none" stroke="#EADCC8" stroke-width="3"/>
+
+  <!-- arroz -->
+  <path d="M320 288 A150 150 0 0 1 202 405 A150 150 0 0 1 172 288 Z" fill="#FBF7EF"/>
+  <g fill="#EDE4D4">
+    <ellipse cx="215" cy="310" rx="13" ry="6" transform="rotate(-25 215 310)"/>
+    <ellipse cx="245" cy="345" rx="13" ry="6" transform="rotate(15 245 345)"/>
+    <ellipse cx="205" cy="360" rx="13" ry="6" transform="rotate(40 205 360)"/>
+    <ellipse cx="255" cy="300" rx="13" ry="6" transform="rotate(-5 255 300)"/>
+  </g>
+
+  <!-- feijão -->
+  <path d="M320 288 A150 150 0 0 0 202 405 A150 150 0 0 0 320 438 Z" fill="#7A4B2A"/>
+  <g fill="#5A3419">
+    <ellipse cx="265" cy="380" rx="11" ry="8" transform="rotate(20 265 380)"/>
+    <ellipse cx="295" cy="410" rx="11" ry="8" transform="rotate(-15 295 410)"/>
+    <ellipse cx="245" cy="410" rx="11" ry="8" transform="rotate(35 245 410)"/>
+  </g>
+
+  <!-- bife acebolado -->
+  <path d="M320 288 A150 150 0 0 1 452 210 A150 150 0 0 1 470 288 Z" fill="#8B4A2B" opacity=".15"/>
+  <path d="M352 178c48-16 96 4 108 42 10 34-16 66-58 72-44 6-84-16-88-48-4-30 12-54 38-66z" fill="#8B4A2B"/>
+  <path d="M362 194c40-13 80 3 90 34 8 27-14 52-48 57-36 5-70-13-73-38-3-24 10-43 31-53z" fill="#A05A33"/>
+  <g fill="#FBF7EF" opacity=".9">
+    <ellipse cx="400" cy="215" rx="26" ry="7" transform="rotate(-12 400 215)"/>
+    <ellipse cx="440" cy="245" rx="24" ry="7" transform="rotate(28 440 245)"/>
+    <ellipse cx="392" cy="256" rx="22" ry="6" transform="rotate(8 392 256)"/>
+  </g>
+
+  <!-- salada -->
+  <g>
+    <circle cx="410" cy="360" r="34" fill="#4E8B3C"/>
+    <circle cx="452" cy="336" r="26" fill="#5FA349"/>
+    <circle cx="446" cy="382" r="24" fill="#3F7431"/>
+    <circle cx="424" cy="398" r="18" fill="#C0392B"/>
+    <circle cx="470" cy="360" r="15" fill="#C0392B"/>
+    <circle cx="424" cy="398" r="6" fill="#E05A4B" opacity=".6"/>
+  </g>
+
+  <!-- talheres -->
+  <g fill="#B9A98F">
+    <rect x="556" y="180" width="9" height="200" rx="4.5"/>
+    <path d="M545 150h6v46h-6zM556 150h6v46h-6zM567 150h6v46h-6z"/>
+    <rect x="66" y="180" width="10" height="200" rx="5"/>
+    <ellipse cx="71" cy="176" rx="20" ry="34" fill="#B9A98F"/>
+  </g>
+</svg>
