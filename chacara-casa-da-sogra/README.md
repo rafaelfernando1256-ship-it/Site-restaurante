@@ -95,3 +95,14 @@ abaixo da dobra · fontes com `display=swap` · sem bibliotecas externas.
 
 Serve qualquer hospedagem estática (GitHub Pages, Netlify, Vercel, Hostinger).
 Basta enviar o conteúdo desta pasta.
+
+## PDF para apresentar o site
+
+Na pasta há duas exportações em imagem, geradas a partir do site real:
+
+- `Chacara-Casa-da-Sogra-site.pdf` — 5 páginas A4, visual de computador
+- `Chacara-Casa-da-Sogra-celular.pdf` — 13 telas, visual de celular
+
+Servem para mostrar o espaço a alguém antes de publicar. São imagens estáticas:
+não têm links, filtros da galeria, formulário nem animações. Depois de alterar o
+site, é preciso gerar os PDFs de novo.
