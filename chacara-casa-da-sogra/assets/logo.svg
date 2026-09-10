@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="96" height="96" role="img" aria-label="Chacara Casa da Sogra">
+  <circle cx="48" cy="48" r="46" fill="#1F3A2E"/>
+  <circle cx="48" cy="48" r="43" fill="none" stroke="#C8A96A" stroke-width="1.2" opacity=".85"/>
+  <path d="M26 50 L48 31 L70 50" fill="none" stroke="#C8A96A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M48 22 c8 8 8 16 0 22 c-8 -6 -8 -14 0 -22z" fill="#7FA97F" opacity=".9"/>
+  <text x="48" y="70" text-anchor="middle" font-family="Georgia,'Times New Roman',serif" font-size="24" font-weight="600" fill="#FBF7EF" letter-spacing="1">CS</text>
+</svg>

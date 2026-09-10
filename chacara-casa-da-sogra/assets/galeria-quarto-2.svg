@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 680" width="900" height="680" role="img" aria-label="Quarto espacoso da chacara">
+<defs>
+  <linearGradient id="ceu4" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#E8DCC8"/><stop offset="1" stop-color="#E8DCC8"/>
+  </linearGradient>
+  <linearGradient id="agua4" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#9CCBC3"/><stop offset="1" stop-color="#6FA8A0"/>
+  </linearGradient>
+  <filter id="grao4" x="0" y="0" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" stitchTiles="stitch"/>
+    <feColorMatrix type="saturate" values="0"/>
+  </filter>
+</defs>
+<rect width="900" height="680" fill="url(#ceu4)"/>
+<rect width="900" height="680" fill="#E8DCC8"/><rect y="490" width="900" height="190" fill="#A97F58"/><rect y="490" width="900" height="10" fill="#8A6242"/><rect x="70" y="120" width="230" height="200" rx="6" fill="#9CCBC3"/><path d="M70 250 q60 -60 120 -10 q50 -40 110 10 v70 h-230 z" fill="#4C8459"/><rect x="70" y="120" width="230" height="200" rx="6" fill="none" stroke="#8A6242" stroke-width="9"/><path d="M185 120 v200" stroke="#8A6242" stroke-width="7"/><rect x="330" y="300" width="380" height="210" rx="10" fill="#FBF7EF"/><rect x="330" y="300" width="380" height="50" rx="10" fill="#E8DCC8"/><rect x="700" y="220" width="56" height="290" rx="12" fill="#8A6242"/><rect x="360" y="272" width="140" height="52" rx="13" fill="#D8ECE7"/><rect x="520" y="272" width="140" height="52" rx="13" fill="#D8ECE7"/><rect x="330" y="420" width="380" height="38" fill="#4C8459" opacity=".7"/><rect x="110" y="400" width="130" height="110" rx="16" fill="#B5603C"/><rect x="96" y="380" width="26" height="130" rx="12" fill="#C9784E"/><rect x="228" y="380" width="26" height="130" rx="12" fill="#C9784E"/><g transform="translate(300 520) scale(0.8)"><ellipse cx="0" cy="0" rx="46" ry="26" fill="#4C8459"/><ellipse cx="-26" cy="-10" rx="28" ry="20" fill="#4C8459" opacity=".85"/><ellipse cx="26" cy="-12" rx="30" ry="21" fill="#7FA97F" opacity=".55"/></g>
+<rect width="900" height="680" filter="url(#grao4)" opacity=".10" style="mix-blend-mode:multiply"/>
+</svg>

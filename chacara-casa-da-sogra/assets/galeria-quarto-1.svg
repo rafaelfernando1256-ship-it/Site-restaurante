@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 680" width="900" height="680" role="img" aria-label="Quarto espacoso da chacara">
+<defs>
+  <linearGradient id="ceu3" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FBF7EF"/><stop offset="1" stop-color="#FBF7EF"/>
+  </linearGradient>
+  <linearGradient id="agua3" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#9CCBC3"/><stop offset="1" stop-color="#6FA8A0"/>
+  </linearGradient>
+  <filter id="grao3" x="0" y="0" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" stitchTiles="stitch"/>
+    <feColorMatrix type="saturate" values="0"/>
+  </filter>
+</defs>
+<rect width="900" height="680" fill="url(#ceu3)"/>
+<rect width="900" height="680" fill="#FBF7EF"/><rect y="490" width="900" height="190" fill="#A97F58"/><rect y="490" width="900" height="10" fill="#8A6242"/><rect x="600" y="120" width="230" height="200" rx="6" fill="#9CCBC3"/><path d="M600 250 q60 -60 120 -10 q50 -40 110 10 v70 h-230 z" fill="#4C8459"/><rect x="600" y="120" width="230" height="200" rx="6" fill="none" stroke="#8A6242" stroke-width="9"/><path d="M715 120 v200" stroke="#8A6242" stroke-width="7"/><rect x="90" y="330" width="430" height="180" rx="10" fill="#FBF7EF"/><rect x="90" y="330" width="430" height="52" rx="10" fill="#E8DCC8"/><rect x="70" y="230" width="60" height="290" rx="12" fill="#8A6242"/><rect x="120" y="300" width="150" height="58" rx="14" fill="#D8ECE7"/><rect x="285" y="300" width="150" height="58" rx="14" fill="#D8ECE7"/><rect x="90" y="430" width="430" height="40" fill="#B5603C" opacity=".8"/><rect x="560" y="420" width="90" height="90" fill="#8A6242"/><path d="M575 420 l14 -52 h48 l14 52 z" fill="#C8A96A"/><g transform="translate(800 500) scale(0.9)"><ellipse cx="0" cy="0" rx="46" ry="26" fill="#4C8459"/><ellipse cx="-26" cy="-10" rx="28" ry="20" fill="#4C8459" opacity=".85"/><ellipse cx="26" cy="-12" rx="30" ry="21" fill="#7FA97F" opacity=".55"/></g>
+<rect width="900" height="680" filter="url(#grao3)" opacity=".10" style="mix-blend-mode:multiply"/>
+</svg>
