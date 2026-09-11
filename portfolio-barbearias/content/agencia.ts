@@ -129,7 +129,7 @@ export const conta = {
     rotuloAno: "por ano",
   },
   nota: "Não é promessa de resultado: é a conta que você mesmo acabou de fazer. O que eu garanto é o site pronto para receber esse cliente quando ele aparecer.",
-  comparacao: { antes: "E o site custa", valor: "R$ 147", depois: "por mês, no plano Profissional." },
+  comparacao: { antes: "E o site sai por", valor: "R$ 423", depois: "uma vez só, no modelo Clássico." },
   cta: "Quero ver o meu de graça",
   mensagemWhats:
     "Olá! Fiz a conta no seu site e quero ver um exemplo do site da minha barbearia.\n\nNome da barbearia: \nCidade: ",
@@ -163,7 +163,7 @@ export const quemFaz = {
   compromissos: [
     "Respondo em até 1 hora, de segunda a sábado",
     "Você vê o site pronto antes de pagar qualquer coisa",
-    "Sem fidelidade: sai quando quiser e leva o domínio",
+    "Pagamento único: sem mensalidade e sem contrato de fidelidade",
   ],
 };
 
@@ -214,67 +214,84 @@ export const chamadaProjetos = {
     "Olá! Vi os projetos e quero ver um exemplo do site da minha barbearia.\n\nNome da barbearia: \nCidade: ",
 };
 
-/* ─── Planos ───────────────────────────────────────────────── */
+/* ─── Planos ───────────────────────────────────────────────────
+   Os preços são por modelo, não por pacote abstrato: o dono
+   escolhe o demo com que se parece e já vê quanto custa aquele.
+   Cobrança única — não há mensalidade em nenhum modelo.
+   ═══ Para editar um preço, mude só o campo `preco`. ═══         */
 export const planos = {
   etiqueta: "Investimento",
-  titulo: "Três formas de começar",
+  titulo: "Escolha o modelo e saiba o preço",
   texto:
-    "Você acabou de ver o que um cliente novo por semana significa na sua receita. Agora o custo: entrada uma vez só e uma mensalidade que cobre hospedagem, domínio, manutenção e suporte. Sem fidelidade e sem letra miúda.",
+    "Pagamento único pelo site pronto, publicado e no ar. Sem mensalidade, sem fidelidade e sem taxa escondida. O que você vê nos projetos é exatamente o que você leva.",
   lista: [
     {
-      nome: "Essencial",
-      resumo: "Para quem precisa existir no Google e receber pedido no WhatsApp.",
-      setup: "R$ 897",
-      mensal: "R$ 97",
-      equivalencia: "menos de 2 cortes por mês",
+      slug: "dom-aurelio",
+      nome: "Clássico",
+      modelo: "Como a Barbearia Dom Aurélio",
+      preco: "R$ 423",
+      resumo:
+        "Para barbearia de bairro, com clientela fiel e cliente que prefere ligar a agendar pelo app.",
       destaque: false,
       inclui: [
-        "Site de página única, sob medida",
-        "Botão de WhatsApp em todas as seções",
+        "Site de uma página, sob medida",
+        "Telefone como ação principal, com botão de ligar",
         "Tabela de serviços e preços",
-        "Mapa e horário de funcionamento",
-        "Domínio e hospedagem inclusos",
+        "Mapa, horários e como chegar",
+        "Botão de WhatsApp em todas as seções",
         "Ficha do Google Meu Negócio ligada ao site",
+        "30 dias de ajustes inclusos",
       ],
-      cta: "Quero o Essencial",
+      cta: "Quero o Clássico",
     },
     {
-      nome: "Profissional",
-      resumo: "Para barbearia com equipe e agenda cheia que quer parar de anotar horário no caderno.",
-      setup: "R$ 1.897",
-      mensal: "R$ 147",
-      equivalencia: "menos de 3 cortes por mês",
+      slug: "nove-e-meia",
+      nome: "Urbano",
+      modelo: "Como a Nove & Meia",
+      preco: "R$ 573",
+      resumo:
+        "Para barbearia com equipe, público jovem e agenda que precisa parar de ser anotada no caderno.",
       destaque: true,
       selo: "Mais escolhido",
       inclui: [
-        "Tudo do Essencial",
-        "Agendamento online integrado",
+        "Tudo do Clássico",
         "Página de equipe com perfil de cada barbeiro",
+        "Agendamento ligado ao app que você já usa",
         "Galeria de trabalhos",
-        "Google Meu Negócio otimizado",
-        "2 alterações de conteúdo por mês",
-        "Relatório simples de visitas",
+        "Horários livres do dia em destaque",
+        "Integração com o seu Instagram",
       ],
-      cta: "Quero o Profissional",
+      cta: "Quero o Urbano",
     },
     {
-      nome: "Assinatura",
-      resumo: "Para barbearia premium que vende plano mensal e precisa parecer o que cobra.",
-      setup: "R$ 3.497",
-      mensal: "R$ 247",
-      equivalencia: "menos de 2 assinaturas de cliente",
+      slug: "casa-valerio",
+      nome: "Premium",
+      modelo: "Como a Casa Valério",
+      preco: "R$ 670",
+      resumo:
+        "Para barbearia de ticket alto que vende plano mensal e precisa parecer o que cobra.",
       destaque: false,
       inclui: [
-        "Tudo do Profissional",
-        "Planos de assinatura e vale-presente no site",
-        "Identidade visual completa",
-        "Direção de fotografia (roteiro do que fotografar)",
-        "Campanha de lançamento para o Instagram",
-        "Alterações ilimitadas",
+        "Tudo do Urbano",
+        "Seção de planos de assinatura",
+        "Vale-presente para compra por terceiros",
+        "Identidade visual: paleta e tipografia próprias",
+        "Textos do site escritos por mim",
+        "60 dias de ajustes inclusos",
       ],
-      cta: "Quero a Assinatura",
+      cta: "Quero o Premium",
     },
   ],
+  /* Custos recorrentes que não são meus — dito na cara, para não
+     virar surpresa depois. */
+  rodape: {
+    titulo: "O que não está no preço",
+    itens: [
+      "Domínio .com.br: cerca de R$ 40 por ano, registrado no seu nome direto no Registro.br. É seu e vai com você.",
+      "Hospedagem: configuro em serviço gratuito, sem custo mensal para você.",
+      "Mudanças depois do prazo de ajustes: combinadas na hora, sem contrato.",
+    ],
+  },
 };
 
 /* ─── Garantia ─────────────────────────────────────────────── */
@@ -307,12 +324,12 @@ export const objecoes = {
     {
       pergunta: "Não entendo nada de site. Vou conseguir mexer?",
       resposta:
-        "Você não precisa mexer. Mudou o preço do corte, entrou barbeiro novo, mudou o horário? Me manda no WhatsApp e eu altero no mesmo dia. Está incluso na mensalidade.",
+        "Você não precisa mexer. Nos primeiros 30 dias, mudou preço, entrou barbeiro novo ou mudou o horário? Me manda no WhatsApp e eu altero no mesmo dia, sem cobrar. Depois desse prazo a gente combina na hora — costuma ser coisa de minutos.",
     },
     {
-      pergunta: "E se eu quiser parar depois de alguns meses?",
+      pergunta: "Tem mensalidade? Fico preso em algum contrato?",
       resposta:
-        "Sem fidelidade. Você avisa e a gente encerra no mês seguinte. O domínio é seu e vai com você.",
+        "Não e não. Você paga uma vez pelo site e ele é seu. A única conta que continua é o domínio, cerca de R$ 40 por ano, pago por você direto no Registro.br e registrado no seu nome. Se um dia quiser trocar de fornecedor, leva tudo.",
     },
     {
       pergunta: "Quanto tempo demora para ficar pronto?",

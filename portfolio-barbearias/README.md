@@ -55,7 +55,8 @@ Dois itens obrigatórios e dois recomendados:
    **É a mudança que mais muda conversão nesta página.** Serviço local fechado
    pelo WhatsApp: a primeira pergunta na cabeça do dono é "quem é essa pessoa?".
    Sem nome e rosto, ela fica sem resposta e ele não chama.
-3. Ajuste os preços em `content/agencia.ts` → `planos`, se os seus forem outros.
+3. Confira os preços em `content/agencia.ts` → `planos.lista`. Para mudar um
+   valor, mexa só no campo `preco` do modelo correspondente.
 4. Troque `metadataBase` em `app/layout.tsx` pelo seu domínio, quando tiver um.
 
 ## Como a página vende
@@ -69,9 +70,9 @@ A ordem das seções não é de portfólio, é de venda:
 | 02 | As cinco peças | o que eu faço a respeito |
 | 03 | Projetos | a prova, com chamada no pico de interesse |
 | 04 | **A conta** | o benefício vira dinheiro, com os números dele |
-| 05 | **Quem faz** | quem está do outro lado do WhatsApp |
-| 06 | Como funciona | o que acontece depois que ele chamar |
-| 07 | Planos | o preço, já com a ponte da seção 04 |
+| 05 | **Planos** | o preço, logo depois da conta que o justifica |
+| 06 | Quem faz | quem está do outro lado do WhatsApp |
+| 07 | Como funciona | o que acontece depois que ele chamar |
 | 08 | Perguntas | o que trava o fechamento |
 | 09 | Garantia | tira o risco e leva ao contato |
 
@@ -80,6 +81,23 @@ dois controles — preço do corte e clientes novos por semana — e vê quanto 
 por mês. No padrão (R$ 45 × 3 por semana) dá **R$ 585 por mês**, exibido ao lado
 de **R$ 147** do plano Profissional. Nada ali é promessa: os números são os que
 ele mesmo digitou, e a página diz isso com todas as letras.
+
+### Os preços são por modelo, não por pacote
+
+| Modelo | Preço | Baseado em |
+|---|---|---|
+| Clássico | R$ 423 | Barbearia Dom Aurélio |
+| Urbano | R$ 573 | Nove & Meia |
+| Premium | R$ 670 | Casa Valério |
+
+**Cobrança única.** Não há mensalidade em nenhum modelo, e a página inteira diz
+isso. Cada cartão carrega a cor de marca do seu projeto e leva ao demo
+correspondente, então o dono escolhe o site que acabou de ver — não um pacote
+abstrato. Os preços também aparecem no card de cada projeto.
+
+A seção "O que não está no preço" diz na cara o que é recorrente: domínio (~R$ 40
+por ano, no nome dele, pago no Registro.br) e hospedagem (gratuita, configurada
+por você). Dizer isso antes evita a discussão depois.
 
 **Um só rótulo de CTA** se repete na página inteira: *"Quero ver o meu de graça"*.
 Os botões dos planos são a exceção proposital — cada um manda uma mensagem

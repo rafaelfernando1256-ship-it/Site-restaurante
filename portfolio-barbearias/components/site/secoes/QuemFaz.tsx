@@ -13,10 +13,10 @@ export default function QuemFaz() {
   const inicial = quemFaz.nome.trim().charAt(0).toUpperCase();
 
   return (
-    <Secao id="quem-faz" tom="base">
+    <Secao id="quem-faz" tom="poco">
       <div className="grid gap-14 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20">
         <div>
-          <CabecaSecao indice="05" etiqueta={quemFaz.etiqueta} titulo={quemFaz.titulo} />
+          <CabecaSecao indice="06" etiqueta={quemFaz.etiqueta} titulo={quemFaz.titulo} />
 
           <Revelar atraso={0.14}>
             <div className="mt-10 flex items-center gap-5">

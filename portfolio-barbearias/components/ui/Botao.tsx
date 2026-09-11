@@ -13,6 +13,7 @@ type Variante = "claro" | "contorno" | "whats" | "escuro";
 
 const base =
   "group/btn relative inline-flex items-center justify-center gap-2.5 rounded-full " +
+  "border border-transparent " +
   "font-medium tracking-[-0.01em] whitespace-nowrap " +
   "transition-[transform,background-color,color,border-color,box-shadow] duration-400 ease-[var(--ease-suave)] " +
   "focus-visible:outline-2 focus-visible:outline-offset-4 active:translate-y-px";
@@ -22,7 +23,7 @@ const variantes: Record<Variante, string> = {
     "bg-osso text-tinta shadow-[0_1px_0_rgba(255,255,255,0.4)_inset] " +
     "hover:-translate-y-0.5 hover:bg-white hover:shadow-[0_10px_28px_-6px_rgba(237,234,228,0.28),0_1px_0_rgba(255,255,255,0.5)_inset]",
   contorno:
-    "border border-fio-forte text-osso hover:-translate-y-0.5 hover:border-osso hover:bg-osso hover:text-tinta",
+    "border-fio-forte text-osso hover:-translate-y-0.5 hover:border-osso hover:bg-osso hover:text-tinta",
   escuro:
     "bg-tinta text-osso hover:-translate-y-0.5 hover:bg-poco hover:shadow-[0_10px_28px_-8px_rgba(11,11,12,0.5)]",
   whats:

@@ -39,9 +39,9 @@ export default function Home() {
         <Maquina />    {/* 02 · o que eu faço */}
         <Projetos />   {/* 03 · a prova, com chamada no fim */}
         <Conta />      {/* 04 · o benefício em dinheiro */}
-        <QuemFaz />    {/* 05 · quem está do outro lado */}
-        <Processo />   {/* 06 · como funciona */}
-        <Planos />     {/* 07 · quanto custa */}
+        <Planos />     {/* 05 · o preço, logo depois da conta */}
+        <QuemFaz />    {/* 06 · quem está do outro lado */}
+        <Processo />   {/* 07 · como funciona */}
         <Perguntas />  {/* 08 · o que trava o fechamento */}
         <Fechamento /> {/* 09 · garantia e contato */}
       </main>

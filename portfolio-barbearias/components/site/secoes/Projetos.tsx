@@ -4,7 +4,7 @@ import Secao, { CabecaSecao } from "@/components/ui/Secao";
 import Revelar from "@/components/ui/Revelar";
 import Botao from "@/components/ui/Botao";
 import IconeWhats from "@/components/ui/IconeWhats";
-import { chamadaProjetos, linkWhats } from "@/content/agencia";
+import { chamadaProjetos, linkWhats, planos } from "@/content/agencia";
 import { demos } from "@/content/demos";
 
 export default function Projetos() {
@@ -20,6 +20,7 @@ export default function Projetos() {
       <div className="mt-16 space-y-5 sm:mt-20">
         {demos.map((d, i) => {
           const claro = d.slug === "dom-aurelio";
+          const plano = planos.lista.find((p) => p.slug === d.slug);
           const corTexto = claro ? "#221E1C" : "#EDEAE4";
           const corApoio = claro ? "rgba(34,30,28,0.62)" : "rgba(237,234,228,0.62)";
           const corFio = claro ? "rgba(34,30,28,0.16)" : "rgba(237,234,228,0.16)";
@@ -133,6 +134,18 @@ export default function Projetos() {
                       className="h-[20rem] w-full object-cover object-top sm:h-[23rem]"
                     />
                   </div>
+                  {plano && (
+                    <p className="mt-6 text-[0.85rem]" style={{ color: corApoio }}>
+                      Este modelo sai por{" "}
+                      <a
+                        href="#planos"
+                        className="underline underline-offset-4 transition-colors"
+                        style={{ color: corTexto }}
+                      >
+                        {plano.preco}, pagamento único
+                      </a>
+                    </p>
+                  )}
                 </div>
               </article>
             </Revelar>
