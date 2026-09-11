@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" width="1200" height="900" role="img" aria-label="Bancada e espelhos da barbearia">
+<defs>
+  <radialGradient id="vg1" cx="50%" cy="38%" r="78%">
+    <stop offset="0" stop-color="#17171A"/><stop offset="1" stop-color="#0D0D0F"/>
+  </radialGradient>
+  <linearGradient id="vl1" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#C4A867"/><stop offset="1" stop-color="#8F7A46"/>
+  </linearGradient>
+  <filter id="vf1"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2"/>
+    <feColorMatrix type="saturate" values="0"/></filter>
+</defs>
+<rect width="1200" height="900" fill="url(#vg1)"/><rect width="1200" height="900" filter="url(#vf1)" opacity=".16" style="mix-blend-mode:overlay"/>
+<g fill="none" stroke="url(#vl1)" stroke-width="2.4" stroke-linejoin="round"><rect x="180" y="120" width="380" height="440" rx="190"/><rect x="212" y="152" width="316" height="376" rx="158" opacity=".4" stroke-width="1.4"/><rect x="640" y="120" width="380" height="440" rx="190"/><rect x="672" y="152" width="316" height="376" rx="158" opacity=".4" stroke-width="1.4"/><path d="M120 620 h960 v40 h-960 z"/><path d="M120 660 v180 M1080 660 v180" opacity=".5"/><path d="M300 560 v-30 M286 530 h28 l-4 -40 h-20 z"/><path d="M430 560 v-30 M416 530 h28 l-4 -40 h-20 z"/><path d="M560 560 v-30 M546 530 h28 l-4 -40 h-20 z"/><path d="M690 560 v-30 M676 530 h28 l-4 -40 h-20 z"/><path d="M820 560 v-30 M806 530 h28 l-4 -40 h-20 z"/></g><rect width="1200" height="900" filter="url(#vf1)" opacity=".14" style="mix-blend-mode:overlay"/>
+</svg>

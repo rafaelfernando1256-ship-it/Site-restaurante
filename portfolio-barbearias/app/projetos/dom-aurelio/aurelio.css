@@ -1,0 +1,186 @@
+/* ═══════════════════════════════════════════════════════════════
+   BARBEARIA DOM AURÉLIO — folha de estilo do projeto demonstrativo
+   Escopo total em .tema-aurelio.
+   Decisão de acessibilidade: corpo de texto em 18px e alvos de
+   toque de 56px. O público desta barbearia tem 45+ e usa o
+   celular com uma mão, na rua. Isso não é detalhe — é conversão.
+   ═══════════════════════════════════════════════════════════════ */
+.tema-aurelio {
+  --creme: #f7f1e3;
+  --creme-2: #efe6d2;
+  --vermelho: #b22b2b;
+  --vermelho-2: #8f2121;
+  --azul: #1f3a5f;
+  --nogueira: #6b4a2f;
+  --tinta: #221e1c;
+  --tinta-2: #55504b;
+  --fio: rgba(34, 30, 28, 0.14);
+  --verde-zap: #128c4a;
+
+  --titulo: var(--fonte-aurelio-titulo), Georgia, serif;
+  --corpo: var(--fonte-aurelio-corpo), Georgia, serif;
+
+  background: var(--creme);
+  color: var(--tinta);
+  font-family: var(--corpo);
+  font-size: 18px;          /* maior que o padrão, de propósito */
+  line-height: 1.75;
+}
+
+.tema-aurelio h1,
+.tema-aurelio h2,
+.tema-aurelio h3 {
+  font-family: var(--titulo);
+  font-weight: 400;
+  line-height: 1.12;
+  margin: 0;
+}
+
+.a-wrap { width: 100%; max-width: 1080px; margin-inline: auto; padding-inline: clamp(20px, 5vw, 48px); }
+.a-secao { padding-block: clamp(56px, 7vw, 96px); }
+.a-borda { border-top: 3px double var(--fio); }
+.a-fundo-2 { background: var(--creme-2); }
+
+.a-etiqueta {
+  display: inline-block; font-size: 0.78rem; font-weight: 700;
+  letter-spacing: 0.2em; text-transform: uppercase; color: var(--vermelho);
+  margin: 0 0 14px;
+}
+.a-titulo { font-size: clamp(1.9rem, 4.2vw, 2.9rem); text-wrap: balance; }
+.a-apoio { color: var(--tinta-2); max-width: 56ch; }
+
+/* ─── Botões: alvo grande, contraste alto ─── */
+.a-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  min-height: 56px; padding: 15px 30px; border-radius: 6px; border: 3px solid transparent;
+  font-family: var(--corpo); font-weight: 700; font-size: 1.05rem; white-space: nowrap;
+  transition: transform 0.2s, background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+.a-btn:hover { transform: translateY(-2px); }
+.a-btn--vermelho { background: var(--vermelho); color: var(--creme); }
+.a-btn--vermelho:hover { background: var(--vermelho-2); }
+.a-btn--azul { background: var(--azul); color: var(--creme); }
+.a-btn--linha { border-color: var(--azul); color: var(--azul); }
+.a-btn--linha:hover { background: var(--azul); color: var(--creme); }
+.a-btn--zap { background: var(--verde-zap); color: #fff; }
+
+/* ─── Cabeçalho ─── */
+.a-topo { position: fixed; inset: 0 0 auto 0; z-index: 50; background: var(--creme); border-bottom: 3px solid var(--vermelho); }
+.a-topo__linha { max-width: 1080px; margin-inline: auto; padding: 10px clamp(20px, 5vw, 48px); display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.a-marca { display: flex; min-height: 44px; justify-content: center; flex-direction: column; line-height: 1.1; }
+.a-marca strong { font-family: var(--titulo); font-size: 1.25rem; color: var(--tinta); }
+.a-marca span { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--vermelho); }
+.a-nav { display: none; gap: 26px; }
+.a-nav a { font-weight: 700; font-size: 0.92rem; color: var(--azul); }
+.a-nav a:hover { color: var(--vermelho); }
+
+/* ─── Hero ─── */
+.a-hero { position: relative; padding-block: 120px 0; overflow: hidden; }
+.a-hero__grade { display: grid; gap: 32px; align-items: center; }
+.a-hero__selo {
+  display: inline-block; background: var(--azul); color: var(--creme);
+  font-family: var(--titulo); font-size: 0.95rem; letter-spacing: 0.1em;
+  padding: 6px 18px; border-radius: 4px; margin-bottom: 18px;
+}
+.a-hero h1 { font-size: clamp(2.3rem, 6vw, 4rem); }
+.a-hero__sub { margin: 20px 0 28px; font-size: 1.1rem; color: var(--tinta-2); max-width: 46ch; }
+.a-hero__acoes { display: flex; flex-wrap: wrap; gap: 12px; }
+.a-hero__arte img { width: 100%; height: auto; border-radius: 8px; border: 3px solid var(--fio); }
+
+/* ─── Faixa de contato fixa logo abaixo do hero ─── */
+.a-faixa { background: var(--azul); color: var(--creme); }
+.a-faixa__grade { display: grid; gap: 4px; padding-block: 22px; }
+.a-faixa__item { display: flex; flex-direction: column; padding: 10px 0; }
+.a-faixa__rotulo { font-size: 0.74rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.75; }
+.a-faixa__valor { font-family: var(--titulo); font-size: 1.35rem; }
+.a-faixa a.a-faixa__valor:hover { text-decoration: underline; }
+
+/* ─── Linha do tempo ─── */
+.a-marcos { display: grid; gap: 28px; margin-top: 40px; }
+.a-marco { border-left: 4px solid var(--vermelho); padding-left: 22px; }
+.a-marco__ano { font-family: var(--titulo); font-size: 2rem; color: var(--vermelho); line-height: 1; }
+.a-marco h3 { font-size: 1.3rem; margin: 8px 0 6px; }
+.a-marco p { margin: 0; color: var(--tinta-2); font-size: 1rem; }
+
+/* ─── Tabela de preços ─── */
+.a-precos { margin-top: 36px; border: 3px solid var(--tinta); border-radius: 8px; overflow: hidden; background: var(--creme); }
+.a-preco {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 14px;
+  padding: 18px 22px; border-bottom: 2px dotted var(--fio);
+}
+.a-preco:last-child { border-bottom: 0; }
+.a-preco:nth-child(odd) { background: rgba(178, 43, 43, 0.04); }
+.a-preco__nome { font-family: var(--titulo); font-size: 1.25rem; }
+.a-preco__valor { font-family: var(--titulo); font-size: 1.6rem; color: var(--vermelho); font-variant-numeric: tabular-nums; }
+.a-precos__obs { padding: 16px 22px; background: var(--azul); color: var(--creme); font-size: 0.95rem; }
+
+/* ─── Ofício ─── */
+.a-oficio { display: grid; gap: 22px; margin-top: 36px; }
+.a-oficio__item { background: var(--creme); border: 2px solid var(--fio); border-radius: 8px; padding: 26px; }
+.a-oficio__item h3 { font-size: 1.35rem; margin-bottom: 8px; }
+.a-oficio__item p { margin: 0; color: var(--tinta-2); font-size: 1rem; }
+
+/* ─── Família ─── */
+.a-familia { display: grid; gap: 26px; margin-top: 36px; }
+.a-pessoa { text-align: center; }
+.a-pessoa img { width: 100%; max-width: 260px; margin-inline: auto; border-radius: 8px; border: 3px solid var(--fio); }
+.a-pessoa h3 { font-size: 1.45rem; margin-top: 16px; }
+.a-pessoa__papel { color: var(--vermelho); font-weight: 700; font-size: 0.95rem; margin: 4px 0; }
+.a-pessoa p { margin: 0; color: var(--tinta-2); font-size: 0.98rem; }
+
+/* ─── Galeria ─── */
+.a-galeria { display: grid; gap: 14px; margin-top: 36px; grid-template-columns: repeat(2, 1fr); }
+.a-galeria img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; border: 2px solid var(--fio); }
+
+/* ─── Avaliação ─── */
+.a-avaliacao { display: flex; flex-wrap: wrap; align-items: center; gap: 22px; background: var(--creme); border: 3px solid var(--fio); border-radius: 8px; padding: 26px; margin-top: 36px; }
+.a-avaliacao__nota { font-family: var(--titulo); font-size: 3.4rem; color: var(--tinta); line-height: 1; }
+.a-avaliacao__estrelas { color: #e0a800; font-size: 1.4rem; letter-spacing: 3px; }
+
+/* ─── Localização: a seção maior deste projeto ─── */
+.a-local { display: grid; gap: 26px; margin-top: 32px; }
+.a-mapa { min-height: 340px; border: 3px solid var(--tinta); border-radius: 8px; overflow: hidden; background: var(--creme-2); }
+.a-mapa iframe { width: 100%; height: 100%; min-height: 340px; border: 0; display: block; }
+.a-mapa__aviso { display: grid; place-items: center; height: 100%; min-height: 340px; padding: 26px; text-align: center; color: var(--tinta-2); }
+.a-horarios { list-style: none; margin: 0; padding: 0; }
+.a-horarios li {
+  display: flex; justify-content: space-between; gap: 14px; padding: 12px 0;
+  border-bottom: 2px dotted var(--fio); font-variant-numeric: tabular-nums;
+}
+.a-horarios li:last-child { border-bottom: 0; }
+.a-horarios li[data-hoje="true"] { color: var(--vermelho); font-weight: 700; }
+
+.a-selo-aberto {
+  display: inline-block; font-size: 0.85rem; font-weight: 700;
+  padding: 4px 14px; border-radius: 999px; margin-left: 10px; vertical-align: middle;
+}
+.a-selo-aberto[data-aberto="true"] { background: #dff0e3; color: #1b6b38; }
+.a-selo-aberto[data-aberto="false"] { background: #f6e0e0; color: var(--vermelho); }
+
+/* ─── Rodapé ─── */
+.a-rodape { background: var(--tinta); color: var(--creme); padding-block: 40px 110px; }
+.a-rodape__linha { display: flex; flex-wrap: wrap; gap: 14px; justify-content: space-between; font-size: 0.92rem; }
+
+/* ─── Barra fixa: LIGAR é a ação principal ─── */
+.a-fixo {
+  position: fixed; inset: auto 0 0 0; z-index: 55; display: grid; grid-template-columns: 2fr 1fr; gap: 10px;
+  background: var(--creme); border-top: 3px solid var(--vermelho);
+  padding: 10px clamp(14px, 4vw, 20px) calc(10px + env(safe-area-inset-bottom));
+}
+.a-fixo .a-btn { width: 100%; padding: 14px 8px; font-size: 1rem; min-height: 56px; }
+
+/* ─── Telas maiores ─── */
+@media (min-width: 700px) {
+  .a-hero__grade { grid-template-columns: 1.05fr 0.95fr; }
+  .a-faixa__grade { grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .a-marcos { grid-template-columns: repeat(3, 1fr); }
+  .a-oficio { grid-template-columns: repeat(3, 1fr); }
+  .a-familia { grid-template-columns: repeat(3, 1fr); }
+  .a-galeria { grid-template-columns: repeat(4, 1fr); }
+  .a-local { grid-template-columns: 1fr 1.15fr; align-items: start; }
+}
+@media (min-width: 940px) {
+  .a-nav { display: flex; }
+  .a-fixo { display: none; }
+  .a-rodape { padding-bottom: 40px; }
+}

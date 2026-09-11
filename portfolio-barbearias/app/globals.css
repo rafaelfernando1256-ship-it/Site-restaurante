@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════════════════
+   SISTEMA VISUAL DO PORTFÓLIO
+   Decisão de direção de arte: o portfólio é quase monocromático.
+   A cor vem dos projetos — como parede de galeria, onde o quadro
+   é que tem cor. Isso evita que o portfólio compita com os demos.
+   ═══════════════════════════════════════════════════════════════ */
+@theme {
+  --color-tinta: #0b0b0c;
+  --color-tinta-2: #131316;
+  --color-tinta-3: #1b1b1f;
+  --color-osso: #edeae4;
+  --color-osso-2: #a6a29a;
+  --color-osso-3: #6e6b65;
+  --color-fio: rgba(237, 234, 228, 0.12);
+  --color-whats: #25d366;
+  --color-whats-escuro: #128c4a;
+
+  --font-display: var(--fonte-display), "Georgia", serif;
+  --font-corpo: var(--fonte-corpo), system-ui, sans-serif;
+
+  --ease-suave: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* ─── Base ──────────────────────────────────────────────────── */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5.5rem;
+  background: var(--color-tinta);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--color-tinta);
+  color: var(--color-osso);
+  font-family: var(--font-corpo);
+  font-weight: 300;
+  line-height: 1.7;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection { background: var(--color-osso); color: var(--color-tinta); }
+
+:focus-visible {
+  outline: 2px solid var(--color-osso);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: var(--color-tinta); }
+::-webkit-scrollbar-thumb { background: #2a2a2f; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #3d3d44; }
+
+/* ─── Revelação no scroll ────────────────────────────────────
+   O elemento nasce visível no HTML. A classe .oculto só é
+   aplicada pelo JavaScript, então quem não tem JS vê tudo.    */
+.oculto {
+  opacity: 0;
+  transform: translate3d(0, 28px, 0);
+}
+.revelavel {
+  transition:
+    opacity 0.9s var(--ease-suave) var(--atraso, 0s),
+    transform 0.9s var(--ease-suave) var(--atraso, 0s);
+}
+.revelado { opacity: 1; transform: none; }
+
+/* ─── Grão sutil sobre o fundo escuro ───────────────────────── */
+.textura::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ─── Acessibilidade: menos movimento ───────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .oculto { opacity: 1 !important; transform: none !important; }
+}

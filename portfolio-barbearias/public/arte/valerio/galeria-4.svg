@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 640" width="800" height="640" role="img" aria-label="Detalhe do atendimento">
+<defs>
+  <radialGradient id="vg13" cx="50%" cy="38%" r="78%">
+    <stop offset="0" stop-color="#17171A"/><stop offset="1" stop-color="#0D0D0F"/>
+  </radialGradient>
+  <linearGradient id="vl13" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#C4A867"/><stop offset="1" stop-color="#8F7A46"/>
+  </linearGradient>
+  <filter id="vf13"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2"/>
+    <feColorMatrix type="saturate" values="0"/></filter>
+</defs>
+<rect width="800" height="640" fill="url(#vg13)"/><rect width="800" height="640" filter="url(#vf13)" opacity=".16" style="mix-blend-mode:overlay"/>
+<g transform="translate(400 470) scale(0.9)" fill="none" stroke="url(#vl13)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M-95 -60 q-16 -96 12 -150 q10 -18 34 -18 h66 q22 0 30 20 q26 60 10 148"/><path d="M-100 -58 h200 q22 0 22 22 v26 q0 20 -22 20 h-200 q-22 0 -22 -20 v-26 q0 -22 22 -22 z"/><path d="M-118 -30 q-30 4 -34 34 M118 -30 q30 4 34 34"/><path d="M-70 10 v54 M70 10 v54"/><path d="M-92 64 h184 q14 0 14 14 v10 h-212 v-10 q0 -14 14 -14 z"/><path d="M-10 88 v40 M10 88 v40 M-52 128 h104 q10 0 10 10 v12 h-124 v-12 q0 -10 10 -10 z"/><path d="M-64 -186 q64 -34 128 0" opacity=".55"/></g><g transform="translate(400 620) rotate(6) scale(0.85)" fill="none" stroke="url(#vl13)" stroke-width="2.4" stroke-linejoin="round"><path d="M-150 -12 h230 q22 0 22 12 v14 q0 10 -22 10 h-230 q-14 0 -14 -18 t14 -18 z"/><path d="M-146 4 h218" opacity=".45" stroke-width="1.4"/><path d="M96 -8 q60 -6 96 14 q-42 26 -96 20 z"/><circle cx="92" cy="12" r="6"/></g>
+</svg>

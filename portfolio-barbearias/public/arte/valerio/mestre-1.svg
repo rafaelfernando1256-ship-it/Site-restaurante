@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 720" width="600" height="720" role="img" aria-label="Retrato ilustrado de barbeiro">
+<defs>
+  <radialGradient id="vg2" cx="50%" cy="38%" r="78%">
+    <stop offset="0" stop-color="#17171A"/><stop offset="1" stop-color="#0D0D0F"/>
+  </radialGradient>
+  <linearGradient id="vl2" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#C4A867"/><stop offset="1" stop-color="#8F7A46"/>
+  </linearGradient>
+  <filter id="vf2"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2"/>
+    <feColorMatrix type="saturate" values="0"/></filter>
+</defs>
+<rect width="600" height="720" fill="url(#vg2)"/><rect width="600" height="720" filter="url(#vf2)" opacity=".16" style="mix-blend-mode:overlay"/>
+<g transform="translate(300.0 446.4) scale(1.579)" fill="none" stroke="url(#vl2)" stroke-width="3" stroke-linejoin="round"><path d="M-72 -18 q0 -104 72 -104 t72 104 q0 96 -72 118 q-72 -22 -72 -118 z"/><path d="M-70 -22 q4 -86 70 -86 q66 0 70 86 q-18 -44 -70 -44 t-70 44 z"/><path d="M-62 18 q0 84 62 92 q62 -8 62 -92 q-30 34 -62 34 t-62 -34 z"/><path d="M-108 150 q18 -52 108 -60 q90 8 108 60" opacity=".8"/><circle cx="0" cy="-14" r="150" opacity=".18"/></g>
+</svg>

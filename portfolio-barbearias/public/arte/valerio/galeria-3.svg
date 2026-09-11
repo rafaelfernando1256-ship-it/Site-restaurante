@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 640" width="800" height="640" role="img" aria-label="Detalhe do atendimento">
+<defs>
+  <radialGradient id="vg12" cx="50%" cy="38%" r="78%">
+    <stop offset="0" stop-color="#17171A"/><stop offset="1" stop-color="#0D0D0F"/>
+  </radialGradient>
+  <linearGradient id="vl12" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#C4A867"/><stop offset="1" stop-color="#8F7A46"/>
+  </linearGradient>
+  <filter id="vf12"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2"/>
+    <feColorMatrix type="saturate" values="0"/></filter>
+</defs>
+<rect width="800" height="640" fill="url(#vg12)"/><rect width="800" height="640" filter="url(#vf12)" opacity=".16" style="mix-blend-mode:overlay"/>
+<g transform="translate(400 240) scale(2.0)" fill="none" stroke="url(#vl12)" stroke-width="2.6" stroke-linejoin="round"><path d="M-34 0 h68 l-8 96 q-2 16 -26 16 t-26 -16 z"/><path d="M-38 0 h76 l-4 -20 h-68 z"/><path d="M-34 -20 q0 -66 34 -66 t34 66 z"/><path d="M-18 -30 q0 -40 18 -44 M18 -30 q0 -40 -18 -44" opacity=".5" stroke-width="1.6"/></g>
+</svg>
