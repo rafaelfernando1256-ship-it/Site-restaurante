@@ -5,51 +5,54 @@ import Secao, { CabecaSecao } from "@/components/ui/Secao";
 import Revelar from "@/components/ui/Revelar";
 import { objecoes } from "@/content/agencia";
 
-/* Sanfona acessível: botão real, aria-expanded e conteúdo que
-   continua no HTML (bom para SEO e para quem usa leitor de tela). */
 export default function Perguntas() {
   const [aberta, setAberta] = useState<number | null>(0);
 
   return (
-    <Secao id="perguntas" className="border-t border-fio">
-      <div className="grid gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
-        <CabecaSecao etiqueta={objecoes.etiqueta} titulo={objecoes.titulo} />
+    <Secao id="perguntas" tom="poco">
+      <div className="grid gap-14 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
+        <CabecaSecao indice="06" etiqueta={objecoes.etiqueta} titulo={objecoes.titulo} />
 
-        <div className="divide-y divide-fio border-y border-fio">
+        <div className="lg:pt-4">
           {objecoes.lista.map((o, i) => {
             const estaAberta = aberta === i;
             return (
               <Revelar key={o.pergunta} atraso={i * 0.04}>
-                <div>
+                <div className="border-t border-fio last:border-b">
                   <h3>
                     <button
                       type="button"
                       onClick={() => setAberta(estaAberta ? null : i)}
                       aria-expanded={estaAberta}
                       aria-controls={`resposta-${i}`}
-                      className="flex w-full items-start justify-between gap-6 py-5 text-left transition-colors duration-300 hover:text-osso"
+                      className="group flex w-full items-start justify-between gap-6 py-6 text-left"
                     >
-                      <span className="font-display text-lg leading-snug font-medium tracking-tight text-osso">
-                        {o.pergunta}
-                      </span>
                       <span
-                        aria-hidden
-                        className={`mt-1 shrink-0 text-xl leading-none text-osso-3 transition-transform duration-400 ${
-                          estaAberta ? "rotate-45" : ""
+                        className={`t-display text-[1.12rem] leading-snug transition-colors duration-400 sm:text-[1.2rem] ${
+                          estaAberta ? "text-osso" : "text-osso-2 group-hover:text-osso"
                         }`}
                       >
-                        +
+                        {o.pergunta}
+                      </span>
+                      {/* cruz que gira: dois filetes, sem ícone de biblioteca */}
+                      <span aria-hidden className="relative mt-2 h-3 w-3 shrink-0">
+                        <span className="absolute top-1/2 left-0 h-px w-3 -translate-y-1/2 bg-osso-2 transition-colors duration-400 group-hover:bg-osso" />
+                        <span
+                          className={`absolute top-0 left-1/2 h-3 w-px -translate-x-1/2 bg-osso-2 transition-transform duration-500 ease-[var(--ease-saida)] group-hover:bg-osso ${
+                            estaAberta ? "scale-y-0" : ""
+                          }`}
+                        />
                       </span>
                     </button>
                   </h3>
                   <div
                     id={`resposta-${i}`}
-                    className={`grid transition-all duration-500 ease-[cubic-bezier(0.22,0.61,0.36,1)] ${
+                    className={`grid transition-all duration-500 ease-[var(--ease-saida)] ${
                       estaAberta ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
                     }`}
                   >
                     <div className="overflow-hidden">
-                      <p className="pr-10 pb-6 text-[0.95rem] leading-relaxed text-osso-2">
+                      <p className="max-w-[58ch] pr-8 pb-7 text-[0.95rem] leading-[1.75] text-osso-2">
                         {o.resposta}
                       </p>
                     </div>

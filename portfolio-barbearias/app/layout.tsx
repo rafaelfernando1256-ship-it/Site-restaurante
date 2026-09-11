@@ -4,7 +4,7 @@ import { agencia } from "@/content/agencia";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://cadeiacheia.com.br"),
+  metadataBase: new URL("https://cadeiracheia.com.br"),
   title: {
     default: `${agencia.nome} · Sites para barbearia que enchem cadeira`,
     template: `%s · ${agencia.nome}`,

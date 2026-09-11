@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import Botao from "@/components/ui/Botao";
+import IconeWhats from "@/components/ui/IconeWhats";
 import { agencia, hero, linkWhats } from "@/content/agencia";
 
 const links = [
@@ -38,7 +39,7 @@ export default function Cabecalho() {
   return (
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ${
-        rolou ? "border-b border-fio bg-tinta/85 backdrop-blur-xl" : "border-b border-transparent"
+        rolou ? "border-b border-fio bg-tinta/80 backdrop-blur-xl" : "border-b border-transparent"
       }`}
     >
       <div className="relative z-50 mx-auto flex max-w-6xl items-center justify-between gap-6 px-5 py-4 sm:px-8">
@@ -50,7 +51,7 @@ export default function Cabecalho() {
           <span className="font-display text-lg font-semibold tracking-tight whitespace-nowrap text-osso">
             {agencia.nome}
           </span>
-          <span className="hidden text-[0.65rem] uppercase tracking-[0.2em] text-osso-3 sm:inline">
+          <span className="t-rotulo hidden text-[0.6rem] text-osso-3 sm:inline">
             {agencia.descritor}
           </span>
         </Link>
@@ -61,7 +62,7 @@ export default function Cabecalho() {
             <Link
               key={l.href}
               href={l.href}
-              className="relative text-sm text-osso-2 transition-colors duration-300 hover:text-osso after:absolute after:-bottom-1.5 after:left-0 after:h-px after:w-full after:origin-right after:scale-x-0 after:bg-osso after:transition-transform after:duration-300 hover:after:origin-left hover:after:scale-x-100"
+              className="relative text-[0.88rem] text-osso-2 transition-colors duration-400 hover:text-osso after:absolute after:-bottom-1.5 after:left-0 after:h-px after:w-full after:origin-right after:scale-x-0 after:bg-osso after:transition-transform after:duration-500 after:ease-[var(--ease-saida)] hover:after:origin-left hover:after:scale-x-100"
             >
               {l.rotulo}
             </Link>
@@ -69,12 +70,15 @@ export default function Cabecalho() {
         </nav>
 
         <div className="flex items-center gap-3">
+          {/* Contorno, não verde cheio: a ação principal da página é
+              a do hero. Dois botões sólidos brigam pela atenção. */}
           <Botao
             href={linkWhats(hero.mensagemWhats)}
-            variante="whats"
+            variante="contorno"
             externo
             className="max-sm:hidden"
           >
+            <IconeWhats className="h-4 w-4" />
             Falar no WhatsApp
           </Botao>
 
@@ -104,7 +108,7 @@ export default function Cabecalho() {
       <div
         id="menu-celular"
         hidden={!aberto}
-        className="fixed inset-0 top-0 z-40 flex flex-col justify-center gap-2 bg-tinta px-7 pt-24 pb-12 lg:hidden"
+        className="fixed inset-0 top-0 z-40 flex flex-col justify-center gap-1 bg-poco px-7 pt-24 pb-12 lg:hidden"
       >
         {links.map((l, i) => (
           <Link
@@ -112,7 +116,7 @@ export default function Cabecalho() {
             href={l.href}
             onClick={() => setAberto(false)}
             style={{ transitionDelay: `${0.05 + i * 0.05}s` }}
-            className={`font-display text-3xl tracking-tight text-osso transition-all duration-500 ${
+            className={`t-display py-2 text-[2rem] text-osso transition-all duration-500 ${
               aberto ? "translate-x-0 opacity-100" : "-translate-x-6 opacity-0"
             }`}
           >

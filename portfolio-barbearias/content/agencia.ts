@@ -15,7 +15,7 @@ export const agencia = {
   /* Promessa de resposta — aparece embaixo dos botões. */
   tempoResposta: "Respondo em até 1 hora, de segunda a sábado",
 
-  email: "contato@cadeiacheia.com.br",
+  email: "contato@cadeiracheia.com.br",
   cidade: "Bauru e região · atendo o Brasil inteiro",
 } as const;
 
@@ -74,7 +74,7 @@ export const problema = {
 /* ─── O que todo site inclui ───────────────────────────────── */
 export const maquina = {
   etiqueta: "A máquina",
-  titulo: "As cinco peças que todo site meu tem",
+  titulo: "As cinco peças de todo site que eu faço",
   texto:
     "Muda o visual, muda o público, muda o preço. Essas cinco peças não mudam — são elas que transformam visita em cliente sentado.",
   pecas: [
@@ -215,6 +215,13 @@ export const garantia = {
   titulo: "Você vê antes de pagar",
   texto:
     "Eu monto o site da sua barbearia e te mando o link. Se você não gostar, não paga nada e a gente se despede sem constrangimento. O risco é todo meu.",
+  /* O mecanismo, dito em três passos: garantia sem explicação de
+     como funciona soa a promessa de vendedor. */
+  passos: [
+    { numero: "01", texto: "Você me manda o nome da barbearia e a cidade." },
+    { numero: "02", texto: "Em até 24 horas eu te devolvo o link do seu site pronto." },
+    { numero: "03", texto: "Gostou, a gente fecha. Não gostou, você não deve nada." },
+  ],
   cta: "Quero ver o meu de graça",
   mensagemWhats:
     "Olá! Quero ver um exemplo do site da minha barbearia antes de fechar.\n\nNome da barbearia: \nCidade: ",

@@ -11,7 +11,7 @@ export default function BarraDemo({ nome }: { nome: string }) {
   return (
     <Link
       href="/#projetos"
-      className="group fixed bottom-4 left-4 z-[60] flex items-center gap-2.5 rounded-full border border-white/15 bg-black/80 px-4 py-2.5 text-xs text-white/80 backdrop-blur-md transition-all duration-300 hover:border-white/35 hover:text-white sm:bottom-6 sm:left-6"
+      className="group fixed bottom-4 left-4 z-[60] flex min-h-[44px] items-center gap-2.5 rounded-full border border-white/15 bg-black/75 px-4 py-2.5 text-[0.78rem] text-white/75 backdrop-blur-md transition-all duration-400 hover:border-white/35 hover:bg-black/90 hover:text-white sm:bottom-6 sm:left-6"
     >
       <span aria-hidden className="transition-transform duration-300 group-hover:-translate-x-0.5">
         ←

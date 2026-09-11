@@ -1,32 +1,49 @@
 @import "tailwindcss";
 
 /* ═══════════════════════════════════════════════════════════════
-   SISTEMA VISUAL DO PORTFÓLIO
-   Decisão de direção de arte: o portfólio é quase monocromático.
-   A cor vem dos projetos — como parede de galeria, onde o quadro
-   é que tem cor. Isso evita que o portfólio compita com os demos.
+   SISTEMA VISUAL — CADEIRA CHEIA
+   ───────────────────────────────────────────────────────────────
+   Direção de arte: o portfólio é quase monocromático. A cor vem
+   dos projetos, como parede de galeria onde o quadro é que tem cor.
+
+   Três superfícies (poço, base, elevada) criam capítulos ao longo
+   da página, e uma única seção clara funciona como respiro e
+   destaque da garantia. Sem isso a página tem uma marcha só.
    ═══════════════════════════════════════════════════════════════ */
 @theme {
+  /* Superfícies, do mais fundo ao mais alto */
+  --color-poco: #070708;
   --color-tinta: #0b0b0c;
-  --color-tinta-2: #131316;
-  --color-tinta-3: #1b1b1f;
+  --color-tinta-2: #121214;
+  --color-tinta-3: #1a1a1d;
+
+  /* Texto sobre escuro — osso-3 subiu de #6E6B65 para passar em AA */
   --color-osso: #edeae4;
-  --color-osso-2: #a6a29a;
-  --color-osso-3: #6e6b65;
-  --color-fio: rgba(237, 234, 228, 0.12);
+  --color-osso-2: #b0aca4;
+  --color-osso-3: #8a867e;
+
+  /* Seção clara (a garantia) */
+  --color-bone: #ebe7df;
+  --color-bone-2: #dcd7cc;
+
+  --color-fio: rgba(237, 234, 228, 0.1);
+  --color-fio-forte: rgba(237, 234, 228, 0.22);
+  --color-fio-escuro: rgba(11, 11, 12, 0.14);
+
   --color-whats: #25d366;
-  --color-whats-escuro: #128c4a;
+  --color-whats-escuro: #0f7d42;
 
   --font-display: var(--fonte-display), "Georgia", serif;
   --font-corpo: var(--fonte-corpo), system-ui, sans-serif;
 
   --ease-suave: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-saida: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ─── Base ──────────────────────────────────────────────────── */
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 5.5rem;
+  scroll-padding-top: 6rem;
   background: var(--color-tinta);
   -webkit-text-size-adjust: 100%;
 }
@@ -36,47 +53,86 @@ body {
   color: var(--color-osso);
   font-family: var(--font-corpo);
   font-weight: 300;
-  line-height: 1.7;
+  line-height: 1.65;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
 }
+
+/* Parágrafos com quebra mais equilibrada e medida de leitura curta */
+p { text-wrap: pretty; }
 
 ::selection { background: var(--color-osso); color: var(--color-tinta); }
 
 :focus-visible {
   outline: 2px solid var(--color-osso);
-  outline-offset: 3px;
-  border-radius: 3px;
+  outline-offset: 4px;
+  border-radius: 2px;
 }
 
 ::-webkit-scrollbar { width: 10px; }
-::-webkit-scrollbar-track { background: var(--color-tinta); }
-::-webkit-scrollbar-thumb { background: #2a2a2f; border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: #3d3d44; }
+::-webkit-scrollbar-track { background: var(--color-poco); }
+::-webkit-scrollbar-thumb { background: #26262b; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #3a3a42; }
+
+/* ─── Tipografia de display ─────────────────────────────────────
+   Títulos grandes pedem tracking negativo; rótulos pedem o oposto.
+   Centralizar isso aqui evita repetir a decisão em cada seção.   */
+.t-display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+.t-rotulo {
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+}
+/* Numeral estrutural: é elemento de composição, não legenda */
+.t-numeral {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
 
 /* ─── Revelação no scroll ────────────────────────────────────
-   O elemento nasce visível no HTML. A classe .oculto só é
-   aplicada pelo JavaScript, então quem não tem JS vê tudo.    */
-.oculto {
-  opacity: 0;
-  transform: translate3d(0, 28px, 0);
-}
+   O conteúdo nasce visível no HTML. A classe que esconde só é
+   aplicada pelo JavaScript — sem JS, nada some.
+   Distância curta e duração curta: movimento discreto envelhece
+   melhor do que movimento longo.                                */
+.oculto { opacity: 0; transform: translate3d(0, 18px, 0); }
 .revelavel {
   transition:
-    opacity 0.9s var(--ease-suave) var(--atraso, 0s),
-    transform 0.9s var(--ease-suave) var(--atraso, 0s);
+    opacity 0.7s var(--ease-saida) var(--atraso, 0s),
+    transform 0.7s var(--ease-saida) var(--atraso, 0s);
 }
 .revelado { opacity: 1; transform: none; }
 
-/* ─── Grão sutil sobre o fundo escuro ───────────────────────── */
+/* Máscara que sobe: usada uma única vez, no título do hero.
+   Um momento coreografado vale mais que efeito em tudo. */
+.mascara-oculta {
+  clip-path: inset(0 0 105% 0);
+  transform: translate3d(0, 12px, 0);
+}
+.mascara-revelavel {
+  transition:
+    clip-path 1.05s var(--ease-saida) var(--atraso, 0s),
+    transform 1.05s var(--ease-saida) var(--atraso, 0s);
+}
+.mascara-revelada { clip-path: inset(0 0 -10% 0); transform: none; }
+
+/* ─── Grão sobre o fundo escuro ─────────────────────────────── */
 .textura::before {
   content: "";
   position: fixed;
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  opacity: 0.035;
+  opacity: 0.04;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
@@ -89,4 +145,5 @@ body {
     transition-duration: 0.01ms !important;
   }
   .oculto { opacity: 1 !important; transform: none !important; }
+  .mascara-oculta { clip-path: none !important; transform: none !important; }
 }

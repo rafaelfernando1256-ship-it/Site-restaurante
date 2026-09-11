@@ -3,27 +3,35 @@ import type { ReactNode } from "react";
 
 /* ═══════════════════════════════════════════════════════════════
    BOTÃO
-   Um componente para todos os botões do portfólio. Externo vira
-   <a target="_blank">, interno vira <Link> do Next.
+   Decisão de direção de arte: a ação principal é OSSO (claro), não
+   verde. Num conjunto monocromático, o verde saturado grita e
+   derruba a percepção de valor. O verde fica reservado para o
+   botão flutuante e para o plano em destaque — onde a associação
+   com WhatsApp ajuda a conversão sem poluir a página.
    ═══════════════════════════════════════════════════════════════ */
-type Variante = "claro" | "contorno" | "whats";
+type Variante = "claro" | "contorno" | "whats" | "escuro";
 
 const base =
-  "group relative inline-flex items-center justify-center gap-2.5 rounded-full " +
-  "font-medium tracking-tight whitespace-nowrap transition-all duration-300 " +
-  "focus-visible:outline-2 focus-visible:outline-offset-4 active:translate-y-0";
+  "group/btn relative inline-flex items-center justify-center gap-2.5 rounded-full " +
+  "font-medium tracking-[-0.01em] whitespace-nowrap " +
+  "transition-[transform,background-color,color,border-color,box-shadow] duration-400 ease-[var(--ease-suave)] " +
+  "focus-visible:outline-2 focus-visible:outline-offset-4 active:translate-y-px";
 
 const variantes: Record<Variante, string> = {
   claro:
-    "bg-osso text-tinta hover:bg-white hover:-translate-y-0.5 hover:shadow-[0_12px_30px_rgba(237,234,228,0.18)]",
+    "bg-osso text-tinta shadow-[0_1px_0_rgba(255,255,255,0.4)_inset] " +
+    "hover:-translate-y-0.5 hover:bg-white hover:shadow-[0_10px_28px_-6px_rgba(237,234,228,0.28),0_1px_0_rgba(255,255,255,0.5)_inset]",
   contorno:
-    "border border-fio text-osso hover:border-osso hover:-translate-y-0.5 hover:bg-osso hover:text-tinta",
+    "border border-fio-forte text-osso hover:-translate-y-0.5 hover:border-osso hover:bg-osso hover:text-tinta",
+  escuro:
+    "bg-tinta text-osso hover:-translate-y-0.5 hover:bg-poco hover:shadow-[0_10px_28px_-8px_rgba(11,11,12,0.5)]",
   whats:
-    "bg-whats text-[#08351d] hover:bg-[#1fbe5a] hover:-translate-y-0.5 hover:shadow-[0_12px_30px_rgba(37,211,102,0.3)]",
+    "bg-whats text-[#06351c] shadow-[0_1px_0_rgba(255,255,255,0.28)_inset] " +
+    "hover:-translate-y-0.5 hover:bg-[#2fe074] hover:shadow-[0_10px_28px_-6px_rgba(37,211,102,0.36)]",
 };
 
 const tamanhos = {
-  md: "px-6 py-3 text-sm",
+  md: "px-6 py-3 text-[0.86rem]",
   lg: "px-8 py-4 text-[0.95rem]",
 };
 

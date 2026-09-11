@@ -1,49 +1,95 @@
 import type { ReactNode } from "react";
 import Revelar from "@/components/ui/Revelar";
 
-/* Cabeçalho padrão de seção: etiqueta + título + texto de apoio.
-   Centraliza a hierarquia tipográfica em um lugar só. */
+/* ═══════════════════════════════════════════════════════════════
+   SEÇÃO
+   Duas decisões ficam centralizadas aqui:
+   1. o índice numerado (01 … 07), que faz a página ler como um
+      documento pensado e não como blocos empilhados;
+   2. o tom da superfície, que cria capítulos ao longo da rolagem.
+   ═══════════════════════════════════════════════════════════════ */
+
+type Tom = "base" | "poco" | "claro";
+
+const tons: Record<Tom, string> = {
+  base: "bg-tinta text-osso",
+  poco: "bg-poco text-osso",
+  claro: "bg-bone text-tinta",
+};
+
 export function CabecaSecao({
+  indice,
   etiqueta,
   titulo,
   texto,
-  centro = false,
+  claro = false,
 }: {
+  indice: string;
   etiqueta: string;
   titulo: ReactNode;
   texto?: string;
-  centro?: boolean;
+  claro?: boolean;
 }) {
   return (
-    <div className={`max-w-2xl ${centro ? "mx-auto text-center" : ""}`}>
+    <header className="max-w-3xl">
       <Revelar>
-        <p className="text-[0.7rem] tracking-[0.24em] text-osso-3 uppercase">{etiqueta}</p>
+        <p className="flex items-center gap-4">
+          <span
+            className={`t-numeral text-[0.82rem] ${claro ? "text-tinta/62" : "text-osso-3"}`}
+          >
+            {indice}
+          </span>
+          <span
+            aria-hidden
+            className={`h-px w-8 ${claro ? "bg-fio-escuro" : "bg-fio-forte"}`}
+          />
+          <span className={`t-rotulo ${claro ? "text-tinta/65" : "text-osso-2"}`}>
+            {etiqueta}
+          </span>
+        </p>
       </Revelar>
-      <Revelar atraso={0.08}>
-        <h2 className="mt-4 font-display text-[clamp(1.9rem,4vw,3rem)] leading-[1.1] font-semibold tracking-[-0.02em] text-balance text-osso">
+
+      <Revelar atraso={0.06}>
+        <h2
+          className={`t-display mt-7 text-[clamp(2rem,4.4vw,3.4rem)] ${
+            claro ? "text-tinta" : "text-osso"
+          }`}
+        >
           {titulo}
         </h2>
       </Revelar>
+
       {texto && (
-        <Revelar atraso={0.14}>
-          <p className="mt-5 text-[1.02rem] leading-relaxed text-osso-2">{texto}</p>
+        <Revelar atraso={0.12}>
+          <p
+            className={`mt-6 max-w-[54ch] text-[1.02rem] leading-[1.72] ${
+              claro ? "text-tinta/70" : "text-osso-2"
+            }`}
+          >
+            {texto}
+          </p>
         </Revelar>
       )}
-    </div>
+    </header>
   );
 }
 
 export default function Secao({
   id,
   children,
+  tom = "base",
   className = "",
 }: {
   id?: string;
   children: ReactNode;
+  tom?: Tom;
   className?: string;
 }) {
   return (
-    <section id={id} className={`relative z-10 py-20 sm:py-28 ${className}`}>
+    <section
+      id={id}
+      className={`relative z-10 py-24 sm:py-32 ${tons[tom]} ${className}`}
+    >
       <div className="mx-auto max-w-6xl px-5 sm:px-8">{children}</div>
     </section>
   );
