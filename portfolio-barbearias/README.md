@@ -46,12 +46,48 @@ arraste em [app.netlify.com/drop](https://app.netlify.com/drop).
 
 ## Antes de mostrar para alguém
 
-Um item obrigatório e dois recomendados:
+Dois itens obrigatórios e dois recomendados:
 
 1. **Troque o número de WhatsApp.** Em `content/agencia.ts`, campos `whatsapp`
    (só dígitos, com 55 e DDD) e `whatsappVisivel`. Está com um número de exemplo.
-2. Ajuste os preços em `content/agencia.ts` → `planos`, se os seus forem outros.
-3. Troque `metadataBase` em `app/layout.tsx` pelo seu domínio, quando tiver um.
+2. **Preencha a seção "Quem faz".** Em `content/agencia.ts` → `quemFaz`: seu nome,
+   sua cidade, uma foto sua em `public/` e três parágrafos na sua voz.
+   **É a mudança que mais muda conversão nesta página.** Serviço local fechado
+   pelo WhatsApp: a primeira pergunta na cabeça do dono é "quem é essa pessoa?".
+   Sem nome e rosto, ela fica sem resposta e ele não chama.
+3. Ajuste os preços em `content/agencia.ts` → `planos`, se os seus forem outros.
+4. Troque `metadataBase` em `app/layout.tsx` pelo seu domínio, quando tiver um.
+
+## Como a página vende
+
+A ordem das seções não é de portfólio, é de venda:
+
+| | Seção | O que faz |
+|---|---|---|
+| — | Hero | promessa e a oferta de graça |
+| 01 | Problema | o espelho: onde ele perde cliente hoje |
+| 02 | As cinco peças | o que eu faço a respeito |
+| 03 | Projetos | a prova, com chamada no pico de interesse |
+| 04 | **A conta** | o benefício vira dinheiro, com os números dele |
+| 05 | **Quem faz** | quem está do outro lado do WhatsApp |
+| 06 | Como funciona | o que acontece depois que ele chamar |
+| 07 | Planos | o preço, já com a ponte da seção 04 |
+| 08 | Perguntas | o que trava o fechamento |
+| 09 | Garantia | tira o risco e leva ao contato |
+
+**A conta** (seção 04) é a peça que faz o preço parar de assustar. O dono mexe em
+dois controles — preço do corte e clientes novos por semana — e vê quanto isso dá
+por mês. No padrão (R$ 45 × 3 por semana) dá **R$ 585 por mês**, exibido ao lado
+de **R$ 147** do plano Profissional. Nada ali é promessa: os números são os que
+ele mesmo digitou, e a página diz isso com todas as letras.
+
+**Um só rótulo de CTA** se repete na página inteira: *"Quero ver o meu de graça"*.
+Os botões dos planos são a exceção proposital — cada um manda uma mensagem
+diferente no WhatsApp, então você sabe de qual plano veio o contato sem instalar
+nenhum analytics.
+
+Os demos abrem em **nova aba**, de propósito: se abrissem na mesma, o visitante
+entraria no demo e o seu portfólio sumiria.
 
 ---
 

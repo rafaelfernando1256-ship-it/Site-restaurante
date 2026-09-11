@@ -125,6 +125,60 @@ p { text-wrap: pretty; }
 }
 .mascara-revelada { clip-path: inset(0 0 -10% 0); transform: none; }
 
+/* ─── Controle deslizante da calculadora ────────────────────────
+   O range padrão do navegador é o elemento mais "formulário" que
+   existe. Trilho fino, polegar sólido e área de toque de 44px.  */
+.faixa {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  height: 44px;
+}
+.faixa::-webkit-slider-runnable-track {
+  height: 2px;
+  border-radius: 2px;
+  background: var(--color-fio-forte);
+}
+.faixa::-moz-range-track {
+  height: 2px;
+  border-radius: 2px;
+  background: var(--color-fio-forte);
+}
+.faixa::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  margin-top: -11px;
+  height: 24px;
+  width: 24px;
+  border-radius: 50%;
+  background: var(--color-osso);
+  border: 6px solid var(--color-tinta-2);
+  box-shadow: 0 0 0 1px var(--color-fio-forte);
+  transition: transform 0.25s var(--ease-suave), box-shadow 0.25s var(--ease-suave);
+}
+.faixa::-moz-range-thumb {
+  height: 24px;
+  width: 24px;
+  border-radius: 50%;
+  background: var(--color-osso);
+  border: 6px solid var(--color-tinta-2);
+  box-shadow: 0 0 0 1px var(--color-fio-forte);
+}
+.faixa:hover::-webkit-slider-thumb,
+.faixa:focus-visible::-webkit-slider-thumb {
+  transform: scale(1.12);
+  box-shadow: 0 0 0 1px var(--color-osso);
+}
+/* Contorno de verdade no elemento: depender só do pseudo-elemento
+   do polegar deixa quem navega por teclado sem referência visual. */
+.faixa:focus-visible {
+  outline: 2px solid var(--color-osso);
+  outline-offset: 8px;
+  border-radius: 999px;
+}
+.faixa:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 1px var(--color-osso); }
+
 /* ─── Grão sobre o fundo escuro ─────────────────────────────── */
 .textura::before {
   content: "";

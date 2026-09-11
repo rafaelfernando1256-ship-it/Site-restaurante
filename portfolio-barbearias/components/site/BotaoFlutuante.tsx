@@ -28,7 +28,7 @@ export default function BotaoFlutuante() {
     >
       <IconeWhats className="h-[22px] w-[22px] shrink-0" />
       <span className="max-w-0 overflow-hidden text-[0.85rem] font-medium whitespace-nowrap transition-all duration-500 ease-[var(--ease-saida)] group-hover:max-w-[14rem]">
-        Quero o meu site
+        Quero ver o meu de graça
       </span>
     </a>
   );

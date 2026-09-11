@@ -7,11 +7,11 @@ import IconeWhats from "@/components/ui/IconeWhats";
 import { agencia, hero, linkWhats } from "@/content/agencia";
 
 const links = [
-  { href: "/#projetos", rotulo: "Projetos" },
   { href: "/#maquina", rotulo: "O que inclui" },
-  { href: "/#processo", rotulo: "Como funciona" },
+  { href: "/#projetos", rotulo: "Projetos" },
+  { href: "/#conta", rotulo: "A conta" },
+  { href: "/#quem-faz", rotulo: "Quem faz" },
   { href: "/#planos", rotulo: "Planos" },
-  { href: "/#perguntas", rotulo: "Perguntas" },
 ];
 
 export default function Cabecalho() {
@@ -79,7 +79,7 @@ export default function Cabecalho() {
             className="max-sm:hidden"
           >
             <IconeWhats className="h-4 w-4" />
-            Falar no WhatsApp
+            Quero ver o meu
           </Botao>
 
           <button
@@ -130,7 +130,7 @@ export default function Cabecalho() {
           externo
           className="mt-8 w-full"
         >
-          Falar no WhatsApp
+          Quero ver o meu de graça
         </Botao>
       </div>
     </header>

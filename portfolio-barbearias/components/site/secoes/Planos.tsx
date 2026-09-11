@@ -10,7 +10,7 @@ export default function Planos() {
   return (
     <Secao id="planos" tom="base">
       <CabecaSecao
-        indice="05"
+        indice="07"
         etiqueta={planos.etiqueta}
         titulo={planos.titulo}
         texto={planos.texto}

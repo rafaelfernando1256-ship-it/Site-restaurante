@@ -26,17 +26,17 @@ export function linkWhats(mensagem: string) {
 
 /* ─── Hero ─────────────────────────────────────────────────── */
 export const hero = {
-  etiqueta: "Especialistas em um único negócio: barbearia",
+  etiqueta: "Trabalho com um único tipo de negócio: barbearia",
   titulo: "Sites de barbearia que enchem cadeira",
   subtitulo:
     "Seu cliente procura barbearia no Google às 21h de uma quinta. Quem aparece primeiro, com preço na tela e botão de agendar, leva o corte. Eu construo esse site.",
-  ctaPrimario: "Ver como ficaria a minha",
+  ctaPrimario: "Quero ver o meu de graça",
   ctaSecundario: "Ver os projetos",
   mensagemWhats:
     "Olá! Vi o portfólio e quero um site para minha barbearia.\n\nNome da barbearia: \nCidade: ",
   provas: [
-    { valor: "3 dias", rotulo: "do briefing ao site no ar" },
-    { valor: "100%", rotulo: "feito para celular primeiro" },
+    { valor: "3 dias", rotulo: "do primeiro alô ao site no ar" },
+    { valor: "R$ 0", rotulo: "para ver o seu antes de decidir" },
     { valor: "1 nicho", rotulo: "só barbearia, mais nada" },
   ],
 };
@@ -111,6 +111,62 @@ export const maquina = {
   ],
 };
 
+/* ─── A conta ──────────────────────────────────────────────────
+   O barbeiro pensa em corte e em real, não em conversão. Esta
+   seção deixa ele mesmo fazer a conta, com os números dele.
+   Nada aqui é promessa: os valores saem do que ele digita.        */
+export const conta = {
+  etiqueta: "A conta",
+  titulo: "Quanto vale um cliente novo por semana?",
+  texto:
+    "Mexa nos números abaixo com a sua realidade. A conta considera só a primeira visita de cada cliente novo — sem contar o retorno, que é onde a barbearia ganha de verdade.",
+  campos: {
+    preco: { rotulo: "Preço do seu corte", min: 20, max: 150, passo: 5, padrao: 45, prefixo: "R$ " },
+    novos: { rotulo: "Clientes novos por semana", min: 1, max: 20, passo: 1, padrao: 3, prefixo: "" },
+  },
+  resultado: {
+    rotuloMes: "por mês",
+    rotuloAno: "por ano",
+  },
+  nota: "Não é promessa de resultado: é a conta que você mesmo acabou de fazer. O que eu garanto é o site pronto para receber esse cliente quando ele aparecer.",
+  comparacao: { antes: "E o site custa", valor: "R$ 147", depois: "por mês, no plano Profissional." },
+  cta: "Quero ver o meu de graça",
+  mensagemWhats:
+    "Olá! Fiz a conta no seu site e quero ver um exemplo do site da minha barbearia.\n\nNome da barbearia: \nCidade: ",
+};
+
+/* ─── Quem faz ─────────────────────────────────────────────────
+   ⚠️ ESTA É A SEÇÃO MAIS IMPORTANTE PARA VOCÊ PERSONALIZAR.
+   Serviço local comprado de um estranho pelo WhatsApp: a primeira
+   pergunta na cabeça do dono é "quem é essa pessoa?". Sem nome,
+   rosto e cidade, essa dúvida fica sem resposta e ele não chama.
+   Troque tudo abaixo pelos seus dados reais.                      */
+export const quemFaz = {
+  etiqueta: "Quem faz",
+  titulo: "Você fala comigo, não com atendimento",
+  /* ⚠️ TROQUE: seu nome */
+  nome: "Rafael Fernando",
+  /* ⚠️ TROQUE: sua função, do jeito que você se apresentaria */
+  papel: "Desenvolvedor · Bauru, SP",
+  /* ⚠️ TROQUE: coloque uma foto sua em public/quem-faz.jpg.
+     Foto de rosto, olhando para a câmera, sem óculos escuros.
+     Enquanto não tiver, fica a inicial no lugar. */
+  foto: "",
+  /* ⚠️ TROQUE: três parágrafos, na sua voz. Diga por que barbearia,
+     como você trabalha e o que o cliente pode esperar de você. */
+  paragrafos: [
+    "Eu escolhi trabalhar só com barbearia porque é um negócio que vive de duas coisas que um site resolve bem: ser achado no Google e facilitar o agendamento. Em vez de aprender dez ramos pela metade, prefiro conhecer um de verdade.",
+    "Não tenho equipe nem atendimento. Quem responde o WhatsApp sou eu, quem desenha sou eu e quem ajusta depois também. Você não precisa repetir a sua história para três pessoas diferentes.",
+    "Se eu achar que a sua barbearia não precisa de site agora, eu falo. Prefiro perder uma venda a entregar algo que não vai te trazer cliente.",
+  ],
+  /* ⚠️ TROQUE ou remova: compromissos que você consegue cumprir */
+  compromissos: [
+    "Respondo em até 1 hora, de segunda a sábado",
+    "Você vê o site pronto antes de pagar qualquer coisa",
+    "Sem fidelidade: sai quando quiser e leva o domínio",
+  ],
+};
+
 /* ─── Processo ─────────────────────────────────────────────── */
 export const processo = {
   etiqueta: "Como funciona",
@@ -147,12 +203,23 @@ export const processo = {
   ],
 };
 
+/* ─── Chamada logo após os projetos ────────────────────────────
+   É o ponto de maior interesse da página: ele acabou de ver três
+   sites funcionando. Deixar esse trecho sem ação era desperdício. */
+export const chamadaProjetos = {
+  titulo: "Quer ver a sua barbearia nesse formato?",
+  texto: "Me manda o nome e a cidade. Em até 24 horas eu te devolvo o link do seu site pronto, de graça.",
+  cta: "Quero ver o meu de graça",
+  mensagemWhats:
+    "Olá! Vi os projetos e quero ver um exemplo do site da minha barbearia.\n\nNome da barbearia: \nCidade: ",
+};
+
 /* ─── Planos ───────────────────────────────────────────────── */
 export const planos = {
   etiqueta: "Investimento",
   titulo: "Três formas de começar",
   texto:
-    "Setup à vista e mensalidade que cobre hospedagem, domínio, manutenção e suporte. Sem fidelidade e sem letra miúda.",
+    "Você acabou de ver o que um cliente novo por semana significa na sua receita. Agora o custo: entrada uma vez só e uma mensalidade que cobre hospedagem, domínio, manutenção e suporte. Sem fidelidade e sem letra miúda.",
   lista: [
     {
       nome: "Essencial",
@@ -270,7 +337,7 @@ export const fechamento = {
   titulo: "Manda o nome da sua barbearia",
   texto:
     "Em até 24 horas eu te devolvo um exemplo do seu site, com as suas cores, os seus serviços e os seus preços. De graça, sem compromisso e sem conversa de vendedor.",
-  cta: "Chamar no WhatsApp agora",
+  cta: "Quero ver o meu de graça",
   mensagemWhats:
     "Olá! Quero o exemplo gratuito do site da minha barbearia.\n\nNome da barbearia: \nCidade: \nInstagram: ",
 };

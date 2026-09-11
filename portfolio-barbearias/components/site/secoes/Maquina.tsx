@@ -8,7 +8,7 @@ export default function Maquina() {
   return (
     <Secao id="maquina" tom="base">
       <CabecaSecao
-        indice="03"
+        indice="02"
         etiqueta={maquina.etiqueta}
         titulo={maquina.titulo}
         texto={maquina.texto}

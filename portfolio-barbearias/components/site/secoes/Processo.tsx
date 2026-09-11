@@ -5,7 +5,7 @@ import { processo } from "@/content/agencia";
 export default function Processo() {
   return (
     <Secao id="processo" tom="poco">
-      <CabecaSecao indice="04" etiqueta={processo.etiqueta} titulo={processo.titulo} />
+      <CabecaSecao indice="06" etiqueta={processo.etiqueta} titulo={processo.titulo} />
 
       <ol className="mt-16 grid gap-x-8 gap-y-12 sm:mt-20 sm:grid-cols-2 lg:grid-cols-4">
         {processo.passos.map((p, i) => (

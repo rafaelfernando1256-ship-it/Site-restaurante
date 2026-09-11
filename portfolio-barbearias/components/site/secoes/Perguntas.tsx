@@ -11,7 +11,7 @@ export default function Perguntas() {
   return (
     <Secao id="perguntas" tom="poco">
       <div className="grid gap-14 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
-        <CabecaSecao indice="06" etiqueta={objecoes.etiqueta} titulo={objecoes.titulo} />
+        <CabecaSecao indice="08" etiqueta={objecoes.etiqueta} titulo={objecoes.titulo} />
 
         <div className="lg:pt-4">
           {objecoes.lista.map((o, i) => {

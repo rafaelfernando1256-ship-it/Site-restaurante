@@ -20,7 +20,7 @@ export default function Fechamento() {
           <div>
             <Revelar>
               <p className="flex items-center gap-4">
-                <span className="t-numeral text-[0.82rem] text-tinta/62">07</span>
+                <span className="t-numeral text-[0.82rem] text-tinta/62">09</span>
                 <span aria-hidden className="h-px w-8 bg-fio-escuro" />
                 <span className="t-rotulo text-tinta/65">Risco zero</span>
               </p>

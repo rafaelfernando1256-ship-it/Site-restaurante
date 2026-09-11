@@ -2,13 +2,16 @@ import Image from "next/image";
 import Link from "next/link";
 import Secao, { CabecaSecao } from "@/components/ui/Secao";
 import Revelar from "@/components/ui/Revelar";
+import Botao from "@/components/ui/Botao";
+import IconeWhats from "@/components/ui/IconeWhats";
+import { chamadaProjetos, linkWhats } from "@/content/agencia";
 import { demos } from "@/content/demos";
 
 export default function Projetos() {
   return (
-    <Secao id="projetos" tom="base">
+    <Secao id="projetos" tom="poco">
       <CabecaSecao
-        indice="02"
+        indice="03"
         etiqueta="Projetos"
         titulo="Três barbearias, três estratégias diferentes"
         texto="Cada projeto resolve um tipo de negócio. Abra no celular e role até o fim — é o site funcionando, não uma imagem."
@@ -77,18 +80,17 @@ export default function Projetos() {
                   </ul>
 
                   <div className="mt-auto flex flex-wrap items-center gap-x-6 gap-y-4 pt-10">
+                    {/* Nova aba de propósito: se o demo abre na mesma,
+                        o portfólio some e o visitante não volta. */}
                     <Link
                       href={`/projetos/${d.slug}/`}
+                      target="_blank"
+                      rel="noopener"
                       className="inline-flex items-center gap-2.5 rounded-full px-7 py-3.5 text-[0.88rem] font-medium transition-transform duration-500 ease-[var(--ease-suave)] group-hover:-translate-y-0.5"
                       style={{ backgroundColor: d.corTexto, color: claro ? "#F7F1E3" : "#0B0B0C" }}
                     >
                       Abrir o site
-                      <span
-                        aria-hidden
-                        className="transition-transform duration-500 ease-[var(--ease-suave)] group-hover:translate-x-1"
-                      >
-                        →
-                      </span>
+                      <span aria-hidden className="text-[0.8em] opacity-70">↗</span>
                     </Link>
 
                     <div className="flex items-center gap-3">
@@ -142,6 +144,31 @@ export default function Projetos() {
         <p className="mt-10 text-[0.78rem] text-osso-3">
           Barbearias fictícias, criadas para demonstração. Nenhum dado corresponde a negócio real.
         </p>
+      </Revelar>
+
+      {/* Pico de interesse da página: ele acabou de ver três sites
+          funcionando. Deixar esse trecho sem ação era desperdício. */}
+      <Revelar atraso={0.14}>
+        <div className="mt-14 flex flex-col items-start gap-7 border-t border-fio-forte pt-12 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <h3 className="t-display max-w-[20ch] text-[clamp(1.5rem,3vw,2.2rem)] text-osso">
+              {chamadaProjetos.titulo}
+            </h3>
+            <p className="mt-4 max-w-[48ch] text-[0.98rem] leading-[1.7] text-osso-2">
+              {chamadaProjetos.texto}
+            </p>
+          </div>
+          <Botao
+            href={linkWhats(chamadaProjetos.mensagemWhats)}
+            variante="claro"
+            tamanho="lg"
+            externo
+            className="shrink-0"
+          >
+            <IconeWhats className="h-[18px] w-[18px]" />
+            {chamadaProjetos.cta}
+          </Botao>
+        </div>
       </Revelar>
     </Secao>
   );
