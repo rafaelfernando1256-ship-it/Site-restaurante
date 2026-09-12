@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 900" width="900" height="900" role="img" aria-label="Anel solitário com cristal em prata 925">
+<defs>
+  <linearGradient id="metal2" gradientTransform="rotate(112 .5 .5)">
+    <stop offset="0"    stop-color="#8E949C"/>
+    <stop offset="0.16" stop-color="#E6EAEE"/>
+    <stop offset="0.30" stop-color="#AFB6BE"/>
+    <stop offset="0.46" stop-color="#F7F9FB"/>
+    <stop offset="0.62" stop-color="#9AA1A9"/>
+    <stop offset="0.80" stop-color="#DDE2E7"/>
+    <stop offset="1"    stop-color="#868D95"/>
+  </linearGradient>
+  <linearGradient id="metal22" gradientTransform="rotate(150 .5 .5)">
+    <stop offset="0"    stop-color="#A6ADB5"/>
+    <stop offset="0.28" stop-color="#F2F5F8"/>
+    <stop offset="0.55" stop-color="#9FA6AE"/>
+    <stop offset="0.78" stop-color="#E9EDF1"/>
+    <stop offset="1"    stop-color="#8B929A"/>
+  </linearGradient>
+  <radialGradient id="fundo2" cx="50%" cy="42%" r="78%">
+    <stop offset="0" stop-color="#FDFDFE"/>
+    <stop offset="0.62" stop-color="#F2F4F7"/>
+    <stop offset="1" stop-color="#E4E7EC"/>
+  </radialGradient>
+  <radialGradient id="sombra2" cx="50%" cy="50%" r="50%">
+    <stop offset="0" stop-color="#6E757E" stop-opacity=".34"/>
+    <stop offset="1" stop-color="#6E757E" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="pedra2" cx="38%" cy="32%" r="72%">
+    <stop offset="0" stop-color="#FFFFFF"/>
+    <stop offset="0.42" stop-color="#DCE6F0"/>
+    <stop offset="1" stop-color="#A9B7C6"/>
+  </radialGradient>
+  <filter id="suave2" x="-30%" y="-30%" width="160%" height="160%">
+    <feGaussianBlur stdDeviation="7"/>
+  </filter>
+</defs>
+<rect width="900" height="900" fill="url(#fundo2)"/>
+<ellipse cx="450" cy="760" rx="234" ry="32" fill="url(#sombra2)"/>
+<g transform="translate(450 470) rotate(-18)"><path fill-rule="evenodd" fill="url(#metal2)" d="M-168 0 a168 77.28 0 1 0 336 0 a168 77.28 0 1 0 -336 0 ZM-134 0 a134 56.9 0 1 1 268 0 a134 56.9 0 1 1 -268 0 Z"/><path d="M-121 -56 a134 62 0 0 1 242 0" fill="none" stroke="#FFFFFF" stroke-width="8.8" opacity=".55" stroke-linecap="round"/><g transform="translate(0 -81)"><path d="M-44 6 q44 -26 88 0 q-44 20 -88 0 z" fill="none" stroke="url(#metal22)" stroke-width="7"/><path d="M-34 4 L0 -40 L34 4 L0 34 Z" fill="url(#pedra2)"/><path d="M-34 4 L0 -40 L0 34 Z" fill="#FFFFFF" opacity=".45"/><path d="M-34 4 L34 4" stroke="#FFFFFF" stroke-width="2.2" opacity=".75"/><path d="M-16 -14 L0 -40 L16 -14 Z" fill="#FFFFFF" opacity=".55"/></g></g>
+</svg>

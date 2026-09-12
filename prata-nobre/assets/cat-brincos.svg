@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 620" width="800" height="620" role="img" aria-label="Brincos de prata">
+<defs>
+  <linearGradient id="metal23" gradientTransform="rotate(112 .5 .5)">
+    <stop offset="0"    stop-color="#8E949C"/>
+    <stop offset="0.16" stop-color="#E6EAEE"/>
+    <stop offset="0.30" stop-color="#AFB6BE"/>
+    <stop offset="0.46" stop-color="#F7F9FB"/>
+    <stop offset="0.62" stop-color="#9AA1A9"/>
+    <stop offset="0.80" stop-color="#DDE2E7"/>
+    <stop offset="1"    stop-color="#868D95"/>
+  </linearGradient>
+  <linearGradient id="metal223" gradientTransform="rotate(150 .5 .5)">
+    <stop offset="0"    stop-color="#A6ADB5"/>
+    <stop offset="0.28" stop-color="#F2F5F8"/>
+    <stop offset="0.55" stop-color="#9FA6AE"/>
+    <stop offset="0.78" stop-color="#E9EDF1"/>
+    <stop offset="1"    stop-color="#8B929A"/>
+  </linearGradient>
+  <radialGradient id="fundo23" cx="50%" cy="42%" r="78%">
+    <stop offset="0" stop-color="#FDFDFE"/>
+    <stop offset="0.62" stop-color="#F2F4F7"/>
+    <stop offset="1" stop-color="#E4E7EC"/>
+  </radialGradient>
+  <radialGradient id="sombra23" cx="50%" cy="50%" r="50%">
+    <stop offset="0" stop-color="#6E757E" stop-opacity=".34"/>
+    <stop offset="1" stop-color="#6E757E" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="pedra23" cx="38%" cy="32%" r="72%">
+    <stop offset="0" stop-color="#FFFFFF"/>
+    <stop offset="0.42" stop-color="#DCE6F0"/>
+    <stop offset="1" stop-color="#A9B7C6"/>
+  </radialGradient>
+  <filter id="suave23" x="-30%" y="-30%" width="160%" height="160%">
+    <feGaussianBlur stdDeviation="7"/>
+  </filter>
+</defs>
+<rect width="800" height="620" fill="url(#fundo23)"/>
+<ellipse cx="400" cy="542" rx="240" ry="25" fill="url(#sombra23)"/>
+<g transform="translate(310 320)"><circle r="88" fill="none" stroke="url(#metal23)" stroke-width="10"/><path d="M-58 -55 a81 81 0 0 1 44 -25" fill="none" stroke="#FFFFFF" stroke-width="3.0" opacity=".6" stroke-linecap="round"/><circle cx="0" cy="-88" r="6.2" fill="url(#metal223)"/></g><g transform="translate(510 330)"><circle r="33" fill="none" stroke="url(#metal223)" stroke-width="4"/><circle r="22" fill="url(#pedra23)"/><path d="M-11 -11 a18 18 0 0 1 13 -6" fill="none" stroke="#FFFFFF" stroke-width="3" opacity=".9" stroke-linecap="round"/></g>
+</svg>

@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 620" width="800" height="620" role="img" aria-label="Anéis de prata">
+<defs>
+  <linearGradient id="metal20" gradientTransform="rotate(112 .5 .5)">
+    <stop offset="0"    stop-color="#8E949C"/>
+    <stop offset="0.16" stop-color="#E6EAEE"/>
+    <stop offset="0.30" stop-color="#AFB6BE"/>
+    <stop offset="0.46" stop-color="#F7F9FB"/>
+    <stop offset="0.62" stop-color="#9AA1A9"/>
+    <stop offset="0.80" stop-color="#DDE2E7"/>
+    <stop offset="1"    stop-color="#868D95"/>
+  </linearGradient>
+  <linearGradient id="metal220" gradientTransform="rotate(150 .5 .5)">
+    <stop offset="0"    stop-color="#A6ADB5"/>
+    <stop offset="0.28" stop-color="#F2F5F8"/>
+    <stop offset="0.55" stop-color="#9FA6AE"/>
+    <stop offset="0.78" stop-color="#E9EDF1"/>
+    <stop offset="1"    stop-color="#8B929A"/>
+  </linearGradient>
+  <radialGradient id="fundo20" cx="50%" cy="42%" r="78%">
+    <stop offset="0" stop-color="#FDFDFE"/>
+    <stop offset="0.62" stop-color="#F2F4F7"/>
+    <stop offset="1" stop-color="#E4E7EC"/>
+  </radialGradient>
+  <radialGradient id="sombra20" cx="50%" cy="50%" r="50%">
+    <stop offset="0" stop-color="#6E757E" stop-opacity=".34"/>
+    <stop offset="1" stop-color="#6E757E" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="pedra20" cx="38%" cy="32%" r="72%">
+    <stop offset="0" stop-color="#FFFFFF"/>
+    <stop offset="0.42" stop-color="#DCE6F0"/>
+    <stop offset="1" stop-color="#A9B7C6"/>
+  </radialGradient>
+  <filter id="suave20" x="-30%" y="-30%" width="160%" height="160%">
+    <feGaussianBlur stdDeviation="7"/>
+  </filter>
+</defs>
+<rect width="800" height="620" fill="url(#fundo20)"/>
+<ellipse cx="400" cy="542" rx="240" ry="25" fill="url(#sombra20)"/>
+<g transform="translate(345 300) rotate(-22)"><path fill-rule="evenodd" fill="url(#metal20)" d="M-128 0 a128 58.88 0 1 0 256 0 a128 58.88 0 1 0 -256 0 ZM-96 0 a96 39.7 0 1 1 192 0 a96 39.7 0 1 1 -192 0 Z"/><path d="M-92 -42 a102 47 0 0 1 184 0" fill="none" stroke="#FFFFFF" stroke-width="8.3" opacity=".55" stroke-linecap="round"/></g><g transform="translate(505 355) rotate(16)"><path fill-rule="evenodd" fill="url(#metal20)" d="M-104 0 a104 47.84 0 1 0 208 0 a104 47.84 0 1 0 -208 0 ZM-78 0 a78 32.2 0 1 1 156 0 a78 32.2 0 1 1 -156 0 Z"/><path d="M-75 -34 a83 38 0 0 1 150 0" fill="none" stroke="#FFFFFF" stroke-width="6.8" opacity=".55" stroke-linecap="round"/></g>
+</svg>
