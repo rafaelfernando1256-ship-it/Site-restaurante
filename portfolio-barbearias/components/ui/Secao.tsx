@@ -88,7 +88,7 @@ export default function Secao({
   return (
     <section
       id={id}
-      className={`relative z-10 py-24 sm:py-32 ${tons[tom]} ${className}`}
+      className={`relative z-10 py-20 sm:py-28 lg:py-32 ${tons[tom]} ${className}`}
     >
       <div className="mx-auto max-w-6xl px-5 sm:px-8">{children}</div>
     </section>

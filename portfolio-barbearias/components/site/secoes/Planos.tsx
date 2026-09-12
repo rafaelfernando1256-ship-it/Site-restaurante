@@ -15,14 +15,32 @@ import { acharDemo } from "@/content/demos";
 export default function Planos() {
   return (
     <Secao id="planos" tom="base">
-      <CabecaSecao
-        indice="05"
-        etiqueta={planos.etiqueta}
-        titulo={planos.titulo}
-        texto={planos.texto}
-      />
+      <div className="grid gap-10 lg:grid-cols-[1fr_auto] lg:items-end lg:gap-16">
+        <CabecaSecao
+          indice="05"
+          etiqueta={planos.etiqueta}
+          titulo={planos.titulo}
+          texto={planos.texto}
+        />
 
-      <div className="mt-16 grid items-stretch gap-4 sm:mt-20 lg:grid-cols-3">
+        <Revelar atraso={0.14}>
+          <div className="rounded-[1.25rem] bg-tinta-2 px-7 py-6 ring-1 ring-fio-forte sm:px-9 sm:py-7">
+            <p className="t-numeral text-[clamp(3rem,11vw,4rem)] leading-none text-osso">
+              {planos.destaque.valor}
+            </p>
+            <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-[0.8rem] text-osso-2 lg:max-w-[16ch] lg:flex-col lg:gap-1">
+              {planos.destaque.nota.split(" · ").map((linha) => (
+                <li key={linha}>{linha}</li>
+              ))}
+            </ul>
+          </div>
+        </Revelar>
+      </div>
+
+      {/* No celular os três cartões viravam quatro telas de rolagem.
+          Vira faixa deslizante com encaixe: um cartão por vez, do
+          jeito que se compara preço no telefone. */}
+      <div className="mt-14 -mx-5 flex snap-x snap-mandatory items-stretch gap-4 overflow-x-auto px-5 pb-2 sm:-mx-8 sm:px-8 lg:mx-0 lg:grid lg:grid-cols-3 lg:overflow-visible lg:px-0 lg:pb-0 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
         {planos.lista.map((p, i) => {
           const demo = acharDemo(p.slug);
           /* paleta[1] é a cor de marca de cada projeto:
@@ -30,7 +48,11 @@ export default function Planos() {
           const acento = demo?.paleta[1]?.hex ?? "#EDEAE4";
 
           return (
-            <Revelar key={p.nome} atraso={i * 0.07}>
+            <Revelar
+              key={p.nome}
+              atraso={i * 0.07}
+              className="w-[84vw] shrink-0 snap-center sm:w-[21rem] lg:w-auto"
+            >
               <article
                 className={`relative flex h-full flex-col overflow-hidden rounded-[1.25rem] p-8 transition-colors duration-500 sm:p-10 ${
                   p.destaque
@@ -62,14 +84,12 @@ export default function Planos() {
                   {p.resumo}
                 </p>
 
-                <div className="mt-9 border-t border-fio pt-8">
-                  <p className="t-numeral text-[2.8rem] leading-none text-osso">{p.preco}</p>
-                  <p className="mt-2.5 text-[0.88rem] text-osso-2">
-                    pagamento único · sem mensalidade
-                  </p>
-                </div>
+                <p className="mt-7 flex items-baseline gap-2 border-t border-fio pt-6 text-[0.86rem] text-osso-2">
+                  <span className="t-numeral text-[1.4rem] text-osso">{p.preco}</span>
+                  pagamento único
+                </p>
 
-                <ul className="mt-8 flex-1 space-y-3.5">
+                <ul className="mt-7 flex-1 space-y-3.5">
                   {p.inclui.map((item) => (
                     <li key={item} className="flex gap-3.5 text-[0.92rem] leading-[1.6] text-osso-2">
                       <span aria-hidden className="mt-[0.6rem] h-px w-3 shrink-0 bg-osso-3" />
@@ -109,6 +129,10 @@ export default function Planos() {
           );
         })}
       </div>
+
+      <p className="mt-3 flex items-center gap-2 text-[0.75rem] text-osso-3 lg:hidden">
+        <span aria-hidden>←</span> arraste para comparar os três modelos
+      </p>
 
       {/* O que fica de fora: dito na cara, para não virar surpresa */}
       <Revelar atraso={0.12}>

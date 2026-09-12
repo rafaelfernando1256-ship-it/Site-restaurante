@@ -66,15 +66,19 @@ export default function Projetos() {
 
                   {/* Lista separada por filete em vez de pílulas: quatro
                       pílulas empilhadas no celular ocupavam meia tela. */}
+                  {/* No celular vira lista com marcador; só a partir de sm
+                      os itens ficam na mesma linha, separados por filete. */}
                   <ul
-                    className="mt-7 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[0.82rem]"
+                    className="mt-7 flex flex-col gap-2 text-[0.85rem] sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-3 sm:gap-y-1.5 sm:text-[0.82rem]"
                     style={{ color: corApoio }}
                   >
                     {d.destaques.map((h, j) => (
                       <li key={h} className="flex items-center gap-3">
-                        {j > 0 && (
-                          <span aria-hidden className="h-3 w-px" style={{ backgroundColor: corFio }} />
-                        )}
+                        <span
+                          aria-hidden
+                          className={`h-px w-3 shrink-0 sm:h-3 sm:w-px ${j === 0 ? "sm:hidden" : ""}`}
+                          style={{ backgroundColor: corFio }}
+                        />
                         {h}
                       </li>
                     ))}
@@ -116,12 +120,27 @@ export default function Projetos() {
                       </span>
                     </div>
                   </div>
+
+                  {/* Texto corrido, não flex: no celular o flex jogava a
+                      seta sozinha na direita e quebrava a frase no meio. */}
+                  {plano && (
+                    <a
+                      href="#planos"
+                      className="mt-3 inline-block min-h-[44px] py-2.5 text-[0.85rem] leading-relaxed"
+                      style={{ color: corApoio }}
+                    >
+                      Este modelo sai por{" "}
+                      <span className="underline underline-offset-4" style={{ color: corTexto }}>
+                        {plano.preco}, pagamento único
+                      </span>
+                    </a>
+                  )}
                 </div>
 
                 {/* Mockup: com bisel e queixo, para ler como aparelho */}
                 <div className="relative flex items-end justify-center px-8 pb-0 lg:px-0">
                   <div
-                    className="w-[15.5rem] translate-y-10 overflow-hidden rounded-t-[2rem] border-[8px] border-b-0 shadow-[0_-24px_70px_-18px_rgba(0,0,0,0.55)] transition-transform duration-700 ease-[var(--ease-saida)] group-hover:-translate-y-0 sm:w-[17rem]"
+                    className="w-[13.5rem] translate-y-10 overflow-hidden rounded-t-[2rem] sm:w-[15.5rem] border-[8px] border-b-0 shadow-[0_-24px_70px_-18px_rgba(0,0,0,0.55)] transition-transform duration-700 ease-[var(--ease-saida)] group-hover:-translate-y-0 lg:w-[17rem]"
                     style={{ borderColor: claro ? "#2A2622" : "#202024" }}
                   >
                     <Image
@@ -131,21 +150,9 @@ export default function Projetos() {
                       height={760}
                       loading="lazy"
                       sizes="(min-width: 640px) 272px, 248px"
-                      className="h-[20rem] w-full object-cover object-top sm:h-[23rem]"
+                      className="h-[16rem] w-full object-cover object-top sm:h-[23rem]"
                     />
                   </div>
-                  {plano && (
-                    <p className="mt-6 text-[0.85rem]" style={{ color: corApoio }}>
-                      Este modelo sai por{" "}
-                      <a
-                        href="#planos"
-                        className="underline underline-offset-4 transition-colors"
-                        style={{ color: corTexto }}
-                      >
-                        {plano.preco}, pagamento único
-                      </a>
-                    </p>
-                  )}
                 </div>
               </article>
             </Revelar>

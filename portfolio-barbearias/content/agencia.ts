@@ -129,7 +129,7 @@ export const conta = {
     rotuloAno: "por ano",
   },
   nota: "Não é promessa de resultado: é a conta que você mesmo acabou de fazer. O que eu garanto é o site pronto para receber esse cliente quando ele aparecer.",
-  comparacao: { antes: "E o site sai por", valor: "R$ 423", depois: "uma vez só, no modelo Clássico." },
+  comparacao: { antes: "E o site sai por", valor: "R$ 200", depois: "uma vez só, em qualquer modelo." },
   cta: "Quero ver o meu de graça",
   mensagemWhats:
     "Olá! Fiz a conta no seu site e quero ver um exemplo do site da minha barbearia.\n\nNome da barbearia: \nCidade: ",
@@ -221,15 +221,18 @@ export const chamadaProjetos = {
    ═══ Para editar um preço, mude só o campo `preco`. ═══         */
 export const planos = {
   etiqueta: "Investimento",
-  titulo: "Escolha o modelo e saiba o preço",
+  titulo: "Um preço, três modelos",
   texto:
-    "Pagamento único pelo site pronto, publicado e no ar. Sem mensalidade, sem fidelidade e sem taxa escondida. O que você vê nos projetos é exatamente o que você leva.",
+    "Qualquer um dos três modelos sai pelo mesmo valor, pago uma vez só. Você escolhe pelo que combina com a sua barbearia, não pelo que cabe no bolso.",
+  /* Preço único anunciado uma vez, em corpo grande: três cartões
+     repetindo o mesmo número passariam a impressão de erro. */
+  destaque: { valor: "R$ 200", nota: "pagamento único · sem mensalidade · qualquer modelo" },
   lista: [
     {
       slug: "dom-aurelio",
       nome: "Clássico",
       modelo: "Como a Barbearia Dom Aurélio",
-      preco: "R$ 423",
+      preco: "R$ 200",
       resumo:
         "Para barbearia de bairro, com clientela fiel e cliente que prefere ligar a agendar pelo app.",
       destaque: false,
@@ -248,7 +251,7 @@ export const planos = {
       slug: "nove-e-meia",
       nome: "Urbano",
       modelo: "Como a Nove & Meia",
-      preco: "R$ 573",
+      preco: "R$ 200",
       resumo:
         "Para barbearia com equipe, público jovem e agenda que precisa parar de ser anotada no caderno.",
       destaque: true,
@@ -267,7 +270,7 @@ export const planos = {
       slug: "casa-valerio",
       nome: "Premium",
       modelo: "Como a Casa Valério",
-      preco: "R$ 670",
+      preco: "R$ 200",
       resumo:
         "Para barbearia de ticket alto que vende plano mensal e precisa parecer o que cobra.",
       destaque: false,
