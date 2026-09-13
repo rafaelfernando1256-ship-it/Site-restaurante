@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000" role="img" aria-label="Corrente com pingente de cruz gótica em aço cromado">
+<defs>
+  <linearGradient id="cromo696" x1="0" y1="0" x2="0" y2="1" gradientTransform="rotate(-22 .5 .5)">
+    <stop offset="0"    stop-color="#FFFFFF"/>
+    <stop offset="0.18" stop-color="#D2D8DF"/>
+    <stop offset="0.33" stop-color="#7C848D"/>
+    <stop offset="0.47" stop-color="#2B3036"/>
+    <stop offset="0.50" stop-color="#3A4048"/>
+    <stop offset="0.55" stop-color="#9AA2AB"/>
+    <stop offset="0.68" stop-color="#F4F7FA"/>
+    <stop offset="0.84" stop-color="#AEB6BE"/>
+    <stop offset="1"    stop-color="#EDF1F5"/>
+  </linearGradient>
+  <linearGradient id="cromo2696" x1="0" y1="0" x2="1" y2="1" gradientTransform="rotate(6 .5 .5)">
+    <stop offset="0"    stop-color="#EFF3F7"/>
+    <stop offset="0.28" stop-color="#8F979F"/>
+    <stop offset="0.44" stop-color="#31363C"/>
+    <stop offset="0.58" stop-color="#C9D0D7"/>
+    <stop offset="0.8"  stop-color="#5E666E"/>
+    <stop offset="1"    stop-color="#E4E9EE"/>
+  </linearGradient>
+  <linearGradient id="fosco696" x1="0" y1="0" x2="0" y2="1" gradientTransform="rotate(-22 .5 .5)">
+    <stop offset="0"    stop-color="#4A4F55"/>
+    <stop offset="0.38" stop-color="#24282D"/>
+    <stop offset="0.62" stop-color="#33383E"/>
+    <stop offset="1"    stop-color="#1A1D21"/>
+  </linearGradient>
+  <linearGradient id="volt696" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#EBFF7A"/>
+    <stop offset="0.5" stop-color="#D6FF2E"/>
+    <stop offset="1" stop-color="#A8CC18"/>
+  </linearGradient>
+</defs>
+<rect width="1000" height="1000" fill="#E8EAEE"/>
+<circle cx="500" cy="500" r="380" fill="#D6DAE0"/>
+<g transform="translate(500 500) rotate(11) scale(0.84)"><g transform="translate(-380.0 -250.0) rotate(44.2)"><ellipse rx="40.0" ry="26.4" fill="none" stroke="#0A0A0B" stroke-width="24.7"/><ellipse rx="40.0" ry="26.4" fill="none" stroke="url(#cromo2696)" stroke-width="13.0"/></g><g transform="translate(-343.8 -216.4) rotate(119.4)"><ellipse rx="40.0" ry="26.4" fill="none" stroke="#0A0A0B" stroke-width="24.7"/><ellipse rx="40.0" ry="26.4" fill="none" stroke="url(#cromo2696)" stroke-width="13.0"/></g><g transform="translate(-307.6 -186.2) rotate(38.2)"><ellipse rx="40.0" ry="26.4" fill="none" stroke="#0A0A0B" stroke-width="24.7"/><ellipse rx="40.0" ry="26.4" fill="none" stroke="url(#cromo2696)" stroke-width="13.0"/></g><g transform="translate(-271.4 -159.4) rotate(112.8)"><ellipse rx="40.0" ry="26.4" fill="none" stroke="#0A0A0B" stroke-width="24.7"/><ellipse rx="40.0" ry="26.4" fill="none" stroke="url(#cromo2696)" stroke-width="13.0"/></g><g transform="translate(-235.2 -135.9) rotate(31.1)"><ellipse rx="40.0" ry="26.4" fill="none" stroke="#0A0A0B" stroke-width="24.7"/><ellipse rx="40.0" ry="26.4" fill="none" stroke="url(#cromo2696)" stroke-width="13.0"/></g><g transform="translate(-199.0 -115.8) rotate(105.0)"><ellipse rx="40.0" ry="26.4" fill="none" stroke="#0A0A0B" stroke-width="24.7"/><ellipse rx="40.0" ry="26.4" fill="none" stroke="url(#cromo2696)" stroke-width="13.0"/></g><g transform="translate(-162.9 -99.0) rotate(22.7)"><ellipse rx="40.0" ry="26.4" fill="none" stroke="#0A0A0B" stroke-width="24.7"/><ellipse rx="40.0" ry="26.4" fill="none" stroke="url(#cromo2696)" stroke-width="13.0"/></g><g transform="translate(-126.7 -85.6) rotate(96.0)"><ellipse rx="40.0" ry="26.4" fill="none" stroke="#0A0A0B" stroke-width="24.7"/><ellipse rx="40.0" ry="26.4" fill="none" stroke="url(#cromo2696)" stroke-width="13.0"/></g><g transform="translate(-90.5 -75.5) rotate(13.1)"><ellipse rx="40.0" ry="26.4" fill="none" stroke="#0A0A0B" stroke-width="24.7"/><ellipse rx="40.0" ry="26.4" fill="none" stroke="url(#cromo2696)" stroke-width="13.0"/></g><g transform="translate(-54.3 -68.8) rotate(85.9)"><ellipse rx="40.0" ry="26.4" fill="none" stroke="#0A0A0B" stroke-width="24.7"/><ellipse rx="40.0" ry="26.4" fill="none" stroke="url(#cromo2696)" stroke-width="13.0"/></g><g transform="translate(-18.1 -65.4) rotate(2.7)"><ellipse rx="40.0" ry="26.4" fill="none" stroke="#0A0A0B" stroke-width="24.7"/><ellipse rx="40.0" ry="26.4" fill="none" stroke="url(#cromo2696)" stroke-width="13.0"/></g><g transform="translate(18.1 -65.4) rotate(75.3)"><ellipse rx="40.0" ry="26.4" fill="none" stroke="#0A0A0B" stroke-width="24.7"/><ellipse rx="40.0" ry="26.4" fill="none" stroke="url(#cromo2696)" stroke-width="13.0"/></g><g transform="translate(54.3 -68.8) rotate(-7.9)"><ellipse rx="40.0" ry="26.4" fill="none" stroke="#0A0A0B" stroke-width="24.7"/><ellipse rx="40.0" ry="26.4" fill="none" stroke="url(#cromo2696)" stroke-width="13.0"/></g><g transform="translate(90.5 -75.5) rotate(64.9)"><ellipse rx="40.0" ry="26.4" fill="none" stroke="#0A0A0B" stroke-width="24.7"/><ellipse rx="40.0" ry="26.4" fill="none" stroke="url(#cromo2696)" stroke-width="13.0"/></g><g transform="translate(126.7 -85.6) rotate(-18.0)"><ellipse rx="40.0" ry="26.4" fill="none" stroke="#0A0A0B" stroke-width="24.7"/><ellipse rx="40.0" ry="26.4" fill="none" stroke="url(#cromo2696)" stroke-width="13.0"/></g><g transform="translate(162.9 -99.0) rotate(55.3)"><ellipse rx="40.0" ry="26.4" fill="none" stroke="#0A0A0B" stroke-width="24.7"/><ellipse rx="40.0" ry="26.4" fill="none" stroke="url(#cromo2696)" stroke-width="13.0"/></g><g transform="translate(199.0 -115.8) rotate(-27.0)"><ellipse rx="40.0" ry="26.4" fill="none" stroke="#0A0A0B" stroke-width="24.7"/><ellipse rx="40.0" ry="26.4" fill="none" stroke="url(#cromo2696)" stroke-width="13.0"/></g><g transform="translate(235.2 -135.9) rotate(46.9)"><ellipse rx="40.0" ry="26.4" fill="none" stroke="#0A0A0B" stroke-width="24.7"/><ellipse rx="40.0" ry="26.4" fill="none" stroke="url(#cromo2696)" stroke-width="13.0"/></g><g transform="translate(271.4 -159.4) rotate(-34.8)"><ellipse rx="40.0" ry="26.4" fill="none" stroke="#0A0A0B" stroke-width="24.7"/><ellipse rx="40.0" ry="26.4" fill="none" stroke="url(#cromo2696)" stroke-width="13.0"/></g><g transform="translate(307.6 -186.2) rotate(39.8)"><ellipse rx="40.0" ry="26.4" fill="none" stroke="#0A0A0B" stroke-width="24.7"/><ellipse rx="40.0" ry="26.4" fill="none" stroke="url(#cromo2696)" stroke-width="13.0"/></g><g transform="translate(343.8 -216.4) rotate(-41.4)"><ellipse rx="40.0" ry="26.4" fill="none" stroke="#0A0A0B" stroke-width="24.7"/><ellipse rx="40.0" ry="26.4" fill="none" stroke="url(#cromo2696)" stroke-width="13.0"/></g><g transform="translate(380.0 -250.0) rotate(33.8)"><ellipse rx="40.0" ry="26.4" fill="none" stroke="#0A0A0B" stroke-width="24.7"/><ellipse rx="40.0" ry="26.4" fill="none" stroke="url(#cromo2696)" stroke-width="13.0"/></g><path d="M0 -65.0 Q0 -32.0 0 1.0" fill="none" stroke="#0A0A0B" stroke-width="25" stroke-linecap="round"/><path d="M0 -65.0 Q0 -32.0 0 1.0" fill="none" stroke="url(#cromo2696)" stroke-width="13" stroke-linecap="round"/><g transform="translate(0 166.0) rotate(0) scale(1.0)"><path d="M-44.6 -165.0 L44.6 -165.0 L44.6 -87.5 L99.0 -87.5 L99.0 1.7 L44.6 1.7 L32.1 165.0 L-32.1 165.0 L-44.6 1.7 L-99.0 1.7 L-99.0 -87.5 L-44.6 -87.5 Z" fill="#0A0A0B" stroke="#0A0A0B" stroke-width="29.7" stroke-linejoin="round"/><path d="M-44.6 -165.0 L44.6 -165.0 L44.6 -87.5 L99.0 -87.5 L99.0 1.7 L44.6 1.7 L32.1 165.0 L-32.1 165.0 L-44.6 1.7 L-99.0 1.7 L-99.0 -87.5 L-44.6 -87.5 Z" fill="url(#cromo696)"/><path d="M-24.5 -135.3 L-24.5 115.5" stroke="#FFFFFF" stroke-width="11.6" opacity=".65" stroke-linecap="round"/></g></g>
+</svg>
