@@ -68,7 +68,7 @@ function compra(p) {
     </div>
 
     ${p.cores.length ? `<div class="ficha__bloco surge"${atraso(3)}>
-      <p class="ficha__rotulo">Cor: <b id="corEscolhida">${esc(p.cores[0].nome)}</b></p>
+      <p class="ficha__rotulo"><span>Cor: <b id="corEscolhida">${esc(p.cores[0].nome)}</b></span></p>
       <div class="cores" id="cores" role="radiogroup" aria-label="Cor">
         ${p.cores.map((c, i) => `<button type="button" class="cor${i === 0 ? ' ativa' : ''}"
           role="radio" aria-checked="${i === 0}" tabindex="${i === 0 ? 0 : -1}"
@@ -79,7 +79,7 @@ function compra(p) {
 
     <div class="ficha__bloco surge"${atraso(3)}>
       <p class="ficha__rotulo">
-        ${p.tamanhos.length > 1 ? 'Tamanho' : 'Tamanho único'}
+        <span>${p.tamanhos.length > 1 ? 'Tamanho' : 'Tamanho único'}</span>
         ${p.tamanhos.length > 1 ? '<a href="#ficha-tecnica">Tabela de medidas</a>' : ''}
       </p>
       <div class="tamanhos" id="tamanhos" role="radiogroup" aria-label="Tamanho">
@@ -107,9 +107,11 @@ function compra(p) {
       <button type="button" class="btn btn--icone" id="favProduto"
         aria-pressed="false" aria-label="Salvar nos favoritos">${ICO.favorito}</button>
     </div>
-    ${botao({ texto: `${ICO.whats}Tirar dúvida no WhatsApp`, variante: 'whats', tamanho: 'bloco',
-              externo: true, href: linkWhats(MSG.produto(p)),
-              extra: ' style="margin-top:10px"' })}
+    <p class="ficha__ajuda">
+      <a href="${linkWhats(MSG.produto(p))}" target="_blank" rel="noopener">
+        ${ICO.whats}<span>Dúvida no tamanho? Fale com a gente no WhatsApp</span>
+      </a>
+    </p>
 
     <ul class="ficha__garantias surge"${atraso(5)}>
       <li>${ICO.caminhao}Frete grátis acima de ${moeda(LOJA.freteGratis)}</li>
@@ -173,7 +175,7 @@ ${secao({ tom: 'creme', classe: 'relacionados', rotuloAria: 'Produtos relacionad
     titulo: `${p.nome} — ${marca(p.marca).nome} | ${LOJA.nome} ${LOJA.sobrenome}`,
     descricao: `${p.resumo} ${moeda(p.preco)} em ${parcelas(p.preco)}. ` +
       `Frete grátis acima de ${moeda(LOJA.freteGratis)} e troca em 30 dias.`,
-    caminho: `produto/${p.slug}.html`, raiz: RAIZ, corpo, atual: p.categoria,
+    caminho: `produto/${p.slug}.html`, raiz: RAIZ, corpo, classe: 'pg-produto', atual: p.categoria,
     imagemSocial: fotos[0],
     jsonLd: [
       jsonLdLoja,

@@ -1,8 +1,8 @@
 # VANTA STORE
 
 E-commerce demonstrativo de uma loja multimarcas fictícia — roupas, tênis,
-perfumes e acessórios. 35 páginas: home, 4 categorias + ofertas, 24 páginas de
-produto, carrinho, checkout e conta.
+perfumes e acessórios. 36 páginas: home, catálogo completo, 4 categorias +
+ofertas, 24 páginas de produto, carrinho, checkout e conta.
 
 **É uma demonstração de interface.** Nenhum pagamento é processado, nenhum
 pedido é enviado e nenhum dado sai do navegador. Marcas, produtos, preços,
@@ -43,6 +43,7 @@ modelos/      as peças de HTML (funções que devolvem string)
   ui.js         botões, cartão de produto, filtros, sanfona
   base.js       topo, menu, busca, gavetas, rodapé, <head>
   home.js       a página inicial
+  produtos.js   o catálogo completo (busca, filtros, ordenação)
   produto.js    a página de produto
   categoria.js  as páginas de categoria
   lojinhas.js   carrinho, checkout e conta
@@ -226,6 +227,7 @@ o resto.
 | Perguntas frequentes | `conteudo/site.js` → `FAQ` |
 | Cupons de demonstração | `conteudo/site.js` → `CUPONS` |
 | Textos de cada seção da home | `conteudo/site.js` → `SECOES` e `HERO` |
+| Promessas da tarja do topo e do hero | `conteudo/site.js` → `TARJA` e `HERO.numeros` |
 | Avisos de "isto é demonstração" | `conteudo/site.js` → `AVISO_DEMO` |
 | Frases da tarja que rola no topo | `conteudo/site.js` → `TARJA` |
 
@@ -236,6 +238,11 @@ um meio de pagamento de verdade — hoje ele só mostra a interface.
 ---
 
 ## O que já está pronto
+
+**Arquitetura das páginas**: a home é vitrine curada — hero, categorias e três
+trilhos de quatro peças. O catálogo inteiro vive em `produtos.html`, com busca,
+filtros e ordenação. É o que separa uma loja de uma página só de uma loja de
+verdade: a home vende, o catálogo lista.
 
 **Loja**: busca por nome, tipo e marca (ignora acento e maiúscula); filtros por
 categoria, tipo, marca, preço, tamanho, cor e disponibilidade, combináveis;
@@ -266,10 +273,10 @@ e navegável **com o JavaScript desligado**.
 
 ### Como foi verificado
 
-- 57 testes funcionais (Playwright) — 57 passando.
-- Varredura de layout e acessibilidade nas 35 páginas × 5 larguras
+- 61 testes funcionais (Playwright) — 61 passando.
+- Varredura de layout e acessibilidade nas 36 páginas × 5 larguras
   (360, 390, 768, 1280, 1600) — zero apontamentos.
 - Auditoria de contraste WCAG, inclusive medindo o pixel real por trás dos
   textos sobre imagem.
-- Peso: home com 449 KB e 16 requisições, primeiro desenho em ~230 ms no
-  celular emulado.
+- Peso: home com 390 KB, 16 requisições e 770 nós de DOM; primeiro desenho em
+  ~190 ms no celular emulado.

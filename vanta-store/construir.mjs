@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { PRODUTOS, CATEGORIAS } from './conteudo/produtos.js';
 import { LOJA } from './conteudo/site.js';
 import { paginaHome } from './modelos/home.js';
+import { paginaProdutos } from './modelos/produtos.js';
 import { paginaProduto } from './modelos/produto.js';
 import { paginaCategoria, OFERTAS } from './modelos/categoria.js';
 import { paginaCarrinho, paginaCheckout, paginaConta } from './modelos/lojinhas.js';
@@ -22,6 +23,7 @@ async function gravar(rel, txt) {
 
 const paginas = [
   ['index.html', paginaHome()],
+  ['produtos.html', paginaProdutos()],
   ['carrinho.html', paginaCarrinho()],
   ['checkout.html', paginaCheckout()],
   ['conta.html', paginaConta()],
@@ -31,7 +33,7 @@ const paginas = [
 ];
 
 const urls = [
-  '', 'carrinho.html', 'checkout.html', 'conta.html',
+  '', 'produtos.html', 'carrinho.html', 'checkout.html', 'conta.html',
   ...CATEGORIAS.map((c) => `categoria/${c.id}.html`), 'categoria/ofertas.html',
   ...PRODUTOS.map((p) => `produto/${p.slug}.html`),
 ];
@@ -41,7 +43,7 @@ const arquivos = await Promise.all([
   gravar('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls.map((u) => `  <url><loc>${LOJA.dominio}/${u}</loc><lastmod>${hoje}</lastmod>` +
-    `<priority>${u === '' ? '1.0' : u.startsWith('produto') ? '0.8' : '0.6'}</priority></url>`).join('\n')}
+    `<priority>${u === '' ? '1.0' : u === 'produtos.html' ? '0.9' : u.startsWith('produto/') ? '0.8' : '0.6'}</priority></url>`).join('\n')}
 </urlset>
 `),
   gravar('robots.txt', `User-agent: *\nAllow: /\nDisallow: /checkout.html\nDisallow: /carrinho.html\n\nSitemap: ${LOJA.dominio}/sitemap.xml\n`),

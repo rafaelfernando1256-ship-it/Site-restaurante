@@ -61,11 +61,12 @@ export function botao({ texto, href, tipo, variante = 'tinta', tamanho, externo,
 }
 
 /* ── Cabeça de seção ──────────────────────────────────────── */
-export function cabeca({ etiqueta, titulo, texto, acao, centro }) {
+export function cabeca({ etiqueta, titulo, texto, acao, centro, nivel = 2 }) {
+  const H = nivel === 1 ? 'h1' : 'h2';
   return `<header class="${cls('cabeca', centro && 'cabeca--centro')}">
     <div class="cabeca__texto">
       ${etiqueta ? `<p class="rotulo surge">${esc(etiqueta)}</p>` : ''}
-      ${titulo ? `<h2 class="titulo surge"${atraso(1)}>${esc(titulo)}</h2>` : ''}
+      ${titulo ? `<${H} class="titulo surge"${atraso(1)}>${esc(titulo)}</${H}>` : ''}
       ${texto ? `<p class="cabeca__apoio surge"${atraso(2)}>${esc(texto)}</p>` : ''}
     </div>
     ${acao ? `<div class="cabeca__acao surge"${atraso(2)}>${acao}</div>` : ''}
@@ -133,12 +134,14 @@ export function cartao(p, { raiz = '', i = 0 } = {}) {
         <b>${moeda(p.preco)}</b>
         <small>${parcelas(p.preco)}</small>
       </p>
+      <!-- Uma ação por cartão. Dois botões concorrendo ("Adicionar" +
+           "Ver produto") poluem a grade e dividem o clique; a foto e o
+           nome já levam ao produto. -->
       <div class="card__acoes">
         ${p.estoque
-          ? `<button type="button" class="btn btn--tinta btn--peq" data-add
-               aria-label="Adicionar ${esc(p.nome)} ao carrinho">Adicionar</button>`
-          : `<button type="button" class="btn btn--tinta btn--peq" disabled>Esgotado</button>`}
-        <a class="btn btn--linha btn--peq" href="${url}">Ver produto</a>
+          ? `<button type="button" class="btn btn--linha btn--peq btn--bloco" data-add
+               aria-label="Adicionar ${esc(p.nome)} ao carrinho">Adicionar ao carrinho</button>`
+          : `<button type="button" class="btn btn--linha btn--peq btn--bloco" disabled>Esgotado</button>`}
       </div>
     </div>
   </article>`;

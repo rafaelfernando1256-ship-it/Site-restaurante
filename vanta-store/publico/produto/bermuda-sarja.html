@@ -30,11 +30,11 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Product","name":"Bermuda de Sarja","sku":"VS-BER-005","description":"Bermuda de sarja com comprimento no joelho — nem curta demais nem passando dele. O cós tem elástico só na parte de trás, que ajusta sem aparecer. Quatro bolsos, todos com fundo reforçado.","category":"Roupas > Bermudas","image":["https://vantastore.com.br/assets/bermuda-sarja.svg","https://vantastore.com.br/assets/bermuda-sarja-2.svg","https://vantastore.com.br/assets/bermuda-sarja-3.svg"],"brand":{"@type":"Brand","name":"GRAVA"},"offers":{"@type":"Offer","price":"129.90","priceCurrency":"BRL","availability":"https://schema.org/InStock","url":"https://vantastore.com.br/produto/bermuda-sarja.html","seller":{"@type":"Organization","name":"VANTA STORE"}},"additionalProperty":[{"@type":"PropertyValue","name":"Composição","value":"100% algodão sarjado"},{"@type":"PropertyValue","name":"Comprimento","value":"No joelho"},{"@type":"PropertyValue","name":"Cós","value":"Com elástico traseiro"},{"@type":"PropertyValue","name":"Bolsos","value":"Dois frontais, dois traseiros"},{"@type":"PropertyValue","name":"Lavagem","value":"Máquina, água fria"}]}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Início","item":"https://vantastore.com.br/"},{"@type":"ListItem","position":2,"name":"Roupas","item":"https://vantastore.com.br/categoria/roupas.html"},{"@type":"ListItem","position":3,"name":"Bermuda de Sarja"}]}</script>
 </head>
-<body data-raiz="../">
+<body class="pg-produto" data-raiz="../">
 <a class="pular" href="#conteudo">Pular para o conteúdo</a>
 <div class="tarja">
-  <div class="tarja__trilho">
-    <ul><li>Frete grátis acima de R$ 299</li><li>Até 10x sem juros</li><li>Troca em 30 dias</li><li>Envio para todo o Brasil</li></ul><ul><li>Frete grátis acima de R$ 299</li><li>Até 10x sem juros</li><li>Troca em 30 dias</li><li>Envio para todo o Brasil</li></ul>
+  <div class="wrap tarja__linha" role="status" aria-label="Condições da loja">
+    <p class="tarja__item ativo">Frete grátis acima de R$ 299</p><p class="tarja__item">Até 10x sem juros</p><p class="tarja__item">Troca em 30 dias</p><p class="tarja__item">Envio para todo o Brasil</p>
   </div>
 </div>
 <header class="topo" id="topo">
@@ -69,18 +69,21 @@
     </div>
   </div>
 
-  <!-- menu mobile -->
-  <div class="menu-mobile" id="menuMobile">
-    <nav aria-label="Menu">
-      <p class="menu-mobile__titulo">Categorias</p>
-      <a href="../categoria/roupas.html">ROUPAS<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m12 5 7 7-7 7"/></svg></a><a href="../categoria/tenis.html">TÊNIS<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m12 5 7 7-7 7"/></svg></a><a href="../categoria/perfumes.html">PERFUMES<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m12 5 7 7-7 7"/></svg></a><a href="../categoria/acessorios.html">ACESSÓRIOS<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m12 5 7 7-7 7"/></svg></a><a href="../categoria/ofertas.html">OFERTAS<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m12 5 7 7-7 7"/></svg></a>
-      <p class="menu-mobile__titulo">Atendimento</p>
-      <a href="../index.html#faq">Dúvidas frequentes<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m12 5 7 7-7 7"/></svg></a>
-      <a href="../conta.html">Minha conta<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m12 5 7 7-7 7"/></svg></a>
-      <a href="https://wa.me/5511900000000?text=Ol%C3%A1!%20Vim%20pelo%20site%20da%20VANTA%20STORE%20e%20queria%20tirar%20uma%20d%C3%BAvida." target="_blank" rel="noopener">WhatsApp<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m12 5 7 7-7 7"/></svg></a>
-    </nav>
-  </div>
 </header>
+
+<!-- O menu mobile fica FORA do <header>: o backdrop-filter do topo cria
+     bloco de contenção e um position:fixed lá dentro colapsa para a
+     altura do cabeçalho em vez de ocupar a tela. -->
+<div class="menu-mobile" id="menuMobile">
+  <nav aria-label="Menu">
+    <p class="menu-mobile__titulo">Categorias</p>
+    <a href="../produtos.html">TODOS OS PRODUTOS<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m12 5 7 7-7 7"/></svg></a><a href="../categoria/roupas.html">ROUPAS<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m12 5 7 7-7 7"/></svg></a><a href="../categoria/tenis.html">TÊNIS<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m12 5 7 7-7 7"/></svg></a><a href="../categoria/perfumes.html">PERFUMES<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m12 5 7 7-7 7"/></svg></a><a href="../categoria/acessorios.html">ACESSÓRIOS<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m12 5 7 7-7 7"/></svg></a><a href="../categoria/ofertas.html">OFERTAS<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m12 5 7 7-7 7"/></svg></a>
+    <p class="menu-mobile__titulo">Atendimento</p>
+    <a href="../index.html#faq">Dúvidas frequentes<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m12 5 7 7-7 7"/></svg></a>
+    <a href="../conta.html">Minha conta<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m12 5 7 7-7 7"/></svg></a>
+    <a href="https://wa.me/5511900000000?text=Ol%C3%A1!%20Vim%20pelo%20site%20da%20VANTA%20STORE%20e%20queria%20tirar%20uma%20d%C3%BAvida." target="_blank" rel="noopener">WhatsApp<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m12 5 7 7-7 7"/></svg></a>
+  </nav>
+</div>
 <main id="conteudo">
 
 <section class="produto">
@@ -147,7 +150,7 @@
     </div>
 
     <div class="ficha__bloco surge" style="--atraso:0.120s">
-      <p class="ficha__rotulo">Cor: <b id="corEscolhida">Areia</b></p>
+      <p class="ficha__rotulo"><span>Cor: <b id="corEscolhida">Areia</b></span></p>
       <div class="cores" id="cores" role="radiogroup" aria-label="Cor">
         <button type="button" class="cor ativa"
           role="radio" aria-checked="true" tabindex="0"
@@ -164,7 +167,7 @@
 
     <div class="ficha__bloco surge" style="--atraso:0.120s">
       <p class="ficha__rotulo">
-        Tamanho
+        <span>Tamanho</span>
         <a href="#ficha-tecnica">Tabela de medidas</a>
       </p>
       <div class="tamanhos" id="tamanhos" role="radiogroup" aria-label="Tamanho">
@@ -192,7 +195,11 @@
       <button type="button" class="btn btn--icone" id="favProduto"
         aria-pressed="false" aria-label="Salvar nos favoritos"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.3 4.7 13a4.6 4.6 0 0 1 6.5-6.5l.8.8.8-.8A4.6 4.6 0 1 1 19.3 13Z"/></svg></button>
     </div>
-    <a class="btn btn--whats btn--bloco" href="https://wa.me/5511900000000?text=Ol%C3%A1!%20Tenho%20uma%20d%C3%BAvida%20sobre%20o%20produto%20Bermuda%20de%20Sarja%20(ref.%20VS-BER-005)%20do%20site%20da%20VANTA%20STORE." target="_blank" rel="noopener" style="margin-top:10px"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.86 9.86 0 0 0 12.04 2Zm5.84 14.06c-.25.7-1.45 1.33-2 1.41-.53.08-1.18.11-1.9-.12-.44-.14-1-.33-1.72-.64-3.03-1.31-5.01-4.36-5.16-4.56-.15-.2-1.23-1.64-1.23-3.13s.78-2.22 1.06-2.53c.28-.3.6-.38.8-.38h.58c.19 0 .44-.07.69.53.25.6.86 2.09.94 2.24.08.15.13.33.02.53-.1.2-.16.33-.31.5-.15.18-.32.4-.46.53-.15.15-.31.31-.13.61.18.3.79 1.3 1.7 2.11 1.17 1.04 2.15 1.37 2.45 1.52.3.15.48.13.66-.08.18-.2.76-.88.96-1.19.2-.3.4-.25.68-.15.28.1 1.77.83 2.07.99.3.15.5.22.58.35.07.13.07.75-.18 1.46Z"/></svg>Tirar dúvida no WhatsApp</a>
+    <p class="ficha__ajuda">
+      <a href="https://wa.me/5511900000000?text=Ol%C3%A1!%20Tenho%20uma%20d%C3%BAvida%20sobre%20o%20produto%20Bermuda%20de%20Sarja%20(ref.%20VS-BER-005)%20do%20site%20da%20VANTA%20STORE." target="_blank" rel="noopener">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.86 9.86 0 0 0 12.04 2Zm5.84 14.06c-.25.7-1.45 1.33-2 1.41-.53.08-1.18.11-1.9-.12-.44-.14-1-.33-1.72-.64-3.03-1.31-5.01-4.36-5.16-4.56-.15-.2-1.23-1.64-1.23-3.13s.78-2.22 1.06-2.53c.28-.3.6-.38.8-.38h.58c.19 0 .44-.07.69.53.25.6.86 2.09.94 2.24.08.15.13.33.02.53-.1.2-.16.33-.31.5-.15.18-.32.4-.46.53-.15.15-.31.31-.13.61.18.3.79 1.3 1.7 2.11 1.17 1.04 2.15 1.37 2.45 1.52.3.15.48.13.66-.08.18-.2.76-.88.96-1.19.2-.3.4-.25.68-.15.28.1 1.77.83 2.07.99.3.15.5.22.58.35.07.13.07.75-.18 1.46Z"/></svg><span>Dúvida no tamanho? Fale com a gente no WhatsApp</span>
+      </a>
+    </p>
 
     <ul class="ficha__garantias surge" style="--atraso:0.200s">
       <li><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16V7h11v9M14 10h4l3 3v3h-7"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>Frete grátis acima de R$ 299,00</li>
@@ -264,10 +271,12 @@
         <b>R$ 149,90</b>
         <small>4x de R$ 37,48 sem juros</small>
       </p>
+      <!-- Uma ação por cartão. Dois botões concorrendo ("Adicionar" +
+           "Ver produto") poluem a grade e dividem o clique; a foto e o
+           nome já levam ao produto. -->
       <div class="card__acoes">
-        <button type="button" class="btn btn--tinta btn--peq" data-add
-               aria-label="Adicionar Camiseta Oversized ao carrinho">Adicionar</button>
-        <a class="btn btn--linha btn--peq" href="../produto/camiseta-oversized.html">Ver produto</a>
+        <button type="button" class="btn btn--linha btn--peq btn--bloco" data-add
+               aria-label="Adicionar Camiseta Oversized ao carrinho">Adicionar ao carrinho</button>
       </div>
     </div>
   </article><article class="card surge" style="--atraso:0.040s"
@@ -295,10 +304,12 @@
         <b>R$ 89,90</b>
         <small>2x de R$ 44,95 sem juros</small>
       </p>
+      <!-- Uma ação por cartão. Dois botões concorrendo ("Adicionar" +
+           "Ver produto") poluem a grade e dividem o clique; a foto e o
+           nome já levam ao produto. -->
       <div class="card__acoes">
-        <button type="button" class="btn btn--tinta btn--peq" data-add
-               aria-label="Adicionar Camiseta Essential ao carrinho">Adicionar</button>
-        <a class="btn btn--linha btn--peq" href="../produto/camiseta-essential.html">Ver produto</a>
+        <button type="button" class="btn btn--linha btn--peq btn--bloco" data-add
+               aria-label="Adicionar Camiseta Essential ao carrinho">Adicionar ao carrinho</button>
       </div>
     </div>
   </article><article class="card surge" style="--atraso:0.080s"
@@ -326,10 +337,12 @@
         <b>R$ 169,90</b>
         <small>5x de R$ 33,98 sem juros</small>
       </p>
+      <!-- Uma ação por cartão. Dois botões concorrendo ("Adicionar" +
+           "Ver produto") poluem a grade e dividem o clique; a foto e o
+           nome já levam ao produto. -->
       <div class="card__acoes">
-        <button type="button" class="btn btn--tinta btn--peq" data-add
-               aria-label="Adicionar Camisa Manga Longa ao carrinho">Adicionar</button>
-        <a class="btn btn--linha btn--peq" href="../produto/camisa-slim.html">Ver produto</a>
+        <button type="button" class="btn btn--linha btn--peq btn--bloco" data-add
+               aria-label="Adicionar Camisa Manga Longa ao carrinho">Adicionar ao carrinho</button>
       </div>
     </div>
   </article><article class="card surge" style="--atraso:0.120s"
@@ -357,10 +370,12 @@
         <b>R$ 229,90</b>
         <small>7x de R$ 32,84 sem juros</small>
       </p>
+      <!-- Uma ação por cartão. Dois botões concorrendo ("Adicionar" +
+           "Ver produto") poluem a grade e dividem o clique; a foto e o
+           nome já levam ao produto. -->
       <div class="card__acoes">
-        <button type="button" class="btn btn--tinta btn--peq" data-add
-               aria-label="Adicionar Calça Cargo ao carrinho">Adicionar</button>
-        <a class="btn btn--linha btn--peq" href="../produto/calca-cargo.html">Ver produto</a>
+        <button type="button" class="btn btn--linha btn--peq btn--bloco" data-add
+               aria-label="Adicionar Calça Cargo ao carrinho">Adicionar ao carrinho</button>
       </div>
     </div>
   </article></div></div>
@@ -497,6 +512,9 @@
 <a class="flutuante" href="https://wa.me/5511900000000?text=Ol%C3%A1!%20Vim%20pelo%20site%20da%20VANTA%20STORE%20e%20queria%20tirar%20uma%20d%C3%BAvida." target="_blank" rel="noopener"
    aria-label="Falar com o atendimento no WhatsApp"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.86 9.86 0 0 0 12.04 2Zm5.84 14.06c-.25.7-1.45 1.33-2 1.41-.53.08-1.18.11-1.9-.12-.44-.14-1-.33-1.72-.64-3.03-1.31-5.01-4.36-5.16-4.56-.15-.2-1.23-1.64-1.23-3.13s.78-2.22 1.06-2.53c.28-.3.6-.38.8-.38h.58c.19 0 .44-.07.69.53.25.6.86 2.09.94 2.24.08.15.13.33.02.53-.1.2-.16.33-.31.5-.15.18-.32.4-.46.53-.15.15-.31.31-.13.61.18.3.79 1.3 1.7 2.11 1.17 1.04 2.15 1.37 2.45 1.52.3.15.48.13.66-.08.18-.2.76-.88.96-1.19.2-.3.4-.25.68-.15.28.1 1.77.83 2.07.99.3.15.5.22.58.35.07.13.07.75-.18 1.46Z"/></svg></a>
 
+<!-- Índice do catálogo: a busca de topo vale em qualquer página, então
+     não pode depender dos cartões que a página desenhou. ~4 KB. -->
+<script type="application/json" id="indiceCatalogo">[{"s":"camiseta-essential","n":"Camiseta Essential","t":"Camisetas","p":89.9,"d":129.9,"e":1,"i":"../assets/camiseta-essential.svg","u":"../produto/camiseta-essential.html","b":"camiseta essential camisetas norte roupas preto off-white oliva"},{"s":"camiseta-oversized","n":"Camiseta Oversized","t":"Camisetas","p":149.9,"d":0,"e":1,"i":"../assets/camiseta-oversized.svg","u":"../produto/camiseta-oversized.html","b":"camiseta oversized camisetas norte roupas off-white areia preto"},{"s":"camisa-slim","n":"Camisa Manga Longa","t":"Camisas","p":169.9,"d":219.9,"e":1,"i":"../assets/camisa-slim.svg","u":"../produto/camisa-slim.html","b":"camisa manga longa camisas grava roupas branco índigo preto"},{"s":"camisa-overshirt","n":"Overshirt de Sarja","t":"Camisas","p":289.9,"d":0,"e":1,"i":"../assets/camisa-overshirt.svg","u":"../produto/camisa-overshirt.html","b":"overshirt de sarja camisas grava roupas caqui oliva preto"},{"s":"calca-cargo","n":"Calça Cargo","t":"Calças","p":229.9,"d":299.9,"e":1,"i":"../assets/calca-cargo.svg","u":"../produto/calca-cargo.html","b":"calça cargo calças grava roupas preto oliva areia"},{"s":"calca-jeans","n":"Calça Jeans Reta","t":"Calças","p":279.9,"d":0,"e":1,"i":"../assets/calca-jeans.svg","u":"../produto/calca-jeans.html","b":"calça jeans reta calças grava roupas índigo preto cinza"},{"s":"bermuda-sarja","n":"Bermuda de Sarja","t":"Bermudas","p":129.9,"d":179.9,"e":1,"i":"../assets/bermuda-sarja.svg","u":"../produto/bermuda-sarja.html","b":"bermuda de sarja bermudas grava roupas areia preto oliva"},{"s":"moletom-capuz","n":"Moletom com Capuz","t":"Moletons","p":249.9,"d":329.9,"e":1,"i":"../assets/moletom-capuz.svg","u":"../produto/moletom-capuz.html","b":"moletom com capuz moletons norte roupas mescla preto oliva"},{"s":"moletom-crew","n":"Moletom Gola Careca","t":"Moletons","p":279.9,"d":0,"e":1,"i":"../assets/moletom-crew.svg","u":"../produto/moletom-crew.html","b":"moletom gola careca moletons norte roupas preto areia vinho"},{"s":"jaqueta-bomber","n":"Jaqueta Bomber","t":"Jaquetas","p":399.9,"d":499.9,"e":1,"i":"../assets/jaqueta-bomber.svg","u":"../produto/jaqueta-bomber.html","b":"jaqueta bomber jaquetas vanta lab roupas oliva preto marrom"},{"s":"tenis-runner","n":"Tênis Runner","t":"Tênis","p":449.9,"d":599.9,"e":1,"i":"../assets/tenis-runner.svg","u":"../produto/tenis-runner.html","b":"tênis runner tênis atrio tênis branco cinza preto"},{"s":"tenis-court","n":"Tênis Court","t":"Tênis","p":529.9,"d":0,"e":1,"i":"../assets/tenis-court.svg","u":"../produto/tenis-court.html","b":"tênis court tênis atrio tênis preto branco índigo"},{"s":"tenis-chunky","n":"Tênis Chunky","t":"Tênis","p":559.9,"d":679.9,"e":1,"i":"../assets/tenis-chunky.svg","u":"../produto/tenis-chunky.html","b":"tênis chunky tênis atrio tênis areia branco grafite"},{"s":"tenis-skate","n":"Tênis Cano Alto","t":"Tênis","p":489.9,"d":0,"e":0,"i":"../assets/tenis-skate.svg","u":"../produto/tenis-skate.html","b":"tênis cano alto tênis atrio tênis cinza preto oliva"},{"s":"perfume-noir","n":"Perfume Noir 100 ml","t":"Perfumes","p":319.9,"d":389.9,"e":1,"i":"../assets/perfume-noir.svg","u":"../produto/perfume-noir.html","b":"perfume noir 100 ml perfumes meridian perfumes "},{"s":"perfume-ambar","n":"Perfume Âmbar 100 ml","t":"Perfumes","p":359.9,"d":0,"e":1,"i":"../assets/perfume-ambar.svg","u":"../produto/perfume-ambar.html","b":"perfume âmbar 100 ml perfumes meridian perfumes "},{"s":"perfume-citrus","n":"Perfume Citrus 50 ml","t":"Perfumes","p":229.9,"d":0,"e":1,"i":"../assets/perfume-citrus.svg","u":"../produto/perfume-citrus.html","b":"perfume citrus 50 ml perfumes meridian perfumes "},{"s":"bone-aba-curva","n":"Boné Aba Curva","t":"Bonés","p":139.9,"d":0,"e":1,"i":"../assets/bone-aba-curva.svg","u":"../produto/bone-aba-curva.html","b":"boné aba curva bonés vanta lab acessórios preto areia oliva"},{"s":"bone-trucker","n":"Boné Trucker","t":"Bonés","p":99.9,"d":129.9,"e":1,"i":"../assets/bone-trucker.svg","u":"../produto/bone-trucker.html","b":"boné trucker bonés vanta lab acessórios areia preto índigo"},{"s":"corrente-cubana","n":"Corrente Cubana","t":"Correntes","p":199.9,"d":0,"e":1,"i":"../assets/corrente-cubana.svg","u":"../produto/corrente-cubana.html","b":"corrente cubana correntes osso acessórios aço preto"},{"s":"pulseira-elos","n":"Pulseira de Elos","t":"Pulseiras","p":119.9,"d":159.9,"e":1,"i":"../assets/pulseira-elos.svg","u":"../produto/pulseira-elos.html","b":"pulseira de elos pulseiras osso acessórios aço preto"},{"s":"relogio-aco","n":"Relógio de Aço","t":"Relógios","p":599.9,"d":749.9,"e":1,"i":"../assets/relogio-aco.svg","u":"../produto/relogio-aco.html","b":"relógio de aço relógios osso acessórios mostrador preto mostrador azul mostrador verde"},{"s":"oculos-retangular","n":"Óculos Retangular","t":"Óculos","p":249.9,"d":0,"e":1,"i":"../assets/oculos-retangular.svg","u":"../produto/oculos-retangular.html","b":"óculos retangular óculos osso acessórios preto marrom grafite"},{"s":"bolsa-crossbody","n":"Bolsa Transversal","t":"Bolsas","p":269.9,"d":329.9,"e":1,"i":"../assets/bolsa-crossbody.svg","u":"../produto/bolsa-crossbody.html","b":"bolsa transversal bolsas osso acessórios preto marrom oliva"}]</script>
 <script src="../js/vanta.js" defer></script>
 </body>
 </html>

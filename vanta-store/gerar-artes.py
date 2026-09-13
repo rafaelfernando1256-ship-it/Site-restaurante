@@ -709,7 +709,10 @@ def render(slug, i):
     v = VISTAS[i]
     s = abs(hash((slug, i))) % 900 + 10
     cor = p['cores'][min(v['cor'], len(p['cores']) - 1)]
-    esc = p['esc'] * v['zoom']
+    # A peça ocupava pouco mais da metade do quadro e a foto lia como
+    # placeholder. PREENCHE_QUADRO abre a escala de todos os produtos de
+    # uma vez, mantendo a proporção relativa que já estava calibrada.
+    esc = p['esc'] * v['zoom'] * PREENCHE_QUADRO
     y = p['y'] + v['dy']
     fundo = v['fundo'] or p['fundo']
     if p['fundo'] == 'noite' and i > 0:
@@ -717,6 +720,8 @@ def render(slug, i):
     corpo = f'<g transform="translate(500 {y}) scale({esc:.3f})">{p["fn"](cor, s)}</g>'
     chao = None if p['fundo'] == 'noite' else (0.5, 0.9, 0.3, 0.045)
     return cena(1000, 1000, s, corpo, p['rot'], fundo, chao)
+
+PREENCHE_QUADRO = 1.16
 
 contagem = 0
 for slug in CATALOGO:
@@ -729,11 +734,13 @@ for slug in CATALOGO:
 hs = 7
 # Tudo tem de caber DENTRO do quadro: a arte do hero aparece inteira
 # (width:100%, sem object-fit), então peça que passa de x=2000 sai cortada.
-hero = (f'<g transform="translate(640 700) scale(1.26)">{moletom(T["mescla"], hs)}</g>'
-        f'<g transform="translate(1230 590) scale(.96) rotate(-6)">{jaqueta(T["oliva"], hs)}</g>'
-        f'<g transform="translate(1640 940) scale(.9) rotate(-4)">{tenis(T["branco"], hs, sola="#F2F0EB", detalhe="#C9C4BA")}</g>'
-        f'<g transform="translate(280 1010) scale(.72)">{bone(T["preto"], hs)}</g>'
-        f'<g transform="translate(1780 330) scale(.58)">{perfume("#3A2E2A", hs, tampa="#141416")}</g>')
+# A composição tem de PREENCHER o quadro: antes as peças ficavam num
+# miolo pequeno com muito ar em volta e o hero lia como placeholder.
+hero = (f'<g transform="translate(620 640) scale(1.52)">{moletom(T["mescla"], hs)}</g>'
+        f'<g transform="translate(1270 560) scale(1.18) rotate(-6)">{jaqueta(T["oliva"], hs)}</g>'
+        f'<g transform="translate(1660 990) scale(1.08) rotate(-4)">{tenis(T["branco"], hs, sola="#F2F0EB", detalhe="#C9C4BA")}</g>'
+        f'<g transform="translate(250 1040) scale(.88)">{bone(T["preto"], hs)}</g>'
+        f'<g transform="translate(1800 290) scale(.68)">{perfume("#3A2E2A", hs, tampa="#141416")}</g>')
 open(OUT + 'hero.svg', 'w').write(
     cena(2000, 1250, hs, hero, 'Moletom, jaqueta, tênis, boné e perfume da coleção VANTA',
          'osso', chao=(0.5, 0.93, 0.42, 0.05)))
@@ -771,19 +778,19 @@ ALTOS = {
  # abaixo de y≈1150. E peça clara em fundo claro some — por isso a
  # camisa aqui é índigo, não branca.
  'cat-roupas-alto':    (lambda s: f'<g transform="translate(600 470) scale(.84)">{camisa(T["indigo"], s)}</g>'
-                                  f'<g transform="translate(370 1000) scale(.62) rotate(-5)">{camiseta(T["preto"], s)}</g>'
-                                  f'<g transform="translate(870 1020) scale(.58) rotate(4)">{calca(T["areia"], s)}</g>',
+                                  f'<g transform="translate(370 930) scale(.58) rotate(-5)">{camiseta(T["preto"], s)}</g>'
+                                  f'<g transform="translate(860 900) scale(.5) rotate(4)">{calca(T["areia"], s)}</g>',
                         'Camisa, camiseta e calça da categoria Roupas', 'osso'),
  'cat-tenis-alto':     (lambda s: f'<g transform="translate(600 450) scale(1.1) rotate(-4)">{tenis(T["branco"], s, sola="#F2F0EB", detalhe="#C9C4BA")}</g>'
-                                  f'<g transform="translate(600 950) scale(1.1) rotate(3)">{tenis(T["preto"], s, sola="#F4F2ED", detalhe="#2A2A2E")}</g>',
+                                  f'<g transform="translate(600 880) scale(1.02) rotate(3)">{tenis(T["preto"], s, sola="#F4F2ED", detalhe="#2A2A2E")}</g>',
                         'Dois pares de tênis da categoria Tênis', 'gelo'),
  'cat-perfumes-alto':  (lambda s: f'<g transform="translate(410 560) scale(.72)">{perfume("#3A2E2A", s, tampa="#141416")}</g>'
                                   f'<g transform="translate(800 600) scale(.64)">{perfume("#CBC25E", s, tampa="#C8C4BC")}</g>'
-                                  f'<g transform="translate(600 1000) scale(.8)">{perfume("#B2803A", s, tampa="#7A5A2E")}</g>',
+                                  f'<g transform="translate(600 920) scale(.74)">{perfume("#B2803A", s, tampa="#7A5A2E")}</g>',
                         'Três frascos de perfume da categoria Perfumes', 'noite'),
  'cat-acessorios-alto':(lambda s: f'<g transform="translate(560 430) scale(.72)">{relogio(s)}</g>'
-                                  f'<g transform="translate(600 810) scale(.68)">{oculos(T["preto"], s)}</g>'
-                                  f'<g transform="translate(600 1080) scale(.62)">{bolsa(T["marrom"], s)}</g>',
+                                  f'<g transform="translate(600 730) scale(.64)">{oculos(T["preto"], s)}</g>'
+                                  f'<g transform="translate(600 960) scale(.56)">{bolsa(T["marrom"], s)}</g>',
                         'Relógio, óculos e bolsa da categoria Acessórios', 'pedra'),
 }
 for i, (nome, (fn, rot, fundo)) in enumerate(ALTOS.items()):

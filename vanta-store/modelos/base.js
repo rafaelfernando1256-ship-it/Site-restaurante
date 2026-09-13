@@ -5,7 +5,8 @@
  */
 import { LOJA, TARJA, AVISO_DEMO, linkWhats, MSG, ENTREGA, TROCA, PAGAMENTOS }
   from '../conteudo/site.js';
-import { CATEGORIAS } from '../conteudo/produtos.js';
+import { CATEGORIAS, PRODUTOS, imagensDe, marca as marcaDe, categoria as categoriaDe }
+  from '../conteudo/produtos.js';
 import { esc, ICO, botao, moeda } from './ui.js';
 
 const ANO = new Date().getFullYear();
@@ -16,9 +17,12 @@ const marca = (raiz, tag = 'span') => `<${tag} class="logo">
 </${tag}>`;
 
 /* ── Tarja rolante ────────────────────────────────────────── */
+/* Sem ticker infinito: no desktop as quatro promessas cabem paradas, e
+   no celular uma de cada vez, trocando devagar. Letreiro rolando e
+   cortado no meio da palavra é cara de loja improvisada. */
 const tarja = () => `<div class="tarja">
-  <div class="tarja__trilho">
-    ${[0, 1].map(() => `<ul>${TARJA.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>`).join('')}
+  <div class="wrap tarja__linha" role="status" aria-label="Condições da loja">
+    ${TARJA.map((t, i) => `<p class="tarja__item${i === 0 ? ' ativo' : ''}">${esc(t)}</p>`).join('')}
   </div>
 </div>`;
 
@@ -29,6 +33,8 @@ function topo(raiz, atual) {
     ...CATEGORIAS.map((c) => [`${raiz}categoria/${c.id}.html`, c.nome.toUpperCase(), c.id]),
     [`${raiz}categoria/ofertas.html`, 'OFERTAS', 'ofertas'],
   ];
+  // O catálogo completo entra no menu, não na home.
+  const itensMenu = [[`${raiz}produtos.html`, 'TODOS OS PRODUTOS', 'produtos'], ...itens];
   return `<header class="topo" id="topo">
   <div class="wrap topo__linha">
     <button class="ico-btn topo__menu" id="abrirMenu" aria-label="Abrir menu"
@@ -56,18 +62,21 @@ function topo(raiz, atual) {
     </div>
   </div>
 
-  <!-- menu mobile -->
-  <div class="menu-mobile" id="menuMobile">
-    <nav aria-label="Menu">
-      <p class="menu-mobile__titulo">Categorias</p>
-      ${itens.map(([h, t]) => `<a href="${h}">${t}${ICO.seta}</a>`).join('')}
-      <p class="menu-mobile__titulo">Atendimento</p>
-      <a href="${ini}#faq">Dúvidas frequentes${ICO.seta}</a>
-      <a href="${raiz}conta.html">Minha conta${ICO.seta}</a>
-      <a href="${linkWhats(MSG.geral)}" target="_blank" rel="noopener">WhatsApp${ICO.seta}</a>
-    </nav>
-  </div>
-</header>`;
+</header>
+
+<!-- O menu mobile fica FORA do <header>: o backdrop-filter do topo cria
+     bloco de contenção e um position:fixed lá dentro colapsa para a
+     altura do cabeçalho em vez de ocupar a tela. -->
+<div class="menu-mobile" id="menuMobile">
+  <nav aria-label="Menu">
+    <p class="menu-mobile__titulo">Categorias</p>
+    ${itensMenu.map(([h, t]) => `<a href="${h}">${t}${ICO.seta}</a>`).join('')}
+    <p class="menu-mobile__titulo">Atendimento</p>
+    <a href="${ini}#faq">Dúvidas frequentes${ICO.seta}</a>
+    <a href="${raiz}conta.html">Minha conta${ICO.seta}</a>
+    <a href="${linkWhats(MSG.geral)}" target="_blank" rel="noopener">WhatsApp${ICO.seta}</a>
+  </nav>
+</div>`;
 }
 
 /* ── Busca em tela cheia ──────────────────────────────────── */
@@ -203,6 +212,21 @@ function rodape(raiz) {
 </footer>`;
 }
 
+/** Catálogo mínimo para a busca e para o carrinho, em toda página. */
+const indiceProdutos = (raiz) => PRODUTOS.map((p) => ({
+  s: p.slug,
+  n: p.nome,
+  t: p.tipo,
+  p: p.preco,
+  d: p.precoDe || 0,
+  e: p.estoque ? 1 : 0,
+  i: `${raiz}${imagensDe(p)[0]}`,
+  u: `${raiz}produto/${p.slug}.html`,
+  // só o que a busca precisa casar; a filtragem fina é feita nos cartões
+  b: [p.nome, p.tipo, marcaDe(p.marca).nome, categoriaDe(p.categoria).nome,
+      p.cores.map((c) => c.nome).join(' ')].join(' ').toLowerCase(),
+}));
+
 export function pagina({ titulo, descricao, caminho = '', raiz = '', corpo, jsonLd = [],
                          atual, imagemSocial = 'assets/hero.svg', classe = '' }) {
   const canonico = `${LOJA.dominio}/${caminho}`;
@@ -255,6 +279,9 @@ ${gavetas(raiz)}
 <a class="flutuante" href="${linkWhats(MSG.geral)}" target="_blank" rel="noopener"
    aria-label="Falar com o atendimento no WhatsApp">${ICO.whats}</a>
 
+<!-- Índice do catálogo: a busca de topo vale em qualquer página, então
+     não pode depender dos cartões que a página desenhou. ~4 KB. -->
+<script type="application/json" id="indiceCatalogo">${JSON.stringify(indiceProdutos(raiz))}</script>
 <script src="${raiz}js/vanta.js" defer></script>
 </body>
 </html>

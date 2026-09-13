@@ -59,10 +59,13 @@ export const HERO = {
   subtitulo: 'Moda, sneakers, fragrâncias e acessórios em um só lugar.',
   cta: 'COMPRAR AGORA',
   ctaSecundario: 'VER NOVIDADES',
+  /* Promessa de serviço, não tamanho de catálogo: "24 produtos" conta
+     para o cliente que a loja é pequena — é exatamente o oposto do que
+     esta faixa tem de fazer. */
   numeros: [
-    ['24', 'produtos no catálogo'],
-    ['6', 'marcas parceiras'],
-    ['30 dias', 'para trocar'],
+    [`Frete grátis`, `acima de R$ ${LOJA.freteGratis}`],
+    [`${LOJA.parcelas}x sem juros`, 'no cartão · 5% no Pix'],
+    ['30 dias', 'para trocar ou devolver'],
   ],
 };
 

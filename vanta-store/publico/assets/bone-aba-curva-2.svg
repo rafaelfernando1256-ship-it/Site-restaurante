@@ -1,25 +1,25 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000" role="img" aria-label="Boné de aba curva, perfil lateral">
 <defs>
-  <linearGradient id="vidro332" x1="0" y1="0" x2="1" y2="0">
+  <linearGradient id="vidro78" x1="0" y1="0" x2="1" y2="0">
     <stop offset="0" stop-color="#FFFFFF" stop-opacity=".55"/>
     <stop offset="0.18" stop-color="#FFFFFF" stop-opacity=".1"/>
     <stop offset="0.5" stop-color="#000000" stop-opacity=".08"/>
     <stop offset="0.82" stop-color="#FFFFFF" stop-opacity=".22"/>
     <stop offset="1" stop-color="#000000" stop-opacity=".12"/>
   </linearGradient>
-  <linearGradient id="aco332" x1="0" y1="0" x2="0" y2="1">
+  <linearGradient id="aco78" x1="0" y1="0" x2="0" y2="1">
     <stop offset="0" stop-color="#FDFDFE"/><stop offset="0.2" stop-color="#C6CBD2"/>
     <stop offset="0.42" stop-color="#6E757E"/><stop offset="0.52" stop-color="#9AA1A9"/>
     <stop offset="0.72" stop-color="#EFF2F5"/><stop offset="1" stop-color="#A8AFB7"/>
   </linearGradient>
-  <radialGradient id="chao332" cx="50%" cy="50%" r="50%">
+  <radialGradient id="chao78" cx="50%" cy="50%" r="50%">
     <stop offset="0" stop-color="#000000" stop-opacity=".16"/>
     <stop offset="1" stop-color="#000000" stop-opacity="0"/>
   </radialGradient>
-  <filter id="borra332" x="-30%" y="-30%" width="160%" height="160%">
+  <filter id="borra78" x="-30%" y="-30%" width="160%" height="160%">
     <feGaussianBlur stdDeviation="16"/></filter>
 </defs>
 <rect width="1000" height="1000" fill="#CFCDC8"/>
-<ellipse cx="500" cy="900" rx="300" ry="45" fill="url(#chao332)"/>
-<g transform="translate(500 410) scale(1.652)"><g><path d="M-30 96 C-200 96 -330 132 -330 176 C-330 206 -190 206 -20 196 L10 120 Z" fill="#121215"/><path d="M-40 110 C-180 112 -300 140 -304 172 C-306 150 -190 122 -36 122 Z" fill="#FFFFFF" opacity="0.18"/><path d="M-34 110 C-40 -78 96 -168 218 -142 C314 -122 348 -22 330 108 C240 130 60 132 -34 110 Z" fill="#17171A"/><path d="M188 -152 C300 -132 344 -30 330 108 C290 120 250 126 214 128 C244 20 236 -84 188 -152 Z" fill="#000000" opacity="0.12"/><path d="M-24 96 C-30 -60 76 -150 178 -140 C96 -112 30 -20 34 104 Z" fill="#FFFFFF" opacity="0.12"/><path d="M68 118 C52 20 64 -84 172 -144" fill="none" stroke="#101012" stroke-width="2.6" stroke-dasharray="8 6" opacity=".7"/><path d="M170 118 C154 20 166 -84 195 -144" fill="none" stroke="#101012" stroke-width="2.6" stroke-dasharray="8 6" opacity=".7"/><path d="M272 118 C256 20 268 -84 217 -144" fill="none" stroke="#101012" stroke-width="2.6" stroke-dasharray="8 6" opacity=".7"/><circle cx="152" cy="-158" r="15" fill="#111113"/><path d="M-34 104 C60 126 240 124 330 102" fill="none" stroke="#0F0F11" stroke-width="3" stroke-dasharray="9 7" opacity=".8"/></g></g>
+<ellipse cx="500" cy="900" rx="300" ry="45" fill="url(#chao78)"/>
+<g transform="translate(500 410) scale(1.917)"><g><path d="M-30 96 C-200 96 -330 132 -330 176 C-330 206 -190 206 -20 196 L10 120 Z" fill="#121215"/><path d="M-40 110 C-180 112 -300 140 -304 172 C-306 150 -190 122 -36 122 Z" fill="#FFFFFF" opacity="0.18"/><path d="M-34 110 C-40 -78 96 -168 218 -142 C314 -122 348 -22 330 108 C240 130 60 132 -34 110 Z" fill="#17171A"/><path d="M188 -152 C300 -132 344 -30 330 108 C290 120 250 126 214 128 C244 20 236 -84 188 -152 Z" fill="#000000" opacity="0.12"/><path d="M-24 96 C-30 -60 76 -150 178 -140 C96 -112 30 -20 34 104 Z" fill="#FFFFFF" opacity="0.12"/><path d="M68 118 C52 20 64 -84 172 -144" fill="none" stroke="#101012" stroke-width="2.6" stroke-dasharray="8 6" opacity=".7"/><path d="M170 118 C154 20 166 -84 195 -144" fill="none" stroke="#101012" stroke-width="2.6" stroke-dasharray="8 6" opacity=".7"/><path d="M272 118 C256 20 268 -84 217 -144" fill="none" stroke="#101012" stroke-width="2.6" stroke-dasharray="8 6" opacity=".7"/><circle cx="152" cy="-158" r="15" fill="#111113"/><path d="M-34 104 C60 126 240 124 330 102" fill="none" stroke="#0F0F11" stroke-width="3" stroke-dasharray="9 7" opacity=".8"/></g></g>
 </svg>

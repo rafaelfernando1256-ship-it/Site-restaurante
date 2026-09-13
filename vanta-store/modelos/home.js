@@ -15,8 +15,8 @@ const hero = () => `<section class="hero" aria-label="Campanha">
       <h1 class="surge"${atraso(1)}>${esc(HERO.titulo)}</h1>
       <p class="hero__sub surge"${atraso(2)}>${esc(HERO.subtitulo)}</p>
       <div class="hero__acoes surge"${atraso(3)}>
-        ${botao({ texto: HERO.cta, href: '#loja', variante: 'claro', tamanho: 'gg' })}
-        ${botao({ texto: HERO.ctaSecundario, href: '#novidades', variante: 'contorno', tamanho: 'gg' })}
+        ${botao({ texto: HERO.cta, href: 'produtos.html', variante: 'tinta', tamanho: 'gg' })}
+        ${botao({ texto: HERO.ctaSecundario, href: '#novidades', variante: 'linha', tamanho: 'gg' })}
       </div>
       <ul class="hero__numeros surge"${atraso(4)}>
         ${HERO.numeros.map(([a, b]) => `<li><b>${esc(a)}</b><span>${esc(b)}</span></li>`).join('')}
@@ -49,11 +49,14 @@ const categorias = () => secao({
 });
 
 /* ── Faixas de produto ────────────────────────────────────── */
-const faixa = (tag, cfg, id, tom) => secao({
+/* Trilho curto, não grade: a home é vitrine curada, não o catálogo
+   inteiro. Antes eram quatro grades dos mesmos 24 produtos e a página
+   passava de 28.000px no celular. */
+const faixa = (tag, cfg, id, tom, destino = 'produtos.html') => secao({
   id, tom, classe: `faixa faixa--${tag}`,
   conteudo: cabeca({ ...cfg,
-    acao: `<a class="link-seta" href="#loja">Ver tudo ${ICO.seta}</a>` }) +
-    trilho(comTag(tag).slice(0, 8).map((p, i) => cartao(p, { i })).join('')),
+    acao: `<a class="link-seta" href="${destino}">Ver tudo ${ICO.seta}</a>` }) +
+    trilho(comTag(tag).slice(0, 4).map((p, i) => cartao(p, { i })).join('')),
 });
 
 /* ── Ofertas ──────────────────────────────────────────────── */
@@ -61,12 +64,12 @@ const ofertas = () => secao({
   id: 'ofertas', tom: 'tinta', classe: 'ofertas',
   conteudo: cabeca({ ...SECOES.ofertas,
     acao: `<a class="link-seta" href="categoria/ofertas.html">Ver todas ${ICO.seta}</a>` }) +
-    trilho(comTag('oferta').slice(0, 8).map((p, i) => cartao(p, { i })).join('')) +
+    trilho(comTag('oferta').slice(0, 4).map((p, i) => cartao(p, { i })).join('')) +
     `<p class="ofertas__nota surge">Preços demonstrativos. Nenhuma venda é processada nesta loja.</p>`,
 });
 
 /* ── Loja: busca, filtros e ordenação ─────────────────────── */
-const loja = () => {
+export const catalogoCompleto = (cabecalho) => {
   const tipos = [...new Set(PRODUTOS.map((p) => p.tipo))].sort()
     .map((t) => [t, t, String(PRODUTOS.filter((p) => p.tipo === t).length)]);
   const tamanhos = [...new Set(PRODUTOS.flatMap((p) => p.tamanhos))]
@@ -75,8 +78,7 @@ const loja = () => {
     .sort().map((c) => [c, c]);
   return secao({
     id: 'loja', classe: 'loja',
-    conteudo: cabeca({ etiqueta: 'Catálogo', titulo: 'TODOS OS PRODUTOS',
-                       texto: 'Use a busca e os filtros para achar o que você quer em dois toques.' }) +
+    conteudo: cabecalho +
       ferramentas({
         categorias: CATEGORIAS.map((c) => [c.id, c.nome, String(daCategoria(c.id).length)]),
         marcas: MARCAS.map((m) => [m.id, m.nome, m.linha]),
@@ -84,7 +86,7 @@ const loja = () => {
         faixas: FAIXAS.map((f) => [f.id, f.nome]),
         ordenacoes: ORDENACOES,
       }) +
-      catalogo(PRODUTOS.map((p, i) => cartao(p, { i })).join('')),
+      catalogo(PRODUTOS.map((p, i) => cartao(p, { i })).join(''), 'Lista de produtos'),
   });
 };
 
@@ -124,7 +126,7 @@ export function paginaHome() {
     hero(), categorias(),
     faixa('mais-vendido', SECOES.vendidos, 'vendidos'),
     faixa('novo', SECOES.novidades, 'novidades', 'creme'),
-    ofertas(), loja(), beneficios(), instagram(), faq(),
+    ofertas(), beneficios(), instagram(), faq(),
   ].join('\n');
 
   return pagina({

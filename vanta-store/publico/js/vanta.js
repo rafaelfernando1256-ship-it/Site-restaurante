@@ -100,9 +100,26 @@
   }
 
   var CATALOGO = {};
+  /* O índice vem embutido em toda página: a busca de topo precisa achar
+     os 24 produtos mesmo na home, que só desenha os destaques. */
+  (function () {
+    var tag = $('#indiceCatalogo');
+    if (!tag) return;
+    var lista;
+    try { lista = JSON.parse(tag.textContent); } catch (e) { return; }
+    lista.forEach(function (p) {
+      CATALOGO[p.s] = {
+        slug: p.s, nome: p.n, tipo: p.t,
+        preco: p.p, de: p.d, off: p.d ? Math.round((1 - p.p / p.d) * 100) : 0,
+        estoque: p.e === 1, tags: [], tamanhos: [], cores: [],
+        img: p.i, url: p.u, busca: chave(p.b),
+      };
+    });
+  }());
+  /* Os cartões da página mandam sobre o índice: trazem tags e caminhos
+     já relativos a ela. */
   $$('.card').forEach(function (el) {
-    var p = lerCard(el);
-    if (!CATALOGO[p.slug]) CATALOGO[p.slug] = p;
+    CATALOGO[el.dataset.slug] = lerCard(el);
   });
   var fichaEl = $('.ficha');
   if (fichaEl && !CATALOGO[fichaEl.dataset.slug]) {
@@ -116,6 +133,22 @@
   function produto(slug, guardado) {
     return CATALOGO[slug] || guardado || null;
   }
+
+  /* ── Tarja: uma frase de cada vez, só quando não cabem todas ── */
+  (function () {
+    var itens = $$('.tarja__item');
+    if (itens.length < 2) return;
+    var cabemTodas = function () { return window.innerWidth >= 1000; };
+    var lento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (cabemTodas() || lento) return;
+    var i = 0;
+    setInterval(function () {
+      if (cabemTodas()) return;                   // no desktop ficam todas
+      itens[i].classList.remove('ativo');
+      i = (i + 1) % itens.length;
+      itens[i].classList.add('ativo');
+    }, 4200);
+  }());
 
   /* ── 02 · Topo e menu ───────────────────────────────────────── */
   var btnMenu = $('#abrirMenu'), menu = $('#menuMobile');
