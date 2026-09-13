@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Carrinho | VANTA STORE</title>
+<meta name="description" content="Revise os produtos do seu carrinho, aplique um cupom e siga para o checkout. Loja demonstrativa: nenhum pagamento é processado.">
+<meta name="theme-color" content="#131316">
+<link rel="canonical" href="https://vantastore.com.br/carrinho.html">
+
+<meta property="og:type" content="website">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:site_name" content="VANTA STORE">
+<meta property="og:title" content="Carrinho | VANTA STORE">
+<meta property="og:description" content="Revise os produtos do seu carrinho, aplique um cupom e siga para o checkout. Loja demonstrativa: nenhum pagamento é processado.">
+<meta property="og:url" content="https://vantastore.com.br/carrinho.html">
+<meta property="og:image" content="https://vantastore.com.br/assets/hero.svg">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@87..112,400..700&family=Instrument+Sans:wght@400;500;600&display=swap">
+
+<link rel="stylesheet" href="css/vanta.css">
+<script>document.documentElement.className += " js";</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"OnlineStore","name":"VANTA STORE","description":"Loja multimarcas de moda e lifestyle: roupas, tênis, perfumes e acessórios em um só lugar.","url":"https://vantastore.com.br/","telephone":"(11) 90000-0000","email":"atendimento@vantastore.com.br","areaServed":"BR","currenciesAccepted":"BRL","paymentAccepted":"Pix, cartão de crédito, boleto bancário"}</script>
+</head>
+<body class="pg-carrinho" data-raiz="">
+<a class="pular" href="#conteudo">Pular para o conteúdo</a>
+<div class="tarja">
+  <div class="tarja__trilho">
+    <ul><li>Frete grátis acima de R$ 299</li><li>Até 10x sem juros</li><li>Troca em 30 dias</li><li>Envio para todo o Brasil</li></ul><ul><li>Frete grátis acima de R$ 299</li><li>Até 10x sem juros</li><li>Troca em 30 dias</li><li>Envio para todo o Brasil</li></ul>
+  </div>
+</div>
+<header class="topo" id="topo">
+  <div class="wrap topo__linha">
+    <button class="ico-btn topo__menu" id="abrirMenu" aria-label="Abrir menu"
+      aria-expanded="false" aria-controls="menuMobile"><span></span><span></span><span></span></button>
+
+    <a class="topo__marca" href="index.html" aria-label="VANTA STORE — início">
+      <span class="logo">
+  <span class="logo__v" aria-hidden="true">V</span>
+  <span class="logo__texto"><b>VANTA</b><i>STORE</i></span>
+</span>
+    </a>
+
+    <nav class="nav" aria-label="Categorias">
+      <a href="categoria/roupas.html">ROUPAS</a>
+      <a href="categoria/tenis.html">TÊNIS</a>
+      <a href="categoria/perfumes.html">PERFUMES</a>
+      <a href="categoria/acessorios.html">ACESSÓRIOS</a>
+      <a href="categoria/ofertas.html" class="nav__oferta">OFERTAS</a>
+    </nav>
+
+    <div class="topo__acoes">
+      <button class="ico-btn" id="abrirBusca" aria-label="Buscar produtos"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.7-3.7"/></svg></button>
+      <a class="ico-btn topo__conta" href="conta.html" aria-label="Minha conta"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg></a>
+      <button class="ico-btn" id="abrirFavoritos" aria-label="Ver favoritos">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.3 4.7 13a4.6 4.6 0 0 1 6.5-6.5l.8.8.8-.8A4.6 4.6 0 1 1 19.3 13Z"/></svg><span class="contador" id="contFav" aria-hidden="true">0</span>
+      </button>
+      <button class="ico-btn" id="abrirCarrinho" aria-label="Abrir carrinho">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 12H7Z"/><path d="M9.2 8V6.4a2.8 2.8 0 0 1 5.6 0V8"/></svg><span class="contador" id="contCar" aria-hidden="true">0</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- menu mobile -->
+  <div class="menu-mobile" id="menuMobile">
+    <nav aria-label="Menu">
+      <p class="menu-mobile__titulo">Categorias</p>
+      <a href="categoria/roupas.html">ROUPAS<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m12 5 7 7-7 7"/></svg></a><a href="categoria/tenis.html">TÊNIS<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m12 5 7 7-7 7"/></svg></a><a href="categoria/perfumes.html">PERFUMES<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m12 5 7 7-7 7"/></svg></a><a href="categoria/acessorios.html">ACESSÓRIOS<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m12 5 7 7-7 7"/></svg></a><a href="categoria/ofertas.html">OFERTAS<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m12 5 7 7-7 7"/></svg></a>
+      <p class="menu-mobile__titulo">Atendimento</p>
+      <a href="index.html#faq">Dúvidas frequentes<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m12 5 7 7-7 7"/></svg></a>
+      <a href="conta.html">Minha conta<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m12 5 7 7-7 7"/></svg></a>
+      <a href="https://wa.me/5511900000000?text=Ol%C3%A1!%20Vim%20pelo%20site%20da%20VANTA%20STORE%20e%20queria%20tirar%20uma%20d%C3%BAvida." target="_blank" rel="noopener">WhatsApp<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="m12 5 7 7-7 7"/></svg></a>
+    </nav>
+  </div>
+</header>
+<main id="conteudo">
+
+<section class="pagina">
+  <div class="wrap">
+    <nav class="migalhas" aria-label="Você está em">
+      <ol><li><a href="index.html">Início</a></li><li><span aria-current="page">Carrinho</span></li></ol>
+    </nav>
+    <h1 class="titulo-pagina">SEU CARRINHO</h1>
+
+    <div class="carrinho" id="carrinhoPagina">
+      <div class="carrinho__lista">
+        <div class="carrinho__itens" id="paginaItens"></div>
+        <div class="vazio" id="paginaVazio" hidden>
+          <p class="vazio__titulo">Seu carrinho está vazio</p>
+          <p class="vazio__texto">Escolha uma peça e ela aparece aqui.</p>
+          <a class="btn btn--tinta" href="index.html#loja">Ver o catálogo</a>
+        </div>
+        <p class="carrinho__voltar">
+          <a class="link-seta link-seta--volta" href="index.html#loja">
+            <span aria-hidden="true">←</span> Continuar comprando</a>
+        </p>
+      </div>
+
+      <aside class="resumo" aria-label="Resumo do pedido">
+        <h2>Resumo</h2>
+
+        <form class="cupom" id="formCupom" novalidate>
+          <label for="cupomCampo">Cupom de desconto</label>
+          <div class="cupom__linha">
+            <input type="text" id="cupomCampo" placeholder="Digite o código"
+              autocomplete="off" spellcheck="false">
+            <button type="submit" class="btn btn--linha">Aplicar</button>
+          </div>
+          <p class="cupom__aviso" id="cupomAviso" role="status" aria-live="polite"></p>
+          <p class="cupom__dica">Cupons de demonstração:
+            <button type="button" class="pilula" data-cupom="VANTA10"
+              title="10% de desconto no subtotal">VANTA10</button><button type="button" class="pilula" data-cupom="BEMVINDO"
+              title="15% em compras acima de R$ 400">BEMVINDO</button><button type="button" class="pilula" data-cupom="FRETEVANTA"
+              title="frete grátis em qualquer valor">FRETEVANTA</button></p>
+        </form>
+
+        <dl class="resumo__linhas">
+          <div><dt>Subtotal</dt><dd id="resSubtotal">R$ 0,00</dd></div>
+          <div id="resLinhaDesc" hidden><dt>Desconto</dt><dd id="resDesconto">− R$ 0,00</dd></div>
+          <div><dt>Frete</dt><dd id="resFrete">A calcular</dd></div>
+          <div class="resumo__total"><dt>Total</dt><dd id="resTotal">R$ 0,00</dd></div>
+        </dl>
+        <p class="resumo__pix" id="resPix" hidden></p>
+
+        <a class="btn btn--tinta btn--bloco btn--gg" href="checkout.html" id="paginaCheckout">
+          Finalizar compra</a>
+        <p class="resumo__nota">VANTA STORE é uma loja fictícia, criada para demonstração de portfólio. Produtos, marcas, preços e prazos são inventados. Nenhum pagamento é processado e nenhum pedido é enviado.</p>
+      </aside>
+    </div>
+  </div>
+</section>
+</main>
+<footer class="rodape">
+  <div class="wrap">
+    <div class="news">
+      <div>
+        <h2 class="news__titulo">Receba novidades e ofertas em primeira mão.</h2>
+        <p class="news__texto">Lançamento e promoção chegam antes por e-mail. Dá para sair com um clique.</p>
+      </div>
+      <form class="news__form" id="newsForm" novalidate>
+        <label class="sr" for="newsEmail">Seu e-mail</label>
+        <input type="email" id="newsEmail" name="email" required placeholder="seu@email.com"
+          autocomplete="email" enterkeyhint="send">
+        <button type="submit" class="btn btn--claro">Quero receber</button>
+        <p class="news__aviso" id="newsAviso" role="status" aria-live="polite"></p>
+        <p class="news__legal">Formulário de demonstração: nada é enviado nem armazenado.</p>
+      </form>
+    </div>
+
+    <div class="rodape__grade">
+      <div class="rodape__marca">
+        <p class="logo">
+  <span class="logo__v" aria-hidden="true">V</span>
+  <span class="logo__texto"><b>VANTA</b><i>STORE</i></span>
+</p>
+        <p class="rodape__frase">Loja multimarcas de moda e lifestyle: roupas, tênis, perfumes e acessórios em um só lugar.</p>
+        <ul class="redes">
+          <li><a href="#" aria-label="Instagram da loja">Instagram</a></li>
+          <li><a href="#" aria-label="TikTok da loja">TikTok</a></li>
+          <li><a href="#" aria-label="YouTube da loja">YouTube</a></li>
+        </ul>
+      </div>
+      <nav class="rodape__col" aria-label="Categorias">
+    <h2>Categorias</h2>
+    <ul><li><a href="categoria/roupas.html">Roupas</a></li><li><a href="categoria/tenis.html">Tênis</a></li><li><a href="categoria/perfumes.html">Perfumes</a></li><li><a href="categoria/acessorios.html">Acessórios</a></li><li><a href="categoria/ofertas.html">Ofertas</a></li></ul>
+  </nav>
+      <nav class="rodape__col" aria-label="Atendimento">
+    <h2>Atendimento</h2>
+    <ul><li><a href="https://wa.me/5511900000000?text=Ol%C3%A1!%20Vim%20pelo%20site%20da%20VANTA%20STORE%20e%20queria%20tirar%20uma%20d%C3%BAvida." target="_blank" rel="noopener">WhatsApp (11) 90000-0000</a></li><li><a href="mailto:atendimento@vantastore.com.br">atendimento@vantastore.com.br</a></li><li><a href="index.html#faq">Perguntas frequentes</a></li><li><a href="conta.html">Meus pedidos</a></li></ul>
+  </nav>
+      <nav class="rodape__col" aria-label="Políticas">
+    <h2>Políticas</h2>
+    <ul><li><a href="index.html#faq">Trocas e devoluções</a></li><li><a href="index.html#faq">Prazo de entrega</a></li><li><a href="index.html#faq">Formas de pagamento</a></li><li><a href="index.html#faq">Privacidade</a></li></ul>
+  </nav>
+    </div>
+
+    <div class="rodape__pagamento">
+      <p>Formas de pagamento</p>
+      <!-- Sem bandeiras reais: a loja é fictícia e não tem contrato com
+           nenhuma delas. Se for usar de verdade, troque por selos próprios. -->
+      <ul><li>Pix</li><li>Cartão de crédito</li><li>Boleto bancário</li>
+        <li>Cartão de débito</li><li>Parcelamento em até 10x</li></ul>
+    </div>
+
+    <p class="rodape__demo">VANTA STORE é uma loja fictícia, criada para demonstração de portfólio. Produtos, marcas, preços e prazos são inventados. Nenhum pagamento é processado e nenhum pedido é enviado.</p>
+    <div class="rodape__base">
+      <p>© 2026 VANTA STORE. Loja fictícia de demonstração.</p>
+      <p>CNPJ 00.000.000/0001-00 · Moda · Sneakers · Fragrâncias</p>
+    </div>
+  </div>
+</footer>
+<div class="busca" id="busca" role="dialog" aria-modal="true"
+  aria-label="Buscar produtos" hidden>
+  <div class="wrap busca__linha">
+    <label class="sr" for="buscaCampo">Buscar produtos</label>
+    <svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.7-3.7"/></svg>
+    <input type="search" id="buscaCampo" placeholder="O que você procura?"
+      autocomplete="off" spellcheck="false" enterkeyhint="search" data-raiz="">
+    <button class="ico-btn" id="fecharBusca" aria-label="Fechar busca"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+  </div>
+  <div class="wrap busca__corpo">
+    <p class="busca__dicas" id="buscaDicas"><span>Buscas comuns:</span>
+      <button type="button" class="pilula" data-termo="camiseta">camiseta</button><button type="button" class="pilula" data-termo="tênis">tênis</button><button type="button" class="pilula" data-termo="perfume">perfume</button><button type="button" class="pilula" data-termo="moletom">moletom</button><button type="button" class="pilula" data-termo="relógio">relógio</button>
+    </p>
+    <p class="busca__status" id="buscaStatus" role="status" aria-live="polite"></p>
+    <div class="busca__grade" id="buscaResultados"></div>
+  </div>
+</div>
+<div class="cortina" id="cortina" hidden></div>
+
+<aside class="gaveta" id="gavetaCarrinho" aria-labelledby="tituloCarrinho" aria-hidden="true">
+  <header class="gaveta__topo">
+    <h2 id="tituloCarrinho">Seu carrinho</h2>
+    <button class="ico-btn" id="fecharCarrinho" aria-label="Fechar carrinho"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+  </header>
+  <div class="gaveta__frete">
+    <p id="freteTexto">Faltam <b>R$ 299,00</b> para o frete grátis</p>
+    <div class="barra"><span id="freteBarra" style="width:0%"></span></div>
+  </div>
+  <div class="gaveta__itens" id="carrinhoItens">
+    <div class="vazio vazio--gaveta" id="carrinhoVazio">
+      <p class="vazio__titulo">Seu carrinho está vazio</p>
+      <p class="vazio__texto">Comece pelos mais vendidos.</p>
+      <a class="btn btn--linha" href="index.html#vendidos">Ver produtos</a>
+    </div>
+  </div>
+  <footer class="gaveta__pe">
+    <p class="gaveta__linha"><span>Subtotal</span><b id="carrinhoSubtotal">R$ 0,00</b></p>
+    <p class="gaveta__linha gaveta__linha--desc" id="linhaDesconto" hidden>
+      <span>Desconto</span><b id="carrinhoDesconto">− R$ 0,00</b></p>
+    <p class="gaveta__linha"><span>Frete</span><b id="carrinhoFrete">A calcular</b></p>
+    <p class="gaveta__linha gaveta__linha--total"><span>Total</span><b id="carrinhoTotal">R$ 0,00</b></p>
+    <a class="btn btn--tinta btn--bloco" href="checkout.html" id="irCheckout">Ir para o checkout</a>
+    <button type="button" class="btn btn--texto btn--bloco" id="continuarComprando">Continuar comprando</button>
+    <p class="gaveta__nota">VANTA STORE é uma loja fictícia, criada para demonstração de portfólio. Produtos, marcas, preços e prazos são inventados. Nenhum pagamento é processado e nenhum pedido é enviado.</p>
+  </footer>
+</aside>
+
+<aside class="gaveta" id="gavetaFavoritos" aria-labelledby="tituloFav" aria-hidden="true">
+  <header class="gaveta__topo">
+    <h2 id="tituloFav">Favoritos</h2>
+    <button class="ico-btn" id="fecharFavoritos" aria-label="Fechar favoritos"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+  </header>
+  <div class="gaveta__itens" id="favoritosItens">
+    <div class="vazio vazio--gaveta" id="favoritosVazio">
+      <p class="vazio__titulo">Nenhum favorito ainda</p>
+      <p class="vazio__texto">Toque no coração de um produto para guardar aqui.</p>
+    </div>
+  </div>
+</aside>
+
+<div class="aviso" id="aviso" role="status" aria-live="polite"></div>
+
+<a class="flutuante" href="https://wa.me/5511900000000?text=Ol%C3%A1!%20Vim%20pelo%20site%20da%20VANTA%20STORE%20e%20queria%20tirar%20uma%20d%C3%BAvida." target="_blank" rel="noopener"
+   aria-label="Falar com o atendimento no WhatsApp"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.86 9.86 0 0 0 12.04 2Zm5.84 14.06c-.25.7-1.45 1.33-2 1.41-.53.08-1.18.11-1.9-.12-.44-.14-1-.33-1.72-.64-3.03-1.31-5.01-4.36-5.16-4.56-.15-.2-1.23-1.64-1.23-3.13s.78-2.22 1.06-2.53c.28-.3.6-.38.8-.38h.58c.19 0 .44-.07.69.53.25.6.86 2.09.94 2.24.08.15.13.33.02.53-.1.2-.16.33-.31.5-.15.18-.32.4-.46.53-.15.15-.31.31-.13.61.18.3.79 1.3 1.7 2.11 1.17 1.04 2.15 1.37 2.45 1.52.3.15.48.13.66-.08.18-.2.76-.88.96-1.19.2-.3.4-.25.68-.15.28.1 1.77.83 2.07.99.3.15.5.22.58.35.07.13.07.75-.18 1.46Z"/></svg></a>
+
+<script src="js/vanta.js" defer></script>
+</body>
+</html>

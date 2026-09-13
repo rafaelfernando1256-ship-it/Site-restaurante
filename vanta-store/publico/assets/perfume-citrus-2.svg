@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000" role="img" aria-label="Frasco de perfume cítrico, vista de frente">
+<defs>
+  <linearGradient id="vidro172" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity=".55"/>
+    <stop offset="0.18" stop-color="#FFFFFF" stop-opacity=".1"/>
+    <stop offset="0.5" stop-color="#000000" stop-opacity=".08"/>
+    <stop offset="0.82" stop-color="#FFFFFF" stop-opacity=".22"/>
+    <stop offset="1" stop-color="#000000" stop-opacity=".12"/>
+  </linearGradient>
+  <linearGradient id="aco172" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FDFDFE"/><stop offset="0.2" stop-color="#C6CBD2"/>
+    <stop offset="0.42" stop-color="#6E757E"/><stop offset="0.52" stop-color="#9AA1A9"/>
+    <stop offset="0.72" stop-color="#EFF2F5"/><stop offset="1" stop-color="#A8AFB7"/>
+  </linearGradient>
+  <radialGradient id="chao172" cx="50%" cy="50%" r="50%">
+    <stop offset="0" stop-color="#000000" stop-opacity=".16"/>
+    <stop offset="1" stop-color="#000000" stop-opacity="0"/>
+  </radialGradient>
+  <filter id="borra172" x="-30%" y="-30%" width="160%" height="160%">
+    <feGaussianBlur stdDeviation="16"/></filter>
+</defs>
+<rect width="1000" height="1000" fill="#CFCDC8"/>
+<ellipse cx="500" cy="900" rx="300" ry="45" fill="url(#chao172)"/>
+<g transform="translate(500 410) scale(1.458)"><g><rect x="-78" y="-440" width="156" height="150" rx="9" fill="#C8C4BC"/><path d="M-66 -432 L-30 -432 L-30 -302 L-66 -302 Z" fill="#FFFFFF" opacity="0.14"/><rect x="-52" y="-304" width="104" height="34" rx="5" fill="url(#aco172)"/><rect x="-40" y="-276" width="80" height="30" fill="#B4B0A9"/><path d="M-168 -250 C-168 -276 -138 -280 -114 -280 L114 -280 C138 -280 168 -276 168 -250 L168 228 C168 250 146 250 128 250 L-128 250 C-146 250 -168 250 -168 228 Z" fill="#F0EDD1" opacity=".5"/><path d="M-162 -154 L162 -154 L162 226 C162 246 142 246 126 246 L-126 246 C-142 246 -162 246 -162 226 Z" fill="#CBC25E" opacity=".9"/><path d="M-168 -250 L168 -250 L168 228 C168 250 146 250 128 250 L-128 250 C-146 250 -168 250 -168 228 Z" fill="url(#vidro172)"/><rect x="-168" y="-250" width="336" height="498" rx="26" fill="none" stroke="rgba(255,255,255,.45)" stroke-width="3"/><rect x="-104" y="-44" width="208" height="128" rx="4" fill="#F6F3EC" opacity=".94"/><text x="0" y="8" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="34" font-weight="700" letter-spacing="9" fill="#1A1A1C">VANTA</text><line x1="-64" y1="26" x2="64" y2="26" stroke="#1A1A1C" stroke-width="2" opacity=".5"/><text x="0" y="60" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="19" letter-spacing="6" fill="#5A5A5E">EAU DE PARFUM</text></g></g>
+</svg>

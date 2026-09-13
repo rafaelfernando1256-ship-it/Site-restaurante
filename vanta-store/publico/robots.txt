@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /checkout.html
+Disallow: /carrinho.html
+
+Sitemap: https://vantastore.com.br/sitemap.xml

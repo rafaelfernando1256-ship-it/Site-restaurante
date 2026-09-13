@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000" role="img" aria-label="Camiseta de malha pesada, vista de frente">
+<defs>
+  <linearGradient id="vidro863" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity=".55"/>
+    <stop offset="0.18" stop-color="#FFFFFF" stop-opacity=".1"/>
+    <stop offset="0.5" stop-color="#000000" stop-opacity=".08"/>
+    <stop offset="0.82" stop-color="#FFFFFF" stop-opacity=".22"/>
+    <stop offset="1" stop-color="#000000" stop-opacity=".12"/>
+  </linearGradient>
+  <linearGradient id="aco863" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FDFDFE"/><stop offset="0.2" stop-color="#C6CBD2"/>
+    <stop offset="0.42" stop-color="#6E757E"/><stop offset="0.52" stop-color="#9AA1A9"/>
+    <stop offset="0.72" stop-color="#EFF2F5"/><stop offset="1" stop-color="#A8AFB7"/>
+  </linearGradient>
+  <radialGradient id="chao863" cx="50%" cy="50%" r="50%">
+    <stop offset="0" stop-color="#000000" stop-opacity=".16"/>
+    <stop offset="1" stop-color="#000000" stop-opacity="0"/>
+  </radialGradient>
+  <filter id="borra863" x="-30%" y="-30%" width="160%" height="160%">
+    <feGaussianBlur stdDeviation="16"/></filter>
+</defs>
+<rect width="1000" height="1000" fill="#DCDCD9"/>
+<ellipse cx="500" cy="900" rx="300" ry="45" fill="url(#chao863)"/>
+<g transform="translate(500 510) scale(0.771)"><g><path d="M-205 -258 L-330 -195 L-306 -93 L-193 -100.0 L-192.0 300 L192.0 300 L193 -100.0 L306 -93 L330 -195 L205 -258 L88 -258 C54.56 -192 -54.56 -192 -88 -258 L-205 -258 Z" fill="#F1EDE4"/><path d="M193 -100.0 L306 -93 L270 -125 L165 -130.0 Z" fill="#000000" opacity="0.12"/><path d="M146.0 300 L192.0 300 L193 -100.0 L145 -90.0 Z" fill="#000000" opacity="0.09"/><path d="M-175 -228 L-152.0 260 L-82.0 260 L-105 -232 Z" fill="#F5F3ED" opacity="0.096"/><path d="M-104 -258 C-54.56 -176 54.56 -176 104 -258 L88 -258 C54.56 -192 -54.56 -192 -88 -258 Z" fill="#CAC7BF"/><path d="M-324 -189 L-302 -99" fill="none" stroke="#9F9C96" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="7 6" opacity=".8"/><path d="M324 -189 L302 -99" fill="none" stroke="#9F9C96" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="7 6" opacity=".8"/><path d="M-186.0 282 L186.0 282" fill="none" stroke="#9F9C96" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="7 6" opacity=".8"/><path d="M-72 -160 C-92 -10 -84 130 -100 260" fill="none" stroke="#C0BDB6" stroke-width="3" stroke-linecap="round" opacity=".55"/><path d="M78 -150 C96 0 88 140 104 260" fill="none" stroke="#C0BDB6" stroke-width="3" stroke-linecap="round" opacity=".55"/></g></g>
+</svg>

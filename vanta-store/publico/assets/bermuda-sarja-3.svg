@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000" role="img" aria-label="Bermuda de sarja, vista de frente">
+<defs>
+  <linearGradient id="vidro16" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity=".55"/>
+    <stop offset="0.18" stop-color="#FFFFFF" stop-opacity=".1"/>
+    <stop offset="0.5" stop-color="#000000" stop-opacity=".08"/>
+    <stop offset="0.82" stop-color="#FFFFFF" stop-opacity=".22"/>
+    <stop offset="1" stop-color="#000000" stop-opacity=".12"/>
+  </linearGradient>
+  <linearGradient id="aco16" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FDFDFE"/><stop offset="0.2" stop-color="#C6CBD2"/>
+    <stop offset="0.42" stop-color="#6E757E"/><stop offset="0.52" stop-color="#9AA1A9"/>
+    <stop offset="0.72" stop-color="#EFF2F5"/><stop offset="1" stop-color="#A8AFB7"/>
+  </linearGradient>
+  <radialGradient id="chao16" cx="50%" cy="50%" r="50%">
+    <stop offset="0" stop-color="#000000" stop-opacity=".16"/>
+    <stop offset="1" stop-color="#000000" stop-opacity="0"/>
+  </radialGradient>
+  <filter id="borra16" x="-30%" y="-30%" width="160%" height="160%">
+    <feGaussianBlur stdDeviation="16"/></filter>
+</defs>
+<rect width="1000" height="1000" fill="#DCDCD9"/>
+<ellipse cx="500" cy="900" rx="300" ry="45" fill="url(#chao16)"/>
+<g transform="translate(500 530) scale(0.846)"><g><path d="M-176 -300 L176 -300 C202 -240 202 -140 198 -100 L152 110 L66 110 C62 -30 8 72 0 -18 C-8 72 -62 -30 -66 110 L-152 110 C-198 -100 -202 -140 -176 -300 Z" fill="#17171A"/><path d="M76 100 L144 100 C182 -100 172 -140 136 -270 L80 -260 C116 -120 92 -10 106 100 Z" fill="#000000" opacity="0.09"/><path d="M-136 90 C-162 -110 -156 -180 -134 -266 L-80 -260 C-106 -140 -76 -30 -82 90 Z" fill="#656567" opacity="0.043"/><path d="M-34 -138 L34 -138 L14 -8 L0 -34 L-14 -8 Z" fill="#000000" opacity="0.13"/><path d="M-176 -300 L176 -300 C184 -272 186 -256 186 -244 L-186 -244 C-186 -256 -184 -272 -176 -300 Z" fill="#141416"/><rect x="-147" y="-254" width="14" height="32" rx="3" fill="#121214"/><rect x="-79" y="-254" width="14" height="32" rx="3" fill="#121214"/><rect x="-7" y="-254" width="14" height="32" rx="3" fill="#121214"/><rect x="65" y="-254" width="14" height="32" rx="3" fill="#121214"/><rect x="133" y="-254" width="14" height="32" rx="3" fill="#121214"/><circle cx="0" cy="-272" r="12" fill="url(#aco16)"/><path d="M-170 -250 L170 -250" fill="none" stroke="#0F0F11" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="7 6" opacity=".8"/><path d="M-15 -238 C-24 -150 -22 -128 -5 -58" fill="none" stroke="#0F0F11" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="7 6" opacity=".8"/><path d="M-172 -236 C-178 -182 -162 -146 -136 -122" fill="none" stroke="#0F0F11" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="7 6" opacity=".8"/><path d="M172 -236 C178 -182 162 -146 136 -122" fill="none" stroke="#0F0F11" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="7 6" opacity=".8"/><path d="M-88 22 C-96 44.0 -115.0 77.0 -109.0 84" fill="none" stroke="#121214" stroke-width="3.4" stroke-linecap="round" opacity=".55"/><path d="M-72 88 L-144 88" fill="none" stroke="#0F0F11" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="7 6" opacity=".8"/><path d="M88 22 C96 44.0 115.0 77.0 109.0 84" fill="none" stroke="#121214" stroke-width="3.4" stroke-linecap="round" opacity=".55"/><path d="M72 88 L144 88" fill="none" stroke="#0F0F11" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="7 6" opacity=".8"/></g></g>
+</svg>

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000" role="img" aria-label="Camiseta oversized, vista de frente">
+<defs>
+  <linearGradient id="vidro437" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#FFFFFF" stop-opacity=".55"/>
+    <stop offset="0.18" stop-color="#FFFFFF" stop-opacity=".1"/>
+    <stop offset="0.5" stop-color="#000000" stop-opacity=".08"/>
+    <stop offset="0.82" stop-color="#FFFFFF" stop-opacity=".22"/>
+    <stop offset="1" stop-color="#000000" stop-opacity=".12"/>
+  </linearGradient>
+  <linearGradient id="aco437" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FDFDFE"/><stop offset="0.2" stop-color="#C6CBD2"/>
+    <stop offset="0.42" stop-color="#6E757E"/><stop offset="0.52" stop-color="#9AA1A9"/>
+    <stop offset="0.72" stop-color="#EFF2F5"/><stop offset="1" stop-color="#A8AFB7"/>
+  </linearGradient>
+  <radialGradient id="chao437" cx="50%" cy="50%" r="50%">
+    <stop offset="0" stop-color="#000000" stop-opacity=".16"/>
+    <stop offset="1" stop-color="#000000" stop-opacity="0"/>
+  </radialGradient>
+  <filter id="borra437" x="-30%" y="-30%" width="160%" height="160%">
+    <feGaussianBlur stdDeviation="16"/></filter>
+</defs>
+<rect width="1000" height="1000" fill="#DCDCD9"/>
+<ellipse cx="500" cy="900" rx="300" ry="45" fill="url(#chao437)"/>
+<g transform="translate(500 510) scale(0.733)"><g><path d="M-245 -258 L-370 -195 L-346 -93 L-233 -100.0 L-212.0 330 L212.0 330 L233 -100.0 L346 -93 L370 -195 L245 -258 L96 -258 C59.519999999999996 -192 -59.519999999999996 -192 -96 -258 L-245 -258 Z" fill="#CBB99A"/><path d="M233 -100.0 L346 -93 L310 -125 L205 -130.0 Z" fill="#000000" opacity="0.12"/><path d="M166.0 330 L212.0 330 L233 -100.0 L185 -90.0 Z" fill="#000000" opacity="0.09"/><path d="M-215 -228 L-172.0 290 L-102.0 290 L-145 -232 Z" fill="#DCD0BC" opacity="0.084"/><path d="M-112 -258 C-59.519999999999996 -176 59.519999999999996 -176 112 -258 L96 -258 C59.519999999999996 -192 -59.519999999999996 -192 -96 -258 Z" fill="#AA9B81"/><path d="M-364 -189 L-342 -99" fill="none" stroke="#857A65" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="7 6" opacity=".8"/><path d="M364 -189 L342 -99" fill="none" stroke="#857A65" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="7 6" opacity=".8"/><path d="M-206.0 312 L206.0 312" fill="none" stroke="#857A65" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="7 6" opacity=".8"/><path d="M-72 -160 C-92 -10 -84 130 -100 290" fill="none" stroke="#A2947B" stroke-width="3" stroke-linecap="round" opacity=".55"/><path d="M78 -150 C96 0 88 140 104 290" fill="none" stroke="#A2947B" stroke-width="3" stroke-linecap="round" opacity=".55"/></g></g>
+</svg>
