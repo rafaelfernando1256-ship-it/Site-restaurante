@@ -103,10 +103,13 @@ const beneficios = () => secao({
 const instagram = () => secao({
   id: 'instagram', classe: 'insta',
   conteudo: cabeca({ ...SECOES.instagram,
-    acao: botao({ texto: 'Seguir no Instagram', href: '#', variante: 'linha' }) }) +
-    `<ul class="insta__grade">${INSTAGRAM.map(([src, alt], i) => `
+    acao: LOJA.redes.Instagram
+      ? botao({ texto: 'Seguir no Instagram', href: LOJA.redes.Instagram,
+                variante: 'linha', externo: true })
+      : '' }) +
+    `<ul class="insta__grade">${INSTAGRAM.map(([src, alt, slug], i) => `
       <li class="surge"${atraso(i, 0.03)}>
-        <a href="#" aria-label="Publicação no Instagram: ${esc(alt)}">
+        <a href="produto/${slug}.html" aria-label="${esc(alt)} — ver produto">
           <img src="assets/${src}" alt="${esc(alt)}" width="1000" height="1000" loading="lazy" decoding="async">
         </a></li>`).join('')}</ul>`,
 });

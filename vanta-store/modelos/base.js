@@ -165,9 +165,9 @@ function rodape(raiz) {
         ${marca(raiz, 'p')}
         <p class="rodape__frase">${esc(LOJA.descricao)}</p>
         <ul class="redes">
-          <li><a href="#" aria-label="Instagram da loja">Instagram</a></li>
-          <li><a href="#" aria-label="TikTok da loja">TikTok</a></li>
-          <li><a href="#" aria-label="YouTube da loja">YouTube</a></li>
+          ${Object.entries(LOJA.redes).filter(([, url]) => url).map(([nome, url]) =>
+            `<li><a href="${url}" target="_blank" rel="noopener"
+               aria-label="${esc(nome)} da loja">${esc(nome)}</a></li>`).join('')}
         </ul>
       </div>
       ${col('Categorias', [...CATEGORIAS.map((c) => [`${raiz}categoria/${c.id}.html`, c.nome]),

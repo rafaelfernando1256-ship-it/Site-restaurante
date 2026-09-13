@@ -17,6 +17,12 @@ export const LOJA = {
   whatsappVisivel: '(11) 90000-0000',    // ← TROQUE
   email: 'atendimento@vantastore.com.br',
   instagram: '@vantastore',
+  // ← TROQUE pelas URLs dos seus perfis. Deixe '' e o link some do rodapé.
+  redes: {
+    Instagram: 'https://www.instagram.com/',
+    TikTok: 'https://www.tiktok.com/',
+    YouTube: 'https://www.youtube.com/',
+  },
   dominio: 'https://vantastore.com.br',
 
   freteGratis: 299,                      // piso do frete grátis, em reais
@@ -144,15 +150,18 @@ export const FAQ = [
 ];
 
 /** Feed: reaproveita vistas do próprio catálogo. */
+/** [arquivo, texto alternativo, slug do produto que a foto mostra].
+ *  A foto leva ao produto — é o que uma vitrine do Instagram faz, e
+ *  evita oito links mortos apontando para "#". */
 export const INSTAGRAM = [
-  ['tenis-runner-2.svg', 'Detalhe do tênis runner branco'],
-  ['jaqueta-bomber.svg', 'Jaqueta bomber oliva'],
-  ['perfume-noir.svg', 'Frasco do perfume Noir'],
-  ['moletom-capuz-3.svg', 'Moletom com capuz'],
-  ['relogio-aco-2.svg', 'Detalhe do relógio de aço'],
-  ['tenis-chunky.svg', 'Tênis chunky areia'],
-  ['bolsa-crossbody.svg', 'Bolsa transversal preta'],
-  ['camiseta-oversized.svg', 'Camiseta oversized off-white'],
+  ['tenis-runner-2.svg', 'Detalhe do tênis runner branco', 'tenis-runner'],
+  ['jaqueta-bomber.svg', 'Jaqueta bomber oliva', 'jaqueta-bomber'],
+  ['perfume-noir.svg', 'Frasco do perfume Noir', 'perfume-noir'],
+  ['moletom-capuz-3.svg', 'Moletom com capuz', 'moletom-capuz'],
+  ['relogio-aco-2.svg', 'Detalhe do relógio de aço', 'relogio-aco'],
+  ['tenis-chunky.svg', 'Tênis chunky areia', 'tenis-chunky'],
+  ['bolsa-crossbody.svg', 'Bolsa transversal preta', 'bolsa-crossbody'],
+  ['camiseta-oversized.svg', 'Camiseta oversized off-white', 'camiseta-oversized'],
 ];
 
 /** Cupons de demonstração, conferidos no carrinho. */

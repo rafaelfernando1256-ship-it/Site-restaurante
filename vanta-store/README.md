@@ -217,7 +217,9 @@ o resto.
 | O quê | Onde |
 |---|---|
 | E-mail, Instagram, domínio | `conteudo/site.js` → `LOJA` |
-| Frase do rodapé, redes sociais | `modelos/base.js` → `rodape()` |
+| URLs das redes sociais | `conteudo/site.js` → `LOJA.redes` — deixe `''` e o link some do rodapé |
+| Fotos da seção do Instagram | `conteudo/site.js` → `INSTAGRAM`: `[arquivo, texto alternativo, slug do produto]`; cada foto leva ao produto que mostra |
+| Frase do rodapé | `modelos/base.js` → `rodape()` |
 | CNPJ e linha de copyright | `modelos/base.js`, no fim de `rodape()` — hoje é um CNPJ zerado de propósito |
 | Prazos e regras de entrega | `conteudo/site.js` → `ENTREGA` |
 | Política de troca | `conteudo/site.js` → `TROCA` |
