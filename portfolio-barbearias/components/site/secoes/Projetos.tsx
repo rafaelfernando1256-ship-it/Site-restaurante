@@ -12,9 +12,9 @@ export default function Projetos() {
     <Secao id="projetos" tom="poco">
       <CabecaSecao
         indice="03"
-        etiqueta="Projetos"
-        titulo="Três barbearias, três estratégias diferentes"
-        texto="Cada projeto resolve um tipo de negócio. Abra no celular e role até o fim — é o site funcionando, não uma imagem."
+        etiqueta="Work"
+        titulo="Three barbershops, three different strategies"
+        texto="Each project solves a different kind of shop. Open one on your phone and scroll to the end — it's the working site, not a picture of one."
       />
 
       <div className="mt-16 space-y-5 sm:mt-20">
@@ -88,13 +88,13 @@ export default function Projetos() {
                     {/* Nova aba de propósito: se o demo abre na mesma,
                         o portfólio some e o visitante não volta. */}
                     <Link
-                      href={`/projetos/${d.slug}/`}
+                      href={`/projects/${d.slug}/`}
                       target="_blank"
                       rel="noopener"
                       className="inline-flex items-center gap-2.5 rounded-full px-7 py-3.5 text-[0.88rem] font-medium transition-transform duration-500 ease-[var(--ease-suave)] group-hover:-translate-y-0.5"
                       style={{ backgroundColor: d.corTexto, color: claro ? "#F7F1E3" : "#0B0B0C" }}
                     >
-                      Abrir o site
+                      Open the site
                       <span aria-hidden className="text-[0.8em] opacity-70">↗</span>
                     </Link>
 
@@ -129,9 +129,9 @@ export default function Projetos() {
                       className="mt-3 inline-block min-h-[44px] py-2.5 text-[0.85rem] leading-relaxed"
                       style={{ color: corApoio }}
                     >
-                      Este modelo sai por{" "}
+                      This model costs{" "}
                       <span className="underline underline-offset-4" style={{ color: corTexto }}>
-                        {plano.preco}, pagamento único
+                        {plano.preco}, one payment
                       </span>
                     </a>
                   )}
@@ -162,7 +162,7 @@ export default function Projetos() {
 
       <Revelar atraso={0.1}>
         <p className="mt-10 text-[0.78rem] text-osso-3">
-          Barbearias fictícias, criadas para demonstração. Nenhum dado corresponde a negócio real.
+          Fictional barbershops, built for demonstration. Nothing here matches a real business.
         </p>
       </Revelar>
 

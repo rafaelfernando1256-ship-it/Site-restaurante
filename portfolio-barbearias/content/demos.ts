@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════
-   ÍNDICE DOS PROJETOS DEMONSTRATIVOS
-   Metadados usados na home do portfólio (cards e navegação).
-   O conteúdo de cada site fica em content/demo-<slug>.ts
+   DEMO PROJECT INDEX
+   Metadata used on the portfolio home (cards and navigation).
+   Each site's own content lives in content/demo-<slug>.ts
    ═══════════════════════════════════════════════════════════════ */
 
 export type ResumoDemo = {
@@ -9,15 +9,15 @@ export type ResumoDemo = {
   nome: string;
   arquetipo: string;
   slogan: string;
-  /** A frase que você usa na prospecção ao mostrar este projeto. */
+  /** The line you use in outreach when showing this project. */
   objetivo: string;
-  /** O que este demo prova para o prospect. */
+  /** What this demo proves to the prospect. */
   prova: string;
   publico: string;
   destaques: string[];
   paleta: { nome: string; hex: string }[];
   tipografia: string;
-  /** Cor usada no card do portfólio. */
+  /** Colour used on the portfolio card. */
   corCard: string;
   corTexto: string;
   mockup: string;
@@ -26,24 +26,24 @@ export type ResumoDemo = {
 export const demos: ResumoDemo[] = [
   {
     slug: "casa-valerio",
-    nome: "Casa Valério",
-    arquetipo: "Premium · Barbearia privê",
-    slogan: "O tempo que você reserva para si.",
+    nome: "Casa Valerio",
+    arquetipo: "Premium · Private barbershop",
+    slogan: "The hour you set aside for yourself.",
     objetivo:
-      "Feito para justificar ticket alto e vender assinatura mensal antes do primeiro corte.",
-    prova: "Prova que eu construo marca de luxo, não só site bonito.",
-    publico: "Executivos 30–55, ticket médio R$ 190",
+      "Built to justify a high price and sell the monthly membership before the first cut.",
+    prova: "Proves I can build a luxury brand, not just a good-looking site.",
+    publico: "Professionals 30–55, average spend £110",
     destaques: [
-      "Seção do ritual de atendimento",
-      "Serviços em menu de restaurante",
-      "Clube de assinatura com 3 níveis",
-      "Vale-presente para compra por terceiros",
+      "A section on the appointment ritual",
+      "Services laid out like a restaurant menu",
+      "Three-tier membership club",
+      "Gift cards for buying on someone else's behalf",
     ],
     paleta: [
-      { nome: "Preto tinta", hex: "#0D0D0F" },
-      { nome: "Latão", hex: "#C4A867" },
-      { nome: "Mármore", hex: "#EDE8E0" },
-      { nome: "Verde garrafa", hex: "#17372E" },
+      { nome: "Ink black", hex: "#0D0D0F" },
+      { nome: "Brass", hex: "#C4A867" },
+      { nome: "Marble", hex: "#EDE8E0" },
+      { nome: "Bottle green", hex: "#17372E" },
     ],
     tipografia: "Marcellus + Jost",
     corCard: "#0D0D0F",
@@ -51,25 +51,25 @@ export const demos: ResumoDemo[] = [
     mockup: "/mockups/casa-valerio.jpg",
   },
   {
-    slug: "nove-e-meia",
-    nome: "Nove & Meia",
-    arquetipo: "Urbana · Barbearia jovem",
-    slogan: "Agenda aberta. Estilo fechado.",
+    slug: "nine-thirty",
+    nome: "Nine Thirty",
+    arquetipo: "Urban · Young barbershop",
+    slogan: "Diary open. Look locked in.",
     objetivo:
-      "Feito para transformar seguidor do Instagram em horário agendado no mesmo minuto.",
-    prova: "Prova que eu resolvo agendamento online e integração com redes.",
-    publico: "18–35, ticket médio R$ 55, alto volume",
+      "Built to turn an Instagram follower into a booked slot inside the same minute.",
+    prova: "Proves I handle online booking and social integration.",
+    publico: "18–35, average spend £30, high volume",
     destaques: [
-      "Escolha do barbeiro antes do serviço",
-      "Faixa rolante de prova social",
-      "Galeria em grade estilo feed",
-      "Horários livres de hoje em destaque",
+      "Pick the barber before the service",
+      "Scrolling strip of social proof",
+      "Feed-style gallery grid",
+      "Today's free slots pulled to the top",
     ],
     paleta: [
-      { nome: "Asfalto", hex: "#101114" },
-      { nome: "Limão elétrico", hex: "#C6F24E" },
-      { nome: "Laranja sinal", hex: "#FF5A1F" },
-      { nome: "Gelo", hex: "#F2F2EF" },
+      { nome: "Asphalt", hex: "#101114" },
+      { nome: "Electric lime", hex: "#C6F24E" },
+      { nome: "Signal orange", hex: "#FF5A1F" },
+      { nome: "Ice", hex: "#F2F2EF" },
     ],
     tipografia: "Archivo Black + Space Grotesk",
     corCard: "#101114",
@@ -77,25 +77,25 @@ export const demos: ResumoDemo[] = [
     mockup: "/mockups/nove-e-meia.jpg",
   },
   {
-    slug: "dom-aurelio",
-    nome: "Barbearia Dom Aurélio",
-    arquetipo: "Clássica · Barbearia de bairro",
-    slogan: "Três gerações cortando o cabelo do bairro.",
+    slug: "aurelio-and-sons",
+    nome: "Aurelio & Sons",
+    arquetipo: "Classic · Neighbourhood barbershop",
+    slogan: "Three generations cutting this neighbourhood's hair.",
     objetivo:
-      "Feito para quem decide pelo telefone: ligar é o botão principal, não agendar.",
-    prova: "Prova que eu desenho para o cliente do cliente, não para o meu portfólio.",
-    publico: "35–70, ticket médio R$ 45, clientela fiel",
+      "Built for people who decide by phone: calling is the main button, not booking.",
+    prova: "Proves I design for the client's customer, not for my portfolio.",
+    publico: "35–70, average spend £22, loyal regulars",
     destaques: [
-      "Ligar como ação principal",
-      "Corpo de texto em 18px por acessibilidade",
-      "Linha do tempo de três gerações",
-      "Seção de localização ampliada",
+      "Calling as the main action",
+      "18px body text for readability",
+      "A three-generation timeline",
+      "An enlarged directions section",
     ],
     paleta: [
-      { nome: "Papel creme", hex: "#F7F1E3" },
-      { nome: "Vermelho esmalte", hex: "#B22B2B" },
-      { nome: "Azul marinho", hex: "#1F3A5F" },
-      { nome: "Nogueira", hex: "#6B4A2F" },
+      { nome: "Cream paper", hex: "#F7F1E3" },
+      { nome: "Enamel red", hex: "#B22B2B" },
+      { nome: "Navy", hex: "#1F3A5F" },
+      { nome: "Walnut", hex: "#6B4A2F" },
     ],
     tipografia: "Alfa Slab One + Libre Baskerville",
     corCard: "#F7F1E3",

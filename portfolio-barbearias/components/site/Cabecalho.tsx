@@ -7,11 +7,11 @@ import IconeWhats from "@/components/ui/IconeWhats";
 import { agencia, hero, linkWhats } from "@/content/agencia";
 
 const links = [
-  { href: "/#maquina", rotulo: "O que inclui" },
-  { href: "/#projetos", rotulo: "Projetos" },
-  { href: "/#conta", rotulo: "A conta" },
-  { href: "/#quem-faz", rotulo: "Quem faz" },
-  { href: "/#planos", rotulo: "Planos" },
+  { href: "/#maquina", rotulo: "What's included" },
+  { href: "/#projetos", rotulo: "Work" },
+  { href: "/#conta", rotulo: "The maths" },
+  { href: "/#quem-faz", rotulo: "Who builds it" },
+  { href: "/#planos", rotulo: "Pricing" },
 ];
 
 export default function Cabecalho() {
@@ -57,7 +57,7 @@ export default function Cabecalho() {
         </Link>
 
         {/* Navegação em telas grandes */}
-        <nav className="hidden items-center gap-8 lg:flex" aria-label="Navegação principal">
+        <nav className="hidden items-center gap-8 lg:flex" aria-label="Main navigation">
           {links.map((l) => (
             <Link
               key={l.href}
@@ -79,7 +79,7 @@ export default function Cabecalho() {
             className="max-sm:hidden"
           >
             <IconeWhats className="h-4 w-4" />
-            Quero ver o meu
+            Show me mine
           </Botao>
 
           <button
@@ -87,7 +87,7 @@ export default function Cabecalho() {
             onClick={() => setAberto((v) => !v)}
             aria-expanded={aberto}
             aria-controls="menu-celular"
-            aria-label={aberto ? "Fechar menu" : "Abrir menu"}
+            aria-label={aberto ? "Close menu" : "Open menu"}
             className="flex h-11 w-11 flex-col items-center justify-center gap-[6px] rounded-xl border border-fio transition-colors hover:border-osso-3 lg:hidden"
           >
             <span
@@ -130,7 +130,7 @@ export default function Cabecalho() {
           externo
           className="mt-8 w-full"
         >
-          Quero ver o meu de graça
+          Show me mine, free
         </Botao>
       </div>
     </header>

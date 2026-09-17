@@ -1,8 +1,16 @@
-# Cadeira Cheia — portfólio de sites para barbearia
+# Full Chair — portfólio de sites para barbearia
 
 Portfólio de agência especializada em criar sites para barbearias, com **três
 projetos demonstrativos navegáveis**. Construído para vender: cada seção existe
 para responder uma objeção e levar o dono da barbearia ao WhatsApp.
+
+> **O site é em inglês.** Todo o texto visível está em inglês britânico e
+> ambientado em Londres: preços em libras, endereços de bairros londrinos e
+> telefones das faixas que o Ofcom reserva para ficção (`07700 900xxx` e
+> `020 7946 0xxx`) — nenhum número toca na casa de ninguém. Os nomes de
+> arquivo, variáveis e comentários do código continuam em português, que é a
+> convenção do resto deste repositório. Onde trocar cada coisa está na seção
+> "Onde fica cada coisa", abaixo.
 
 ---
 
@@ -119,14 +127,14 @@ content/
   agencia.ts              seu nome, WhatsApp, textos de venda, planos, perguntas
   demos.ts                os 3 cards de projeto da home (cores, destaques)
   demo-casa-valerio.ts    conteúdo do site demonstrativo 1
-  demo-nove-e-meia.ts     conteúdo do site demonstrativo 2
-  demo-dom-aurelio.ts     conteúdo do site demonstrativo 3
+  demo-nove-e-meia.ts     conteúdo do site demonstrativo 2 (Nine Thirty)
+  demo-dom-aurelio.ts     conteúdo do site demonstrativo 3 (Aurelio & Sons)
 
 app/
   page.tsx                a home do portfólio (só junta as seções)
   layout.tsx              meta tags de SEO do site inteiro
   globals.css            o sistema visual do portfólio (cores e tipografia)
-  projetos/<nome>/
+  projects/<slug>/        casa-valerio · nine-thirty · aurelio-and-sons
     page.tsx              a página daquela barbearia
     <nome>.css            o visual daquela barbearia, isolado do resto
 
@@ -144,15 +152,24 @@ Abra `content/agencia.ts`, procure a seção pelo nome (`hero`, `problema`,
 `maquina`, `processo`, `planos`, `objecoes`, `fechamento`) e edite.
 
 ### Mudar preços
-`content/agencia.ts` → `planos.lista`. Cada plano tem `setup`, `mensal`,
-`equivalencia` ("menos de 3 cortes por mês") e a lista `inclui`.
+`content/agencia.ts` → `planos.lista` e `planos.destaque`. Os preços dos demos
+ficam em `content/demo-*.ts`.
+
+### Trocar a moeda
+Dois lugares: `components/site/secoes/Conta.tsx` (função `moeda`, que usa
+`en-GB` e `GBP`) e `content/agencia.ts` → `conta.campos.preco.prefixo`.
+
+### Trocar o país
+Endereços e telefones ficam em `content/demo-*.ts` (campos `endereco`,
+`whatsapp`, `telefone`, `telefoneVisivel`) e em `content/agencia.ts` (bloco
+`agencia`). O idioma do documento está em `app/layout.tsx` (`lang` e `locale`).
 
 ### Mudar as cores do portfólio
 `app/globals.css`, bloco `@theme`, no topo. O portfólio é quase monocromático de
 propósito: a cor vem dos projetos, como parede de galeria.
 
 ### Mudar as cores de um demo
-`app/projetos/<nome>/<nome>.css`, primeiras linhas. Cada demo tem suas variáveis
+`app/projects/<slug>/<nome>.css`, primeiras linhas. Cada demo tem suas variáveis
 isoladas — mexer em um nunca afeta os outros.
 
 ---

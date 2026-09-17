@@ -3,10 +3,10 @@
 import { useEffect, useState } from "react";
 
 const links = [
-  { href: "#equipe", rotulo: "Barbeiros" },
-  { href: "#servicos", rotulo: "Serviços" },
-  { href: "#trabalhos", rotulo: "Trabalhos" },
-  { href: "#onde", rotulo: "Onde é" },
+  { href: "#equipe", rotulo: "Barbers" },
+  { href: "#servicos", rotulo: "Services" },
+  { href: "#trabalhos", rotulo: "Work" },
+  { href: "#onde", rotulo: "Find us" },
 ];
 
 export default function TopoNove({ linkAgendar }: { linkAgendar: string }) {
@@ -23,9 +23,9 @@ export default function TopoNove({ linkAgendar }: { linkAgendar: string }) {
     <header className="n-topo" data-solido={solido}>
       <div className="n-topo__linha">
         <a href="#topo" className="n-marca">
-          Nove <span>&amp;</span> Meia
+          Nine <span>·</span> Thirty
         </a>
-        <nav className="n-nav" aria-label="Navegação da barbearia">
+        <nav className="n-nav" aria-label="Barbershop navigation">
           {links.map((l) => (
             <a key={l.href} href={l.href}>
               {l.rotulo}
@@ -39,7 +39,7 @@ export default function TopoNove({ linkAgendar }: { linkAgendar: string }) {
           rel="noopener noreferrer"
           style={{ padding: "11px 20px", fontSize: "0.82rem" }}
         >
-          Agendar
+          Book
         </a>
       </div>
     </header>

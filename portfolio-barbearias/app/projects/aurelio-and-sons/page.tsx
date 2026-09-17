@@ -9,9 +9,9 @@ import SeloAberto from "./SeloAberto";
 import "./aurelio.css";
 
 export const metadata: Metadata = {
-  title: "Barbearia Dom Aurélio · Desde 1978 (projeto demonstrativo)",
+  title: "Aurelio & Sons · Since 1978 (demo project)",
   description:
-    "Projeto demonstrativo de site para barbearia clássica de bairro: telefone como ação principal, preços grandes, história da família e localização ampliada.",
+    "Demo website for a classic neighbourhood barbershop: the phone as the main action, large prices, the family's story and an enlarged directions section.",
 };
 
 const zap = (msg: string) =>
@@ -41,7 +41,7 @@ export default function PaginaAurelio() {
           <div className="a-hero__arte">
             <Image
               src="/arte/aurelio/hero.svg"
-              alt="Placa pintada da Barbearia Dom Aurélio, com poste de barbeiro e tesoura"
+              alt="Hand-painted Aurelio &amp; Sons sign, with a barber pole and scissors"
               width={1600}
               height={1100}
               priority
@@ -54,21 +54,21 @@ export default function PaginaAurelio() {
       <div className="a-faixa">
         <div className="a-wrap a-faixa__grade">
           <div className="a-faixa__item">
-            <span className="a-faixa__rotulo">Telefone</span>
+            <span className="a-faixa__rotulo">Phone</span>
             <a className="a-faixa__valor" href={`tel:${domAurelio.telefone}`}>
               {domAurelio.telefoneVisivel}
             </a>
           </div>
           <div className="a-faixa__item">
-            <span className="a-faixa__rotulo">Endereço</span>
+            <span className="a-faixa__rotulo">Address</span>
             <span className="a-faixa__valor" style={{ fontSize: "1.05rem" }}>
               {domAurelio.endereco.linha1}
             </span>
           </div>
           <div className="a-faixa__item">
-            <span className="a-faixa__rotulo">Atendimento</span>
+            <span className="a-faixa__rotulo">Walk-ins</span>
             <span className="a-faixa__valor" style={{ fontSize: "1.05rem" }}>
-              Por ordem de chegada
+              First come, first served
             </span>
           </div>
         </div>
@@ -156,15 +156,15 @@ export default function PaginaAurelio() {
       {/* ── Galeria + avaliação ── */}
       <section className="a-secao a-borda">
         <div className="a-wrap">
-          <p className="a-etiqueta">A casa</p>
-          <h2 className="a-titulo">Do jeito que sempre foi</h2>
+          <p className="a-etiqueta">The shop</p>
+          <h2 className="a-titulo">The way it has always been</h2>
 
           <div className="a-galeria">
             {[1, 2, 3, 4].map((n) => (
               <Image
                 key={n}
                 src={`/arte/aurelio/galeria-${n}.svg`}
-                alt="Detalhe da barbearia"
+                alt="A corner of the shop"
                 width={800}
                 height={640}
                 loading="lazy"
@@ -181,8 +181,8 @@ export default function PaginaAurelio() {
             </div>
             <div style={{ flex: 1, minWidth: "220px" }}>
               <p style={{ margin: 0 }}>
-                <strong>{domAurelio.avaliacao.quantidade} avaliações no Google.</strong> Quem mora
-                no bairro conhece — e quem passa uma vez, volta.
+                <strong>{domAurelio.avaliacao.quantidade} Google reviews.</strong> People round
+                here know us — and anyone who walks in once comes back.
               </p>
             </div>
             <a
@@ -191,7 +191,7 @@ export default function PaginaAurelio() {
               target="_blank"
               rel="noopener noreferrer"
             >
-              Ver avaliações
+              Read the reviews
             </a>
           </div>
         </div>
@@ -209,7 +209,7 @@ export default function PaginaAurelio() {
           <div className="a-local">
             <div>
               <h3 style={{ fontSize: "1.4rem" }}>
-                Horário
+                Opening hours
                 <SeloAberto />
               </h3>
               <ul className="a-horarios">
@@ -233,7 +233,7 @@ export default function PaginaAurelio() {
 
               <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", marginTop: "1.4rem" }}>
                 <a className="a-btn a-btn--vermelho" href={`tel:${domAurelio.telefone}`}>
-                  Ligar agora
+                  Call now
                 </a>
                 <a
                   className="a-btn a-btn--zap"
@@ -249,9 +249,9 @@ export default function PaginaAurelio() {
             <div className="a-mapa">
               <div className="a-mapa__aviso">
                 <p style={{ margin: 0 }}>
-                  <strong>Mapa do Google</strong>
+                  <strong>Google map</strong>
                   <br />
-                  No site publicado, o mapa aparece aqui com o endereço marcado.
+                  On the published site, the map sits here with the address pinned.
                   <br />
                   <a
                     href="https://www.google.com/maps"
@@ -259,7 +259,7 @@ export default function PaginaAurelio() {
                     rel="noopener noreferrer"
                     style={{ color: "var(--azul)", textDecoration: "underline", display: "inline-block", padding: "10px 4px", minHeight: "44px" }}
                   >
-                    Abrir no Google Maps
+                    Open in Google Maps
                   </a>
                 </p>
               </div>
@@ -273,14 +273,14 @@ export default function PaginaAurelio() {
           <p style={{ margin: 0 }}>
             {domAurelio.nome} · {domAurelio.descritor}
           </p>
-          <p style={{ margin: 0 }}>Barbearia fictícia, criada para demonstração.</p>
+          <p style={{ margin: 0 }}>Fictional barbershop, built for demonstration.</p>
         </div>
       </footer>
 
       {/* Barra fixa: ligar tem o dobro do espaço do WhatsApp */}
       <div className="a-fixo">
         <a className="a-btn a-btn--vermelho" href={`tel:${domAurelio.telefone}`}>
-          Ligar agora
+          Call now
         </a>
         <a
           className="a-btn a-btn--zap"
@@ -288,11 +288,11 @@ export default function PaginaAurelio() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          Zap
+          WhatsApp
         </a>
       </div>
 
-      <BarraDemo nome="Dom Aurélio" />
+      <BarraDemo nome="Aurelio &amp; Sons" />
     </div>
   );
 }

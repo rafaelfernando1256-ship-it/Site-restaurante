@@ -8,9 +8,9 @@ import TopoValerio from "./TopoValerio";
 import "./valerio.css";
 
 export const metadata: Metadata = {
-  title: "Casa Valério · Barbearia Privê (projeto demonstrativo)",
+  title: "Casa Valerio · Private Barbershop (demo project)",
   description:
-    "Projeto demonstrativo de site para barbearia premium: ritual de atendimento, carta de serviços, clube de assinatura e reserva por WhatsApp.",
+    "Demo website for a premium barbershop: the appointment ritual, a service list, a membership club and booking over WhatsApp.",
 };
 
 const zap = (msg: string) =>
@@ -164,7 +164,7 @@ export default function PaginaValerio() {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  Assinar
+                  Join
                 </a>
               </Revelar>
             ))}
@@ -191,15 +191,15 @@ export default function PaginaValerio() {
       {/* ── Galeria ── */}
       <section className="v-secao v-borda-topo">
         <div className="v-wrap">
-          <p className="v-etiqueta">A casa</p>
-          <h2 className="v-titulo">Cada detalhe pensado</h2>
+          <p className="v-etiqueta">The house</p>
+          <h2 className="v-titulo">Every detail considered</h2>
 
           <div className="v-galeria">
             {["ambiente", "galeria-1", "galeria-2", "galeria-3"].map((nome, i) => (
               <figure key={nome}>
                 <Image
                   src={`/arte/valerio/${nome}.svg`}
-                  alt="Detalhe do ambiente da Casa Valério"
+                  alt="A corner of the Casa Valerio room"
                   width={800}
                   height={640}
                   loading={i === 0 ? "eager" : "lazy"}
@@ -232,7 +232,7 @@ export default function PaginaValerio() {
             </div>
 
             <dl className="v-info">
-              <dt>Endereço</dt>
+              <dt>Address</dt>
               <dd>
                 {valerio.endereco.linha1}
                 <br />
@@ -243,10 +243,10 @@ export default function PaginaValerio() {
                 </span>
               </dd>
 
-              <dt>Telefone</dt>
+              <dt>Phone</dt>
               <dd>{valerio.telefoneVisivel}</dd>
 
-              <dt>Horários</dt>
+              <dt>Opening hours</dt>
               <dd style={{ marginBottom: 0 }}>
                 <ul className="v-horarios">
                   {valerio.horarios.map((h) => (
@@ -267,15 +267,15 @@ export default function PaginaValerio() {
           <p style={{ margin: 0 }}>
             {valerio.nome} · {valerio.descritor}
           </p>
-          <p style={{ margin: 0 }}>Barbearia fictícia, criada para demonstração.</p>
+          <p style={{ margin: 0 }}>Fictional barbershop, built for demonstration.</p>
         </div>
       </footer>
 
       {/* Barra fixa de reserva no celular */}
       <div className="v-fixo">
         <p className="v-fixo__preco">
-          A partir de R$ 120
-          <span>Corte Valério</span>
+          From £70
+          <span>The Valerio Cut</span>
         </p>
         <a
           className="v-btn v-btn--ouro"
@@ -284,7 +284,7 @@ export default function PaginaValerio() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          Reservar horário
+          Book now
         </a>
       </div>
 

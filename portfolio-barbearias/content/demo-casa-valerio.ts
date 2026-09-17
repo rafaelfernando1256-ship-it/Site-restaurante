@@ -1,98 +1,99 @@
 /* ═══════════════════════════════════════════════════════════════
-   PROJETO DEMONSTRATIVO 1 — CASA VALÉRIO
-   Barbearia fictícia. Nenhum dado corresponde a negócio real.
+   DEMO PROJECT 1 — CASA VALERIO
+   Fictional barbershop. Nothing here matches a real business.
+   Phone numbers use the ranges Ofcom reserves for fiction.
    ═══════════════════════════════════════════════════════════════ */
 
 export const valerio = {
-  nome: "Casa Valério",
-  descritor: "Barbearia Privê",
-  slogan: "O tempo que você reserva para si.",
-  whatsapp: "5511900000000",
-  telefoneVisivel: "(11) 90000-0000",
+  nome: "Casa Valerio",
+  descritor: "Private Barbershop",
+  slogan: "The hour you set aside for yourself.",
+  whatsapp: "447700900218",
+  telefoneVisivel: "020 7946 0218",
   endereco: {
-    linha1: "Rua Dom Gastão, 218 — Jardim Paulista",
-    linha2: "São Paulo · SP",
-    referencia: "Manobrista na porta, das 9h às 21h",
+    linha1: "218 Wardell Street — Marylebone",
+    linha2: "London · W1",
+    referencia: "Doorman on the street, 9am to 9pm",
   },
 
   hero: {
-    etiqueta: "São Paulo · Jardim Paulista",
-    titulo: "Casa Valério",
+    etiqueta: "London · Marylebone",
+    titulo: "Casa Valerio",
     subtitulo:
-      "Uma hora reservada só para você, com hora marcada e sem pressa. Atendimento individual, em sala privativa.",
-    cta: "Reservar horário",
-    ctaSecundario: "Conhecer o clube",
+      "One hour held for you alone, by appointment, with nobody rushing. Seen one at a time, in a private room.",
+    cta: "Book your hour",
+    ctaSecundario: "About the club",
   },
 
   ritual: {
-    etiqueta: "O ritual",
-    titulo: "Aqui não existe fila. Existe hora marcada.",
+    etiqueta: "The ritual",
+    titulo: "There's no queue here. There's an appointment.",
     texto:
-      "Cada reserva ocupa uma hora inteira da agenda. É o tempo de fazer bem feito e ainda tomar um café sem olhar o relógio.",
+      "Every booking takes a full hour of the diary. That's the time it takes to do it properly and still have a coffee without watching the clock.",
     passos: [
-      { numero: "I", titulo: "Recepção", texto: "Café, água com gás ou um dedo de whisky. Você escolhe antes de sentar." },
-      { numero: "II", titulo: "Consultoria", texto: "Cinco minutos entendendo seu cabelo, sua rotina e o que você não quer." },
-      { numero: "III", titulo: "Toalha quente", texto: "A pele abre, o pelo amolece. É o que faz a navalha deslizar sem repuxar." },
-      { numero: "IV", titulo: "Navalha", texto: "Barba feita no fio, no sentido certo, com produto de alfaiataria." },
-      { numero: "V", titulo: "Finalização", texto: "Você sai pronto para o compromisso, não para passar em casa antes." },
+      { numero: "I", titulo: "Welcome", texto: "Coffee, sparkling water or a finger of whisky. You choose before you sit down." },
+      { numero: "II", titulo: "Consultation", texto: "Five minutes on your hair, your routine and what you don't want." },
+      { numero: "III", titulo: "Hot towel", texto: "The skin opens, the beard softens. It's what lets the blade glide without pulling." },
+      { numero: "IV", titulo: "The razor", texto: "Shaved with the grain, properly, with products worthy of a tailor." },
+      { numero: "V", titulo: "Finishing", texto: "You leave ready for wherever you're going, not needing to stop at home first." },
     ],
   },
 
   servicos: {
-    etiqueta: "Serviços",
-    titulo: "Nossa carta",
-    texto: "Todos os atendimentos incluem consultoria, bebida e finalização.",
+    etiqueta: "Services",
+    titulo: "Our list",
+    texto: "Every appointment includes the consultation, a drink and finishing.",
     lista: [
-      { nome: "Corte Valério", descricao: "Consultoria, corte na tesoura e finalização", preco: "R$ 120", duracao: "60 min" },
-      { nome: "Barba Tradicional", descricao: "Toalha quente, navalha e óleo de finalização", preco: "R$ 90", duracao: "45 min" },
-      { nome: "Corte + Barba", descricao: "O atendimento completo, sem pressa", preco: "R$ 190", duracao: "90 min" },
-      { nome: "Tratamento Capilar", descricao: "Diagnóstico do couro e protocolo em três etapas", preco: "R$ 140", duracao: "60 min" },
-      { nome: "Pigmentação", descricao: "Cobertura de falhas na barba ou no cabelo", preco: "R$ 70", duracao: "30 min" },
-      { nome: "Dia do Noivo", descricao: "Duas horas, com acompanhante e brinde da casa", preco: "R$ 450", duracao: "120 min" },
+      { nome: "The Valerio Cut", descricao: "Consultation, scissor cut and finishing", preco: "£70", duracao: "60 min" },
+      { nome: "Traditional Shave", descricao: "Hot towel, cut-throat razor and finishing oil", preco: "£55", duracao: "45 min" },
+      { nome: "Cut & Shave", descricao: "The full appointment, unhurried", preco: "£110", duracao: "90 min" },
+      { nome: "Scalp Treatment", descricao: "Scalp diagnosis and a three-stage protocol", preco: "£80", duracao: "60 min" },
+      { nome: "Pigmentation", descricao: "Filling gaps in the beard or hairline", preco: "£40", duracao: "30 min" },
+      { nome: "Groom's Morning", descricao: "Two hours, bring a guest, with a gift from the house", preco: "£260", duracao: "120 min" },
     ],
   },
 
   mestres: {
-    etiqueta: "Os mestres",
-    titulo: "Nenhum barbeiro nosso tem menos de dez anos de navalha.",
+    etiqueta: "The masters",
+    titulo: "No barber here has fewer than ten years on the razor.",
     lista: [
-      { nome: "Aurélio Valério", papel: "Mestre-barbeiro e fundador", anos: "28 anos de ofício", especialidade: "Navalha clássica" },
-      { nome: "Tomás Ferrari", papel: "Barbeiro sênior", anos: "16 anos de ofício", especialidade: "Cortes sociais e tesoura" },
-      { nome: "Igor Salles", papel: "Barbeiro sênior", anos: "12 anos de ofício", especialidade: "Tratamento capilar" },
+      { nome: "Aurelio Valerio", papel: "Master barber and founder", anos: "28 years in the trade", especialidade: "Classic cut-throat" },
+      { nome: "Tomas Ferrari", papel: "Senior barber", anos: "16 years in the trade", especialidade: "Business cuts and scissor work" },
+      { nome: "Igor Salles", papel: "Senior barber", anos: "12 years in the trade", especialidade: "Scalp treatments" },
     ],
   },
 
   clube: {
-    etiqueta: "Clube Valério",
-    titulo: "Para quem já sabe que volta.",
+    etiqueta: "The Valerio Club",
+    titulo: "For the ones who already know they're coming back.",
     texto:
-      "Assinatura mensal com horário garantido, sem precisar disputar agenda. Cancele quando quiser.",
+      "A monthly membership with your slot held, so you're never fighting for the diary. Cancel whenever you like.",
     planos: [
-      { nome: "Essencial", preco: "R$ 249", periodo: "/mês", inclui: ["2 cortes por mês", "10% em produtos", "Reserva com 7 dias"], destaque: false },
-      { nome: "Clube", preco: "R$ 389", periodo: "/mês", inclui: ["4 cortes por mês", "2 barbas por mês", "15% em produtos", "Reserva com 15 dias"], destaque: true },
-      { nome: "Privê", preco: "R$ 690", periodo: "/mês", inclui: ["Atendimentos ilimitados", "Horário fixo reservado", "20% em produtos", "Convidado uma vez por mês"], destaque: false },
+      { nome: "Essential", preco: "£140", periodo: "/month", inclui: ["2 cuts a month", "10% off products", "Book 7 days ahead"], destaque: false },
+      { nome: "Club", preco: "£220", periodo: "/month", inclui: ["4 cuts a month", "2 shaves a month", "15% off products", "Book 15 days ahead"], destaque: true },
+      { nome: "Privé", preco: "£390", periodo: "/month", inclui: ["Unlimited appointments", "A standing slot, held for you", "20% off products", "Bring a guest once a month"], destaque: false },
     ],
   },
 
   presente: {
-    titulo: "Vale-presente",
+    titulo: "Gift card",
     texto:
-      "Um cartão nominal, entregue em envelope de linho, válido por doze meses para qualquer serviço da carta.",
-    cta: "Presentear alguém",
+      "A named card, delivered in a linen envelope, valid for twelve months against anything on the list.",
+    cta: "Buy one as a gift",
   },
 
   reserva: {
-    etiqueta: "Reserva",
-    titulo: "Sua hora, reservada",
+    etiqueta: "Booking",
+    titulo: "Your hour, held",
     texto:
-      "A agenda costuma fechar com cinco dias de antecedência. Escolha o serviço e nós confirmamos por WhatsApp.",
-    cta: "Reservar pelo WhatsApp",
-    mensagem: "Olá! Gostaria de reservar um horário na Casa Valério.",
+      "The diary usually fills five days out. Pick a service and we'll confirm over WhatsApp.",
+    cta: "Book over WhatsApp",
+    mensagem: "Hello! I'd like to book an appointment at Casa Valerio.",
   },
 
   horarios: [
-    { dia: "Terça a sexta", hora: "10h às 21h" },
-    { dia: "Sábado", hora: "9h às 19h" },
-    { dia: "Domingo e segunda", hora: "Fechado" },
+    { dia: "Tuesday to Friday", hora: "10am – 9pm" },
+    { dia: "Saturday", hora: "9am – 7pm" },
+    { dia: "Sunday and Monday", hora: "Closed" },
   ],
 };

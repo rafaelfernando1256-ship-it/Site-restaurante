@@ -1,363 +1,367 @@
 /* ═══════════════════════════════════════════════════════════════
-   DADOS DA AGÊNCIA
-   Este é o arquivo que você mais vai editar. Nome, telefone,
-   preços e textos de venda ficam todos aqui.
+   AGENCY DETAILS
+   This is the file you will edit most. Name, phone, prices and
+   sales copy all live here.
+
+   Numbers below use the ranges Ofcom reserves for fiction
+   (07700 900xxx and 020 7946 0xxx), so nothing here rings a real
+   person. Replace them with yours before going live.
    ═══════════════════════════════════════════════════════════════ */
 
 export const agencia = {
-  nome: "Cadeira Cheia",
-  descritor: "Sites para barbearia",
+  nome: "Full Chair",
+  descritor: "Websites for barbershops",
 
-  /* ⚠️ TROQUE PELO SEU NÚMERO: 55 + DDD + número, só dígitos. */
-  whatsapp: "5514999999999",
-  whatsappVisivel: "(14) 99999-9999",
+  /* ⚠️ REPLACE WITH YOUR NUMBER: country code + number, digits only. */
+  whatsapp: "447700900123",
+  whatsappVisivel: "07700 900123",
 
-  /* Promessa de resposta — aparece embaixo dos botões. */
-  tempoResposta: "Respondo em até 1 hora, de segunda a sábado",
+  /* Response promise — shown under the buttons. */
+  tempoResposta: "I reply within the hour, Monday to Saturday",
 
-  email: "contato@cadeiracheia.com.br",
-  cidade: "Bauru e região · atendo o Brasil inteiro",
+  email: "hello@fullchair.co.uk",
+  cidade: "London · working with shops across the UK",
 } as const;
 
-/** Monta o link do WhatsApp com a mensagem já escrita. */
+/** Builds the WhatsApp link with the message already written. */
 export function linkWhats(mensagem: string) {
   return `https://wa.me/${agencia.whatsapp}?text=${encodeURIComponent(mensagem)}`;
 }
 
 /* ─── Hero ─────────────────────────────────────────────────── */
 export const hero = {
-  etiqueta: "Trabalho com um único tipo de negócio: barbearia",
-  titulo: "Sites de barbearia que enchem cadeira",
+  etiqueta: "One trade, nothing else: barbershops",
+  titulo: "Barbershop websites that fill the chair",
   subtitulo:
-    "Seu cliente procura barbearia no Google às 21h de uma quinta. Quem aparece primeiro, com preço na tela e botão de agendar, leva o corte. Eu construo esse site.",
-  ctaPrimario: "Quero ver o meu de graça",
-  ctaSecundario: "Ver os projetos",
+    "Your next customer searches for a barber at nine on a Thursday night. Whoever turns up first, with prices on screen and a booking button, gets the cut. I build that site.",
+  ctaPrimario: "Show me mine, free",
+  ctaSecundario: "See the work",
   mensagemWhats:
-    "Olá! Vi o portfólio e quero um site para minha barbearia.\n\nNome da barbearia: \nCidade: ",
+    "Hi! I saw your portfolio and I want a website for my barbershop.\n\nShop name: \nTown: ",
   provas: [
-    { valor: "3 dias", rotulo: "do primeiro alô ao site no ar" },
-    { valor: "R$ 0", rotulo: "para ver o seu antes de decidir" },
-    { valor: "1 nicho", rotulo: "só barbearia, mais nada" },
+    { valor: "3 days", rotulo: "from first hello to live site" },
+    { valor: "£0", rotulo: "to see yours before you decide" },
+    { valor: "1 trade", rotulo: "barbershops only, nothing else" },
   ],
 };
 
-/* ─── Seção "o espelho": o problema do dono ────────────────── */
+/* ─── The mirror: the owner's problem ──────────────────────── */
 export const problema = {
-  etiqueta: "O problema",
-  titulo: "Você não perde cliente na cadeira. Perde antes dele chegar.",
+  etiqueta: "The problem",
+  titulo: "You don't lose customers in the chair. You lose them before they walk in.",
   texto:
-    "Quem procura barbearia decide em menos de um minuto, no celular, comparando três resultados do Google. Se o seu não tem preço, endereço fácil e um botão que funciona, ele vai no de baixo.",
+    "Someone looking for a barber decides in under a minute, on their phone, comparing three Google results. If yours has no prices, no easy address and no button that works, they go to the one below you.",
   itens: [
     {
-      titulo: "Só Instagram não resolve",
+      titulo: "Instagram alone won't do it",
       texto:
-        "O Instagram mostra o seu trabalho para quem já te segue. O site aparece para quem ainda não te conhece e está procurando agora, a três quarteirões de você.",
+        "Instagram shows your work to people who already follow you. A website shows up for the ones who don't know you yet and are searching right now, three streets away.",
     },
     {
-      titulo: "Preço escondido faz o cliente desistir",
+      titulo: "Hidden prices lose the booking",
       texto:
-        "A primeira dúvida de todo mundo é quanto custa. Sem resposta na tela, ele não manda mensagem para perguntar — ele fecha e abre o concorrente.",
+        "The first thing anyone wants to know is what it costs. With no answer on screen, they don't message to ask — they close the tab and open your competitor.",
     },
     {
-      titulo: "Google Maps sozinho é pouco",
+      titulo: "A Google listing isn't enough on its own",
       texto:
-        "O perfil do Google é a vitrine. O site é a loja. Um alimenta o outro: quem tem site bem feito sobe no mapa e converte mais quem clica.",
+        "Your Google profile is the shop window. The website is the shop. One feeds the other: a well-built site lifts you on the map and converts more of the people who tap through.",
     },
     {
-      titulo: "Horário perdido é dinheiro perdido",
+      titulo: "An empty slot is money gone",
       texto:
-        "Cada janela vazia na agenda é um corte que não volta. Um botão de agendar bem colocado preenche buraco de terça à tarde.",
+        "Every gap in the diary is a cut that never comes back. A booking button in the right place fills Tuesday afternoon.",
     },
   ],
 };
 
-/* ─── O que todo site inclui ───────────────────────────────── */
+/* ─── What every site includes ─────────────────────────────── */
 export const maquina = {
-  etiqueta: "A máquina",
-  titulo: "As cinco peças de todo site que eu faço",
+  etiqueta: "The machine",
+  titulo: "The five parts in every site I build",
   texto:
-    "Muda o visual, muda o público, muda o preço. Essas cinco peças não mudam — são elas que transformam visita em cliente sentado.",
+    "The look changes, the audience changes, the prices change. These five don't — they're what turns a visit into someone sitting in your chair.",
   pecas: [
     {
       numero: "01",
-      titulo: "Uma ação principal sempre à mão",
+      titulo: "One main action, always in reach",
       texto:
-        "Agendar, ligar ou chamar no WhatsApp — uma só, fixa na tela, alcançável com o polegar. Sem menu de opções para o cliente pensar.",
+        "Book, call or message — one of them, fixed on screen, reachable with a thumb. No menu of options for the customer to think about.",
     },
     {
       numero: "02",
-      titulo: "Serviços com preço na cara",
+      titulo: "Services with the price right there",
       texto:
-        "Tabela clara, sem 'consulte valores'. Preço visível filtra curioso e traz quem já decidiu pagar.",
+        "A clear list, no 'enquire for pricing'. Visible prices filter out browsers and bring in people who already decided to pay.",
     },
     {
       numero: "03",
-      titulo: "Prova social ligada ao Google",
+      titulo: "Proof tied to your Google reviews",
       texto:
-        "Sua nota e suas avaliações reais, com link para o perfil. Nunca depoimento inventado — isso queima na primeira checada.",
+        "Your real rating and real reviews, linked to the profile. Never invented testimonials — those fall apart the first time someone checks.",
     },
     {
       numero: "04",
-      titulo: "Seus barbeiros com nome e rosto",
+      titulo: "Your barbers, with names and faces",
       texto:
-        "Cliente não escolhe estabelecimento, escolhe quem passa a máquina. Quem aparece na tela vira preferência.",
+        "People don't pick a shop, they pick the person holding the clippers. Whoever shows up on screen becomes the one they ask for.",
     },
     {
       numero: "05",
-      titulo: "Como chegar sem pensar",
+      titulo: "Getting there without thinking",
       texto:
-        "Mapa, ponto de referência, estacionamento e horário. Decisão de bairro é decisão de deslocamento.",
+        "Map, landmark, parking and opening hours. Choosing a local barber is really a decision about the walk.",
     },
   ],
 };
 
-/* ─── A conta ──────────────────────────────────────────────────
-   O barbeiro pensa em corte e em real, não em conversão. Esta
-   seção deixa ele mesmo fazer a conta, com os números dele.
-   Nada aqui é promessa: os valores saem do que ele digita.        */
+/* ─── The maths ────────────────────────────────────────────────
+   A barber thinks in haircuts and pounds, not conversion rates.
+   This section lets him do the sum himself, with his own numbers.
+   Nothing here is a promise: the figures come from what he types.  */
 export const conta = {
-  etiqueta: "A conta",
-  titulo: "Quanto vale um cliente novo por semana?",
+  etiqueta: "The maths",
+  titulo: "What is one new customer a week worth?",
   texto:
-    "Mexa nos números abaixo com a sua realidade. A conta considera só a primeira visita de cada cliente novo — sem contar o retorno, que é onde a barbearia ganha de verdade.",
+    "Move the numbers below to match your shop. The sum counts only each new customer's first visit — it ignores them coming back, which is where a barbershop actually makes its money.",
   campos: {
-    preco: { rotulo: "Preço do seu corte", min: 20, max: 150, passo: 5, padrao: 45, prefixo: "R$ " },
-    novos: { rotulo: "Clientes novos por semana", min: 1, max: 20, passo: 1, padrao: 3, prefixo: "" },
+    preco: { rotulo: "Your price for a cut", min: 10, max: 80, passo: 1, padrao: 25, prefixo: "£" },
+    novos: { rotulo: "New customers per week", min: 1, max: 20, passo: 1, padrao: 3, prefixo: "" },
   },
   resultado: {
-    rotuloMes: "por mês",
-    rotuloAno: "por ano",
+    rotuloMes: "per month",
+    rotuloAno: "per year",
   },
-  nota: "Não é promessa de resultado: é a conta que você mesmo acabou de fazer. O que eu garanto é o site pronto para receber esse cliente quando ele aparecer.",
-  comparacao: { antes: "E o site sai por", valor: "R$ 200", depois: "uma vez só, em qualquer modelo." },
-  cta: "Quero ver o meu de graça",
+  nota: "This isn't a promise of results: it's the sum you just did yourself. What I guarantee is a site ready to catch that customer when they show up.",
+  comparacao: { antes: "And the site costs", valor: "£200", depois: "once, whichever model you pick." },
+  cta: "Show me mine, free",
   mensagemWhats:
-    "Olá! Fiz a conta no seu site e quero ver um exemplo do site da minha barbearia.\n\nNome da barbearia: \nCidade: ",
+    "Hi! I did the sum on your site and I'd like to see an example for my barbershop.\n\nShop name: \nTown: ",
 };
 
-/* ─── Quem faz ─────────────────────────────────────────────────
-   ⚠️ ESTA É A SEÇÃO MAIS IMPORTANTE PARA VOCÊ PERSONALIZAR.
-   Serviço local comprado de um estranho pelo WhatsApp: a primeira
-   pergunta na cabeça do dono é "quem é essa pessoa?". Sem nome,
-   rosto e cidade, essa dúvida fica sem resposta e ele não chama.
-   Troque tudo abaixo pelos seus dados reais.                      */
+/* ─── Who builds it ────────────────────────────────────────────
+   ⚠️ THIS IS THE MOST IMPORTANT SECTION FOR YOU TO PERSONALISE.
+   A local service bought from a stranger over WhatsApp: the first
+   question in the owner's head is "who is this person?". Without a
+   name, a face and a town, that question goes unanswered and he
+   doesn't message. Replace everything below with your real details. */
 export const quemFaz = {
-  etiqueta: "Quem faz",
-  titulo: "Você fala comigo, não com atendimento",
-  /* ⚠️ TROQUE: seu nome */
+  etiqueta: "Who builds it",
+  titulo: "You talk to me, not to a support desk",
+  /* ⚠️ REPLACE: your name */
   nome: "Rafael Fernando",
-  /* ⚠️ TROQUE: sua função, do jeito que você se apresentaria */
-  papel: "Desenvolvedor · Bauru, SP",
-  /* ⚠️ TROQUE: coloque uma foto sua em public/quem-faz.jpg.
-     Foto de rosto, olhando para a câmera, sem óculos escuros.
-     Enquanto não tiver, fica a inicial no lugar. */
+  /* ⚠️ REPLACE: your role, the way you'd introduce yourself */
+  papel: "Developer · London",
+  /* ⚠️ REPLACE: put a photo of yourself in public/quem-faz.jpg.
+     Head and shoulders, looking at the camera, no sunglasses.
+     Until then, your initial stands in. */
   foto: "",
-  /* ⚠️ TROQUE: três parágrafos, na sua voz. Diga por que barbearia,
-     como você trabalha e o que o cliente pode esperar de você. */
+  /* ⚠️ REPLACE: three paragraphs, in your voice. Say why barbershops,
+     how you work, and what the customer can expect from you. */
   paragrafos: [
-    "Eu escolhi trabalhar só com barbearia porque é um negócio que vive de duas coisas que um site resolve bem: ser achado no Google e facilitar o agendamento. Em vez de aprender dez ramos pela metade, prefiro conhecer um de verdade.",
-    "Não tenho equipe nem atendimento. Quem responde o WhatsApp sou eu, quem desenha sou eu e quem ajusta depois também. Você não precisa repetir a sua história para três pessoas diferentes.",
-    "Se eu achar que a sua barbearia não precisa de site agora, eu falo. Prefiro perder uma venda a entregar algo que não vai te trazer cliente.",
+    "I chose to work only with barbershops because the trade lives on two things a website handles well: being found on Google and making booking easy. Rather than half-learn ten industries, I'd rather know one properly.",
+    "There's no team and no support desk. I answer the messages, I do the design, and I make the changes afterwards. You never have to tell your story to three different people.",
+    "If I think your shop doesn't need a site right now, I'll say so. I'd rather lose the sale than hand over something that won't bring you customers.",
   ],
-  /* ⚠️ TROQUE ou remova: compromissos que você consegue cumprir */
+  /* ⚠️ REPLACE or remove: promises you can actually keep */
   compromissos: [
-    "Respondo em até 1 hora, de segunda a sábado",
-    "Você vê o site pronto antes de pagar qualquer coisa",
-    "Pagamento único: sem mensalidade e sem contrato de fidelidade",
+    "I reply within the hour, Monday to Saturday",
+    "You see the finished site before you pay anything",
+    "One payment: no monthly fee, no tie-in",
   ],
 };
 
-/* ─── Processo ─────────────────────────────────────────────── */
+/* ─── Process ──────────────────────────────────────────────── */
 export const processo = {
-  etiqueta: "Como funciona",
-  titulo: "Do primeiro alô ao site no ar",
+  etiqueta: "How it works",
+  titulo: "From first hello to live site",
   passos: [
     {
       numero: "01",
-      titulo: "Conversa de 15 minutos",
-      prazo: "Dia 1",
+      titulo: "A fifteen-minute chat",
+      prazo: "Day 1",
       texto:
-        "No WhatsApp mesmo. Quero saber seu público, seus preços e o que te diferencia da barbearia da esquina.",
+        "Over WhatsApp is fine. I want to know who your customers are, what you charge, and what makes you different from the shop on the corner.",
     },
     {
       numero: "02",
-      titulo: "Eu monto e te mostro",
-      prazo: "Dia 2",
+      titulo: "I build it and show you",
+      prazo: "Day 2",
       texto:
-        "Você recebe o link do seu site pronto para ver no celular. Não é rascunho nem desenho: é o site funcionando.",
+        "You get a link to your finished site to open on your phone. Not a sketch or a mock-up: the real thing, working.",
     },
     {
       numero: "03",
-      titulo: "Ajustes finos",
-      prazo: "Dia 3",
+      titulo: "Fine-tuning",
+      prazo: "Day 3",
       texto:
-        "Você aponta o que quer diferente, eu ajusto na hora. Cor, texto, foto, preço — até ficar do seu jeito.",
+        "You tell me what you'd change and I change it there and then. Colours, wording, photos, prices — until it's yours.",
     },
     {
       numero: "04",
-      titulo: "No ar, no seu domínio",
-      prazo: "Dia 3",
+      titulo: "Live, on your own domain",
+      prazo: "Day 3",
       texto:
-        "Publico, ligo no seu perfil do Google e te explico como funciona. A partir daí é comigo manter no ar.",
+        "I publish it, connect it to your Google Business profile and walk you through it. Keeping it online is on me after that.",
     },
   ],
 };
 
-/* ─── Chamada logo após os projetos ────────────────────────────
-   É o ponto de maior interesse da página: ele acabou de ver três
-   sites funcionando. Deixar esse trecho sem ação era desperdício. */
+/* ─── Call to action right after the projects ──────────────────
+   This is the page's high-interest moment: they have just seen
+   three working sites. Leaving it without an action was a waste.  */
 export const chamadaProjetos = {
-  titulo: "Quer ver a sua barbearia nesse formato?",
-  texto: "Me manda o nome e a cidade. Em até 24 horas eu te devolvo o link do seu site pronto, de graça.",
-  cta: "Quero ver o meu de graça",
+  titulo: "Want to see your shop in one of these?",
+  texto: "Send me the name and the town. Within 24 hours I'll send back the link to your finished site, free.",
+  cta: "Show me mine, free",
   mensagemWhats:
-    "Olá! Vi os projetos e quero ver um exemplo do site da minha barbearia.\n\nNome da barbearia: \nCidade: ",
+    "Hi! I saw the projects and I'd like to see an example for my barbershop.\n\nShop name: \nTown: ",
 };
 
-/* ─── Planos ───────────────────────────────────────────────────
-   Os preços são por modelo, não por pacote abstrato: o dono
-   escolhe o demo com que se parece e já vê quanto custa aquele.
-   Cobrança única — não há mensalidade em nenhum modelo.
-   ═══ Para editar um preço, mude só o campo `preco`. ═══         */
+/* ─── Pricing ──────────────────────────────────────────────────
+   Priced by model rather than by abstract package: the owner picks
+   the demo his shop looks like and sees what that one costs.
+   One-off fee — none of the models carry a monthly charge.
+   ═══ To change a price, edit only the `preco` field. ═══         */
 export const planos = {
-  etiqueta: "Investimento",
-  titulo: "Um preço, três modelos",
+  etiqueta: "Investment",
+  titulo: "One price, three models",
   texto:
-    "Qualquer um dos três modelos sai pelo mesmo valor, pago uma vez só. Você escolhe pelo que combina com a sua barbearia, não pelo que cabe no bolso.",
-  /* Preço único anunciado uma vez, em corpo grande: três cartões
-     repetindo o mesmo número passariam a impressão de erro. */
-  destaque: { valor: "R$ 200", nota: "pagamento único · sem mensalidade · qualquer modelo" },
+    "All three models cost the same, paid once. You choose by what suits your shop, not by what you can afford.",
+  /* A single price, stated once, in large type: three cards all
+     repeating the same number would read like a mistake. */
+  destaque: { valor: "£200", nota: "one payment · no monthly fee · any model" },
   lista: [
     {
-      slug: "dom-aurelio",
-      nome: "Clássico",
-      modelo: "Como a Barbearia Dom Aurélio",
-      preco: "R$ 200",
+      slug: "aurelio-and-sons",
+      nome: "Classic",
+      modelo: "Like Aurelio & Sons",
+      preco: "£200",
       resumo:
-        "Para barbearia de bairro, com clientela fiel e cliente que prefere ligar a agendar pelo app.",
+        "For the neighbourhood shop with regulars, where customers would rather ring than tap through an app.",
       destaque: false,
       inclui: [
-        "Site de uma página, sob medida",
-        "Telefone como ação principal, com botão de ligar",
-        "Tabela de serviços e preços",
-        "Mapa, horários e como chegar",
-        "Botão de WhatsApp em todas as seções",
-        "Ficha do Google Meu Negócio ligada ao site",
-        "30 dias de ajustes inclusos",
+        "A one-page site, built to measure",
+        "The phone as the main action, with a call button",
+        "Full service and price list",
+        "Map, opening hours and directions",
+        "A WhatsApp button in every section",
+        "Google Business profile wired to the site",
+        "30 days of changes included",
       ],
-      cta: "Quero o Clássico",
+      cta: "I want the Classic",
     },
     {
-      slug: "nove-e-meia",
-      nome: "Urbano",
-      modelo: "Como a Nove & Meia",
-      preco: "R$ 200",
+      slug: "nine-thirty",
+      nome: "Urban",
+      modelo: "Like Nine Thirty",
+      preco: "£200",
       resumo:
-        "Para barbearia com equipe, público jovem e agenda que precisa parar de ser anotada no caderno.",
+        "For a shop with a team, a younger crowd and a diary that needs to stop living in a notebook.",
       destaque: true,
-      selo: "Mais escolhido",
+      selo: "Most chosen",
       inclui: [
-        "Tudo do Clássico",
-        "Página de equipe com perfil de cada barbeiro",
-        "Agendamento ligado ao app que você já usa",
-        "Galeria de trabalhos",
-        "Horários livres do dia em destaque",
-        "Integração com o seu Instagram",
+        "Everything in the Classic",
+        "A team page with a profile for each barber",
+        "Booking wired to the app you already use",
+        "Gallery of recent work",
+        "Today's free slots pulled to the top",
+        "Instagram feed connected",
       ],
-      cta: "Quero o Urbano",
+      cta: "I want the Urban",
     },
     {
       slug: "casa-valerio",
       nome: "Premium",
-      modelo: "Como a Casa Valério",
-      preco: "R$ 200",
+      modelo: "Like Casa Valerio",
+      preco: "£200",
       resumo:
-        "Para barbearia de ticket alto que vende plano mensal e precisa parecer o que cobra.",
+        "For a high-ticket shop selling memberships that needs to look like what it charges.",
       destaque: false,
       inclui: [
-        "Tudo do Urbano",
-        "Seção de planos de assinatura",
-        "Vale-presente para compra por terceiros",
-        "Identidade visual: paleta e tipografia próprias",
-        "Textos do site escritos por mim",
-        "60 dias de ajustes inclusos",
+        "Everything in the Urban",
+        "Membership plans section",
+        "Gift cards for buying on someone else's behalf",
+        "Visual identity: your own palette and typefaces",
+        "Site copy written by me",
+        "60 days of changes included",
       ],
-      cta: "Quero o Premium",
+      cta: "I want the Premium",
     },
   ],
-  /* Custos recorrentes que não são meus — dito na cara, para não
-     virar surpresa depois. */
+  /* Recurring costs that aren't mine — said plainly, so they don't
+     turn into a surprise later. */
   rodape: {
-    titulo: "O que não está no preço",
+    titulo: "What isn't in the price",
     itens: [
-      "Domínio .com.br: cerca de R$ 40 por ano, registrado no seu nome direto no Registro.br. É seu e vai com você.",
-      "Hospedagem: configuro em serviço gratuito, sem custo mensal para você.",
-      "Mudanças depois do prazo de ajustes: combinadas na hora, sem contrato.",
+      "A .co.uk domain: around £12 a year, registered in your name with any registrar. It's yours and it goes with you.",
+      "Hosting: I set it up on a free service, so there's no monthly cost to you.",
+      "Changes after the included period: agreed as they come up, no contract.",
     ],
   },
 };
 
-/* ─── Garantia ─────────────────────────────────────────────── */
+/* ─── Guarantee ────────────────────────────────────────────── */
 export const garantia = {
-  titulo: "Você vê antes de pagar",
+  titulo: "You see it before you pay",
   texto:
-    "Eu monto o site da sua barbearia e te mando o link. Se você não gostar, não paga nada e a gente se despede sem constrangimento. O risco é todo meu.",
-  /* O mecanismo, dito em três passos: garantia sem explicação de
-     como funciona soa a promessa de vendedor. */
+    "I build your shop's site and send you the link. If you don't like it, you pay nothing and we part ways with no awkwardness. The risk is all mine.",
+  /* The mechanism, in three steps: a guarantee with no explanation
+     of how it works reads like a salesman's promise. */
   passos: [
-    { numero: "01", texto: "Você me manda o nome da barbearia e a cidade." },
-    { numero: "02", texto: "Em até 24 horas eu te devolvo o link do seu site pronto." },
-    { numero: "03", texto: "Gostou, a gente fecha. Não gostou, você não deve nada." },
+    { numero: "01", texto: "You send me the shop name and the town." },
+    { numero: "02", texto: "Within 24 hours I send back the link to your finished site." },
+    { numero: "03", texto: "If you like it, we go ahead. If you don't, you owe me nothing." },
   ],
-  cta: "Quero ver o meu de graça",
+  cta: "Show me mine, free",
   mensagemWhats:
-    "Olá! Quero ver um exemplo do site da minha barbearia antes de fechar.\n\nNome da barbearia: \nCidade: ",
+    "Hi! I'd like to see an example of my barbershop's site before committing.\n\nShop name: \nTown: ",
 };
 
-/* ─── Objeções ─────────────────────────────────────────────── */
+/* ─── Objections ───────────────────────────────────────────── */
 export const objecoes = {
-  etiqueta: "Perguntas diretas",
-  titulo: "O que todo dono pergunta antes de fechar",
+  etiqueta: "Straight questions",
+  titulo: "What every owner asks before saying yes",
   lista: [
     {
-      pergunta: "Eu já tenho Instagram. Preciso de site?",
+      pergunta: "I already have Instagram. Do I need a website?",
       resposta:
-        "Instagram e site fazem coisas diferentes. O Instagram conversa com quem já te segue. O site aparece para quem está procurando barbearia agora e ainda não te conhece — e é ele que faz seu perfil subir no Google Maps. Um não substitui o outro; juntos eles se puxam.",
+        "Instagram and a website do different jobs. Instagram talks to people who already follow you. The website turns up for someone searching for a barber right now who's never heard of you — and it's what lifts your profile on Google Maps. Neither replaces the other; together they pull each other up.",
     },
     {
-      pergunta: "Não entendo nada de site. Vou conseguir mexer?",
+      pergunta: "I know nothing about websites. Will I be able to manage it?",
       resposta:
-        "Você não precisa mexer. Nos primeiros 30 dias, mudou preço, entrou barbeiro novo ou mudou o horário? Me manda no WhatsApp e eu altero no mesmo dia, sem cobrar. Depois desse prazo a gente combina na hora — costuma ser coisa de minutos.",
+        "You don't need to. For the first 30 days: price changed, new barber started, hours moved? Message me and I'll change it the same day, at no cost. After that we agree it as it comes up — it's usually a matter of minutes.",
     },
     {
-      pergunta: "Tem mensalidade? Fico preso em algum contrato?",
+      pergunta: "Is there a monthly fee? Am I tied into a contract?",
       resposta:
-        "Não e não. Você paga uma vez pelo site e ele é seu. A única conta que continua é o domínio, cerca de R$ 40 por ano, pago por você direto no Registro.br e registrado no seu nome. Se um dia quiser trocar de fornecedor, leva tudo.",
+        "No and no. You pay once for the site and it's yours. The only bill that continues is the domain, around £12 a year, paid by you directly to a registrar and registered in your name. If you ever want to move to someone else, you take everything with you.",
     },
     {
-      pergunta: "Quanto tempo demora para ficar pronto?",
+      pergunta: "How long does it take?",
       resposta:
-        "Três dias úteis do briefing ao site no ar, quando você me manda as fotos e os preços rápido. O que costuma atrasar é foto, não código.",
+        "Three working days from the brief to going live, as long as you send me photos and prices quickly. What usually holds things up is photos, not code.",
     },
     {
-      pergunta: "Meu site vai aparecer no Google?",
+      pergunta: "Will my site show up on Google?",
       resposta:
-        "Vai ser construído para isso: endereço e serviços marcados do jeito que o Google entende, carregamento rápido e ligação com a sua ficha do Google Meu Negócio. Não prometo primeiro lugar — quem promete está mentindo. Prometo o site tecnicamente certo para competir.",
+        "It'll be built for it: address and services marked up the way Google reads them, fast loading, and a link to your Google Business profile. I won't promise first place — anyone who does is lying. I promise a site that's technically right to compete.",
     },
     {
-      pergunta: "Já tenho um site. Vale trocar?",
+      pergunta: "I already have a website. Is it worth replacing?",
       resposta:
-        "Me manda o link. Se ele estiver rápido, bonito no celular e convertendo, eu digo para você não gastar. Se estiver lento ou de 2015, eu mostro exatamente o que está te custando cliente.",
+        "Send me the link. If it's fast, good on a phone and converting, I'll tell you not to spend the money. If it's slow or stuck in 2015, I'll show you exactly what it's costing you.",
     },
   ],
 };
 
-/* ─── Chamada final ────────────────────────────────────────── */
+/* ─── Closing call ─────────────────────────────────────────── */
 export const fechamento = {
-  titulo: "Manda o nome da sua barbearia",
+  titulo: "Send me your shop's name",
   texto:
-    "Em até 24 horas eu te devolvo um exemplo do seu site, com as suas cores, os seus serviços e os seus preços. De graça, sem compromisso e sem conversa de vendedor.",
-  cta: "Quero ver o meu de graça",
+    "Within 24 hours I'll send back an example of your site, with your colours, your services and your prices. Free, no strings and no sales patter.",
+  cta: "Show me mine, free",
   mensagemWhats:
-    "Olá! Quero o exemplo gratuito do site da minha barbearia.\n\nNome da barbearia: \nCidade: \nInstagram: ",
+    "Hi! I'd like the free example of my barbershop's website.\n\nShop name: \nTown: \nInstagram: ",
 };

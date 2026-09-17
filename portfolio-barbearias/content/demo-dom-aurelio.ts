@@ -1,91 +1,92 @@
 /* ═══════════════════════════════════════════════════════════════
-   PROJETO DEMONSTRATIVO 3 — BARBEARIA DOM AURÉLIO
-   Barbearia fictícia. Nenhum dado corresponde a negócio real.
+   DEMO PROJECT 3 — AURELIO & SONS
+   Fictional barbershop. Nothing here matches a real business.
+   Phone numbers use the ranges Ofcom reserves for fiction.
    ═══════════════════════════════════════════════════════════════ */
 
 export const domAurelio = {
-  nome: "Barbearia Dom Aurélio",
-  descritor: "Desde 1978",
-  slogan: "Três gerações cortando o cabelo do bairro.",
-  whatsapp: "5511900000000",
-  telefone: "+551140000000",
-  telefoneVisivel: "(11) 4000-0000",
+  nome: "Aurelio & Sons",
+  descritor: "Since 1978",
+  slogan: "Three generations cutting this neighbourhood's hair.",
+  whatsapp: "447700900045",
+  telefone: "+442079460045",
+  telefoneVisivel: "020 7946 0045",
   endereco: {
-    linha1: "Rua Coronel Bento, 45 — Centro",
-    linha2: "Jundiaí · SP",
-    referencia: "Na esquina com a praça, em frente à padaria",
-    estacionamento: "Estacionamento gratuito na praça, em frente",
+    linha1: "45 Colonel Bent Road — Walthamstow",
+    linha2: "London · E17",
+    referencia: "On the corner by the green, opposite the bakery",
+    estacionamento: "Free parking on the green, right opposite",
   },
 
   hero: {
-    selo: "Desde 1978",
-    titulo: "Barbearia Dom Aurélio",
+    selo: "Since 1978",
+    titulo: "Aurelio & Sons",
     subtitulo:
-      "Corte na tesoura, barba na navalha e conversa boa. Do mesmo jeito há 47 anos, na mesma esquina.",
-    cta: "Ligar agora",
-    ctaSecundario: "Como chegar",
+      "Scissor cuts, cut-throat shaves and decent conversation. Same way for 47 years, on the same corner.",
+    cta: "Call now",
+    ctaSecundario: "Find us",
   },
 
   historia: {
-    etiqueta: "Nossa história",
-    titulo: "Seu Aurélio abriu em 78. Hoje quem passa a navalha é o neto.",
+    etiqueta: "Our story",
+    titulo: "Old Aurelio opened in '78. These days it's his grandson on the razor.",
     marcos: [
-      { ano: "1978", titulo: "A primeira cadeira", texto: "Seu Aurélio abre a barbearia com uma cadeira emprestada e um espelho comprado no ferro-velho." },
-      { ano: "1996", titulo: "Chega o Marinho", texto: "O filho mais velho larga o emprego na fábrica e entra para o negócio do pai." },
-      { ano: "2019", titulo: "A terceira geração", texto: "Gabriel assume a segunda cadeira e traz o degradê para a casa, sem tirar a navalha da primeira." },
+      { ano: "1978", titulo: "The first chair", texto: "Aurelio opens up with a borrowed chair and a mirror bought from a scrapyard." },
+      { ano: "1996", titulo: "Martin joins", texto: "The eldest son leaves his job at the factory and comes into his father's trade." },
+      { ano: "2019", titulo: "The third generation", texto: "Gabriel takes the second chair and brings the skin fade in, without taking the razor off the first." },
     ],
   },
 
   servicos: {
-    etiqueta: "Preços",
-    titulo: "Preço de bairro, sem surpresa na hora de pagar",
+    etiqueta: "Prices",
+    titulo: "Neighbourhood prices, no surprise at the till",
     lista: [
-      { nome: "Corte Tradicional", preco: "R$ 35" },
-      { nome: "Barba na Navalha", preco: "R$ 30" },
-      { nome: "Corte + Barba", preco: "R$ 60" },
-      { nome: "Corte Infantil", preco: "R$ 25" },
-      { nome: "Corte 3ª Idade", preco: "R$ 25" },
-      { nome: "Pezinho", preco: "R$ 15" },
+      { nome: "Traditional Cut", preco: "£18" },
+      { nome: "Cut-throat Shave", preco: "£16" },
+      { nome: "Cut & Shave", preco: "£30" },
+      { nome: "Children's Cut", preco: "£13" },
+      { nome: "Over-65s Cut", preco: "£13" },
+      { nome: "Neck Tidy", preco: "£7" },
     ],
-    observacao: "Dinheiro, Pix e cartão. Sem taxa em nenhuma forma de pagamento.",
+    observacao: "Cash, card and contactless. No surcharge on any of them.",
   },
 
   oficio: {
-    etiqueta: "O que fazemos",
-    titulo: "O básico, muito bem feito",
+    etiqueta: "What we do",
+    titulo: "The basics, done properly",
     itens: [
-      { titulo: "Tesoura e máquina", texto: "Corte clássico, social, militar ou o que você trouxer na cabeça." },
-      { titulo: "Navalha de verdade", texto: "Toalha quente, espuma batida na hora e fio afiado todo dia." },
-      { titulo: "Criança sem drama", texto: "Cadeirinha de cavalinho, paciência e bala no fim." },
+      { titulo: "Scissors and clippers", texto: "Classic, smart, short back and sides, or whatever you walk in with." },
+      { titulo: "A real razor", texto: "Hot towel, lather whipped on the spot and a blade stropped every day." },
+      { titulo: "Children, no drama", texto: "The little horse seat, plenty of patience and a sweet at the end." },
     ],
   },
 
   familia: {
-    etiqueta: "Quem te atende",
-    titulo: "Pai, filho e neto",
+    etiqueta: "Who'll see you",
+    titulo: "Father, son and grandson",
     lista: [
-      { nome: "Seu Aurélio", papel: "Fundador", desde: "Desde 1978", nota: "Atende às terças e quintas" },
-      { nome: "Marinho", papel: "Filho", desde: "Desde 1996", nota: "De terça a sábado" },
-      { nome: "Gabriel", papel: "Neto", desde: "Desde 2019", nota: "De terça a sábado, degradê e barba" },
+      { nome: "Old Aurelio", papel: "Founder", desde: "Since 1978", nota: "In on Tuesdays and Thursdays" },
+      { nome: "Martin", papel: "Son", desde: "Since 1996", nota: "Tuesday to Saturday" },
+      { nome: "Gabriel", papel: "Grandson", desde: "Since 2019", nota: "Tuesday to Saturday, fades and beards" },
     ],
   },
 
-  avaliacao: { nota: "4,8", quantidade: "127" },
+  avaliacao: { nota: "4.8", quantidade: "127" },
 
   localizacao: {
-    etiqueta: "Onde estamos",
-    titulo: "Não precisa marcar. Chegou, sentou.",
+    etiqueta: "Where we are",
+    titulo: "No need to book. Walk in, sit down.",
     texto:
-      "A gente atende por ordem de chegada. Se estiver cheio, o café é por nossa conta enquanto espera.",
+      "We take people in the order they arrive. If it's busy, the tea is on us while you wait.",
   },
 
   horarios: [
-    { dia: "Segunda", hora: "Fechado", dataDia: 1 },
-    { dia: "Terça", hora: "08:00 – 19:00", dataDia: 2 },
-    { dia: "Quarta", hora: "08:00 – 19:00", dataDia: 3 },
-    { dia: "Quinta", hora: "08:00 – 19:00", dataDia: 4 },
-    { dia: "Sexta", hora: "08:00 – 20:00", dataDia: 5 },
-    { dia: "Sábado", hora: "08:00 – 17:00", dataDia: 6 },
-    { dia: "Domingo", hora: "Fechado", dataDia: 0 },
+    { dia: "Monday", hora: "Closed", dataDia: 1 },
+    { dia: "Tuesday", hora: "8:00am – 7:00pm", dataDia: 2 },
+    { dia: "Wednesday", hora: "8:00am – 7:00pm", dataDia: 3 },
+    { dia: "Thursday", hora: "8:00am – 7:00pm", dataDia: 4 },
+    { dia: "Friday", hora: "8:00am – 8:00pm", dataDia: 5 },
+    { dia: "Saturday", hora: "8:00am – 5:00pm", dataDia: 6 },
+    { dia: "Sunday", hora: "Closed", dataDia: 0 },
   ],
 };

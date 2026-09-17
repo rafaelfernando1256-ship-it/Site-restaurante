@@ -8,20 +8,20 @@ export default function Rodape() {
       <div className="mx-auto max-w-6xl px-5 pt-20 sm:px-8">
         <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-[1.6fr_1fr_1fr]">
           <div>
-            <p className="t-rotulo text-osso-3">Especialista em um nicho só</p>
+            <p className="t-rotulo text-osso-3">One trade, done properly</p>
             <p className="mt-4 max-w-[34ch] text-[1.05rem] leading-[1.6] text-osso-2">
-              Sites para barbearia. Só isso, e por isso bem feito.
+              Websites for barbershops. That's all I do, which is why it's done well.
             </p>
             <p className="mt-6 text-[0.85rem] text-osso-3">{agencia.cidade}</p>
           </div>
 
-          <nav aria-label="Projetos demonstrativos">
-            <p className="t-rotulo text-osso-3">Projetos</p>
+          <nav aria-label="Demo projects">
+            <p className="t-rotulo text-osso-3">Work</p>
             <ul className="mt-4">
               {demos.map((d) => (
                 <li key={d.slug}>
                   <Link
-                    href={`/projetos/${d.slug}/`}
+                    href={`/projects/${d.slug}/`}
                     className="group inline-flex min-h-[40px] items-center gap-2 text-[0.92rem] text-osso-2 transition-colors hover:text-osso"
                   >
                     {d.nome}
@@ -38,7 +38,7 @@ export default function Rodape() {
           </nav>
 
           <div>
-            <p className="t-rotulo text-osso-3">Contato</p>
+            <p className="t-rotulo text-osso-3">Contact</p>
             <ul className="mt-4 text-[0.92rem] text-osso-2">
               <li>
                 <a
@@ -64,9 +64,9 @@ export default function Rodape() {
 
         <div className="mt-16 flex flex-col gap-2 border-t border-fio pt-7 text-[0.75rem] text-osso-3 sm:flex-row sm:items-center sm:justify-between">
           <p>
-            © {new Date().getFullYear()} {agencia.nome}. Todos os direitos reservados.
+            © {new Date().getFullYear()} {agencia.nome}. All rights reserved.
           </p>
-          <p>As barbearias dos projetos são fictícias, criadas para demonstração.</p>
+          <p>The barbershops in these projects are fictional, built for demonstration.</p>
         </div>
       </div>
 

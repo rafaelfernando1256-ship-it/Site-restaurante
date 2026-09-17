@@ -86,7 +86,7 @@ export default function Planos() {
 
                 <p className="mt-7 flex items-baseline gap-2 border-t border-fio pt-6 text-[0.86rem] text-osso-2">
                   <span className="t-numeral text-[1.4rem] text-osso">{p.preco}</span>
-                  pagamento único
+                  one payment
                 </p>
 
                 <ul className="mt-7 flex-1 space-y-3.5">
@@ -113,12 +113,12 @@ export default function Planos() {
                   </Botao>
 
                   <Link
-                    href={`/projetos/${p.slug}/`}
+                    href={`/projects/${p.slug}/`}
                     target="_blank"
                     rel="noopener"
                     className="inline-flex min-h-[40px] items-center justify-center gap-2 text-[0.85rem] text-osso-2 transition-colors duration-400 hover:text-osso"
                   >
-                    Ver este modelo funcionando
+                    See this model working
                     <span aria-hidden className="text-[0.8em] opacity-70">
                       ↗
                     </span>
@@ -131,7 +131,7 @@ export default function Planos() {
       </div>
 
       <p className="mt-3 flex items-center gap-2 text-[0.75rem] text-osso-3 lg:hidden">
-        <span aria-hidden>←</span> arraste para comparar os três modelos
+        <span aria-hidden>←</span> swipe to compare the three models
       </p>
 
       {/* O que fica de fora: dito na cara, para não virar surpresa */}

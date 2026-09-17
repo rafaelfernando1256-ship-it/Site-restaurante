@@ -17,7 +17,7 @@ export default function BarraDemo({ nome }: { nome: string }) {
         ←
       </span>
       <span>
-        <span className="hidden sm:inline">Projeto demonstrativo · </span>
+        <span className="hidden sm:inline">Demo project · </span>
         {nome}
       </span>
     </Link>

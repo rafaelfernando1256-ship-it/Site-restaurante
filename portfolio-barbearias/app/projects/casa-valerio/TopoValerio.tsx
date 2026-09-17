@@ -4,11 +4,11 @@ import { useEffect, useState } from "react";
 import { valerio } from "@/content/demo-casa-valerio";
 
 const links = [
-  { href: "#ritual", rotulo: "O ritual" },
-  { href: "#carta", rotulo: "Serviços" },
-  { href: "#mestres", rotulo: "Mestres" },
-  { href: "#clube", rotulo: "Clube" },
-  { href: "#casa", rotulo: "A casa" },
+  { href: "#ritual", rotulo: "The ritual" },
+  { href: "#carta", rotulo: "Services" },
+  { href: "#mestres", rotulo: "Masters" },
+  { href: "#clube", rotulo: "The club" },
+  { href: "#casa", rotulo: "The house" },
 ];
 
 export default function TopoValerio({ linkReserva }: { linkReserva: string }) {
@@ -28,7 +28,7 @@ export default function TopoValerio({ linkReserva }: { linkReserva: string }) {
           <strong>{valerio.nome}</strong>
           <span>{valerio.descritor}</span>
         </a>
-        <nav className="v-nav" aria-label="Navegação da barbearia">
+        <nav className="v-nav" aria-label="Barbershop navigation">
           {links.map((l) => (
             <a key={l.href} href={l.href}>
               {l.rotulo}
@@ -42,7 +42,7 @@ export default function TopoValerio({ linkReserva }: { linkReserva: string }) {
           rel="noopener noreferrer"
           style={{ padding: "12px 24px", fontSize: "0.68rem" }}
         >
-          Reservar
+          Book
         </a>
       </div>
     </header>

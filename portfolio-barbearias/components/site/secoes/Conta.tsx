@@ -9,10 +9,12 @@ import { conta, linkWhats } from "@/content/agencia";
 
 const SEMANAS_NO_MES = 4.33;
 
+/* Para trocar de moeda, mude as duas linhas abaixo e o campo
+   `prefixo` em conteudo/agencia.ts → conta.campos.preco. */
 function moeda(valor: number) {
-  return valor.toLocaleString("pt-BR", {
+  return valor.toLocaleString("en-GB", {
     style: "currency",
-    currency: "BRL",
+    currency: "GBP",
     maximumFractionDigits: 0,
   });
 }

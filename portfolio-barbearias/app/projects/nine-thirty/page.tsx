@@ -8,16 +8,16 @@ import TopoNove from "./TopoNove";
 import "./nove.css";
 
 export const metadata: Metadata = {
-  title: "Nove & Meia · Barbearia (projeto demonstrativo)",
+  title: "Nine Thirty · Barbershop (demo project)",
   description:
-    "Projeto demonstrativo de site para barbearia urbana: escolha do barbeiro, agendamento rápido, galeria de cortes e horários livres do dia.",
+    "Demo website for an urban barbershop: pick your barber, fast booking, a gallery of cuts and today's free slots.",
 };
 
 const zap = (msg: string) =>
   `https://wa.me/${noveMeia.whatsapp}?text=${encodeURIComponent(msg)}`;
 
 export default function PaginaNove() {
-  const linkAgendar = zap("Olá! Quero agendar um horário na Nove & Meia.");
+  const linkAgendar = zap("Hi! I'd like to book a slot at Nine Thirty.");
   /* A faixa é duplicada para o loop ficar contínuo. */
   const faixa = [...noveMeia.marquee, ...noveMeia.marquee];
 
@@ -72,7 +72,7 @@ export default function PaginaNove() {
           ))}
         </div>
         <span className="sr-only">
-          Avaliação 4,9 no Google, mais de 2.000 cortes por ano, aberto até 21h.
+          Rated 4.9 on Google, over 2,000 cuts a year, open until 9pm.
         </span>
       </div>
 
@@ -105,7 +105,7 @@ export default function PaginaNove() {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    Agendar com {b.nome}
+                    Book with {b.nome}
                   </a>
                 </div>
               </Revelar>
@@ -169,7 +169,7 @@ export default function PaginaNove() {
               <figure key={n}>
                 <Image
                   src={`/arte/nove/trabalho-${n}.svg`}
-                  alt="Corte degradê feito na barbearia"
+                  alt="A skin fade cut in the shop"
                   width={700}
                   height={700}
                   loading="lazy"
@@ -210,7 +210,7 @@ export default function PaginaNove() {
                 ★★★★★
               </p>
               <p className="n-apoio" style={{ marginTop: "0.8rem", fontSize: "0.9rem" }}>
-                {noveMeia.avaliacao.quantidade} avaliações no Google. Leia todas antes de decidir.
+                {noveMeia.avaliacao.quantidade} Google reviews. Read them all before you decide.
               </p>
               <a
                 className="n-btn n-btn--linha"
@@ -219,7 +219,7 @@ export default function PaginaNove() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Ver no Google
+                See on Google
               </a>
             </Revelar>
           </div>
@@ -231,10 +231,10 @@ export default function PaginaNove() {
         <div className="n-wrap">
           <div className="n-painel">
             <div>
-              <p className="n-etiqueta">Onde é</p>
+              <p className="n-etiqueta">Find us</p>
               <h2 className="n-titulo">
-                Vila Matilde,<br />
-                <em>fácil de achar</em>
+                Shoreditch,<br />
+                <em>easy to find</em>
               </h2>
               <p className="n-apoio" style={{ marginTop: "1rem" }}>
                 {noveMeia.endereco.linha1}
@@ -250,12 +250,12 @@ export default function PaginaNove() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Traçar rota
+                Get directions
               </a>
             </div>
 
             <div className="n-cartao">
-              <h3 style={{ fontSize: "1.3rem" }}>Horário</h3>
+              <h3 style={{ fontSize: "1.3rem" }}>Opening hours</h3>
               <ul className="n-horarios">
                 {noveMeia.horarios.map((h) => (
                   <li key={h.dia}>
@@ -277,14 +277,14 @@ export default function PaginaNove() {
           <p style={{ margin: 0 }}>
             {noveMeia.nome} · {noveMeia.playlist}
           </p>
-          <p style={{ margin: 0 }}>Barbearia fictícia, criada para demonstração.</p>
+          <p style={{ margin: 0 }}>Fictional barbershop, built for demonstration.</p>
         </div>
       </footer>
 
       {/* Barra fixa com duas ações */}
       <div className="n-fixo">
         <a className="n-btn n-btn--limao" href={linkAgendar} target="_blank" rel="noopener noreferrer">
-          Agendar
+          Book now
         </a>
         <a
           className="n-btn n-btn--linha"

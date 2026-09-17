@@ -38,7 +38,7 @@ export default function Maquina() {
 
       <Revelar atraso={0.1}>
         <p className="t-display mt-16 max-w-[26ch] border-t border-fio-forte pt-8 text-[1.5rem] leading-[1.2] text-osso sm:text-[1.9rem]">
-          Cinco peças, um objetivo: a próxima cadeira ocupada.
+          Five parts, one aim: the next chair filled.
         </p>
       </Revelar>
     </Secao>

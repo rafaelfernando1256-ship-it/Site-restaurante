@@ -4,28 +4,28 @@ import { agencia } from "@/content/agencia";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://cadeiracheia.com.br"),
+  metadataBase: new URL("https://fullchair.co.uk"),
   title: {
-    default: `${agencia.nome} · Sites para barbearia que enchem cadeira`,
+    default: `${agencia.nome} · Barbershop websites that fill the chair`,
     template: `%s · ${agencia.nome}`,
   },
   description:
-    "Agência especializada em sites para barbearia. Projeto sob medida, pronto em 3 dias, feito para virar agendamento e não enfeite. Veja os projetos e peça o seu exemplo gratuito.",
+    "A studio building websites for barbershops only. Built to measure, live in 3 days, made to turn into bookings rather than decoration. See the work and ask for your free example.",
   keywords: [
-    "site para barbearia",
-    "criação de site barbearia",
-    "site de barbearia com agendamento",
-    "agência para barbearia",
-    "marketing para barbearia",
+    "barbershop website",
+    "barber website design",
+    "barbershop booking website",
+    "website for barbers",
+    "barbershop marketing",
   ],
   authors: [{ name: agencia.nome }],
   openGraph: {
     type: "website",
-    locale: "pt_BR",
+    locale: "en_GB",
     siteName: agencia.nome,
-    title: `${agencia.nome} · Sites para barbearia que enchem cadeira`,
+    title: `${agencia.nome} · Barbershop websites that fill the chair`,
     description:
-      "Projetos demonstrativos de sites para barbearia: premium, urbana e clássica. Peça o exemplo gratuito da sua.",
+      "Demo barbershop websites: premium, urban and classic. Ask for a free example of yours.",
   },
   twitter: { card: "summary_large_image" },
   robots: { index: true, follow: true },
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" className={`${display.variable} ${corpo.variable}`}>
+    <html lang="en-GB" className={`${display.variable} ${corpo.variable}`}>
       <body className="textura antialiased">{children}</body>
     </html>
   );

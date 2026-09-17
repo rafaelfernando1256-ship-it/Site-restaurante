@@ -22,7 +22,7 @@ export default function Fechamento() {
               <p className="flex items-center gap-4">
                 <span className="t-numeral text-[0.82rem] text-tinta/62">09</span>
                 <span aria-hidden className="h-px w-8 bg-fio-escuro" />
-                <span className="t-rotulo text-tinta/65">Risco zero</span>
+                <span className="t-rotulo text-tinta/65">Zero risk</span>
               </p>
             </Revelar>
 
