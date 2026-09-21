@@ -1,0 +1,206 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════════════════
+   SISTEMA VISUAL — FULL HOUSE
+   ───────────────────────────────────────────────────────────────
+   Direção de arte: o portfólio é quase monocromático. A cor vem
+   dos projetos, como parede de galeria onde o quadro é que tem cor.
+
+   Três superfícies (poço, base, elevada) criam capítulos ao longo
+   da página, e uma única seção clara funciona como respiro e
+   destaque da garantia. Sem isso a página tem uma marcha só.
+   ═══════════════════════════════════════════════════════════════ */
+@theme {
+  /* Superfícies, do mais fundo ao mais alto */
+  --color-poco: #070708;
+  --color-tinta: #0b0b0c;
+  --color-tinta-2: #121214;
+  --color-tinta-3: #1a1a1d;
+
+  /* Texto sobre escuro — osso-3 subiu de #6E6B65 para passar em AA */
+  --color-osso: #edeae4;
+  --color-osso-2: #b0aca4;
+  --color-osso-3: #8a867e;
+
+  /* Seção clara (a garantia) */
+  --color-bone: #ebe7df;
+  --color-bone-2: #dcd7cc;
+
+  --color-fio: rgba(237, 234, 228, 0.1);
+  --color-fio-forte: rgba(237, 234, 228, 0.22);
+  --color-fio-escuro: rgba(11, 11, 12, 0.14);
+
+  /* Acento de cobre: puxa o olho no plano em destaque sem a
+     saturação de uma cor de app. O "vivo" é só o pontinho que
+     pisca no hero. */
+  --color-cobre: #b87333;
+  --color-vivo: #d98f4a;
+
+  --font-display: var(--fonte-display), "Georgia", serif;
+  --font-corpo: var(--fonte-corpo), system-ui, sans-serif;
+
+  --ease-suave: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-saida: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ─── Base ──────────────────────────────────────────────────── */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 6rem;
+  background: var(--color-tinta);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--color-tinta);
+  color: var(--color-osso);
+  font-family: var(--font-corpo);
+  font-weight: 300;
+  line-height: 1.65;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Parágrafos com quebra mais equilibrada e medida de leitura curta */
+p { text-wrap: pretty; }
+
+::selection { background: var(--color-osso); color: var(--color-tinta); }
+
+:focus-visible {
+  outline: 2px solid var(--color-osso);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: var(--color-poco); }
+::-webkit-scrollbar-thumb { background: #26262b; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #3a3a42; }
+
+/* ─── Tipografia de display ─────────────────────────────────────
+   Títulos grandes pedem tracking negativo; rótulos pedem o oposto.
+   Centralizar isso aqui evita repetir a decisão em cada seção.   */
+.t-display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+.t-rotulo {
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+}
+/* Numeral estrutural: é elemento de composição, não legenda */
+.t-numeral {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+/* ─── Revelação no scroll ────────────────────────────────────
+   O conteúdo nasce visível no HTML. A classe que esconde só é
+   aplicada pelo JavaScript — sem JS, nada some.
+   Distância curta e duração curta: movimento discreto envelhece
+   melhor do que movimento longo.                                */
+.oculto { opacity: 0; transform: translate3d(0, 18px, 0); }
+.revelavel {
+  transition:
+    opacity 0.7s var(--ease-saida) var(--atraso, 0s),
+    transform 0.7s var(--ease-saida) var(--atraso, 0s);
+}
+.revelado { opacity: 1; transform: none; }
+
+/* Máscara que sobe: usada uma única vez, no título do hero.
+   Um momento coreografado vale mais que efeito em tudo. */
+.mascara-oculta {
+  clip-path: inset(0 0 105% 0);
+  transform: translate3d(0, 12px, 0);
+}
+.mascara-revelavel {
+  transition:
+    clip-path 1.05s var(--ease-saida) var(--atraso, 0s),
+    transform 1.05s var(--ease-saida) var(--atraso, 0s);
+}
+.mascara-revelada { clip-path: inset(0 0 -10% 0); transform: none; }
+
+/* ─── Controle deslizante da calculadora ────────────────────────
+   O range padrão do navegador é o elemento mais "formulário" que
+   existe. Trilho fino, polegar sólido e área de toque de 44px.  */
+.faixa {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  height: 44px;
+}
+.faixa::-webkit-slider-runnable-track {
+  height: 2px;
+  border-radius: 2px;
+  background: var(--color-fio-forte);
+}
+.faixa::-moz-range-track {
+  height: 2px;
+  border-radius: 2px;
+  background: var(--color-fio-forte);
+}
+.faixa::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  margin-top: -11px;
+  height: 24px;
+  width: 24px;
+  border-radius: 50%;
+  background: var(--color-osso);
+  border: 6px solid var(--color-tinta-2);
+  box-shadow: 0 0 0 1px var(--color-fio-forte);
+  transition: transform 0.25s var(--ease-suave), box-shadow 0.25s var(--ease-suave);
+}
+.faixa::-moz-range-thumb {
+  height: 24px;
+  width: 24px;
+  border-radius: 50%;
+  background: var(--color-osso);
+  border: 6px solid var(--color-tinta-2);
+  box-shadow: 0 0 0 1px var(--color-fio-forte);
+}
+.faixa:hover::-webkit-slider-thumb,
+.faixa:focus-visible::-webkit-slider-thumb {
+  transform: scale(1.12);
+  box-shadow: 0 0 0 1px var(--color-osso);
+}
+/* Contorno de verdade no elemento: depender só do pseudo-elemento
+   do polegar deixa quem navega por teclado sem referência visual. */
+.faixa:focus-visible {
+  outline: 2px solid var(--color-osso);
+  outline-offset: 8px;
+  border-radius: 999px;
+}
+.faixa:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 1px var(--color-osso); }
+
+/* ─── Grão sobre o fundo escuro ─────────────────────────────── */
+.textura::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ─── Acessibilidade: menos movimento ───────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .oculto { opacity: 1 !important; transform: none !important; }
+  .mascara-oculta { clip-path: none !important; transform: none !important; }
+}

@@ -1,0 +1,166 @@
+/* ═══════════════════════════════════════════════════════════════
+   BLUE PLATE DINER — folha de estilo do projeto demonstrativo
+   Escopo total em .tema-diner.
+   Acessibilidade como decisão de conversão: corpo em 18px, alvos de
+   56px, contraste alto. A clientela tem 45+ e decide no celular,
+   muitas vezes dirigindo até a esquina. Isso não é detalhe.
+   ═══════════════════════════════════════════════════════════════ */
+.tema-diner {
+  --creme: #f6f0e2;
+  --creme-2: #efe6d0;
+  /* Ajustado de #c0362c: sobre o creme-2 o tom anterior dava 4,44:1 e
+     não passava no AA. Este dá 4,93:1 sem perder o vermelho de diner. */
+  --vermelho: #b62f27;
+  --vermelho-2: #9c281f;
+  --azul: #1d3557;
+  --cromo: #8a8f98;
+  --tinta: #221e1b;
+  --tinta-2: #55504a;
+  --fio: rgba(34, 30, 27, 0.15);
+
+  --titulo: var(--fonte-diner-titulo), Georgia, serif;
+  --corpo: var(--fonte-diner-corpo), Georgia, serif;
+
+  background: var(--creme);
+  color: var(--tinta);
+  font-family: var(--corpo);
+  font-size: 18px;              /* maior que o padrão, de propósito */
+  line-height: 1.72;
+}
+
+.tema-diner h1,
+.tema-diner h2,
+.tema-diner h3 {
+  font-family: var(--titulo);
+  font-weight: 400;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.d-wrap { width: 100%; max-width: 1060px; margin-inline: auto; padding-inline: clamp(20px, 5vw, 48px); }
+.d-secao { padding-block: clamp(52px, 6.5vw, 92px); }
+.d-borda { border-top: 3px double var(--fio); }
+.d-fundo-2 { background: var(--creme-2); }
+
+.d-etiqueta {
+  display: inline-block; margin: 0 0 14px;
+  font-size: 0.8rem; font-weight: 700; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--vermelho);
+}
+.d-titulo { font-size: clamp(1.9rem, 4.4vw, 3rem); max-width: 20ch; }
+.d-apoio { margin: 16px 0 0; color: var(--tinta-2); max-width: 56ch; }
+
+/* ── Botões: alvos grandes, de propósito ── */
+.d-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  min-height: 58px; padding: 16px 30px;
+  border: 3px solid transparent; border-radius: 6px;
+  font-family: var(--corpo); font-size: 1.05rem; font-weight: 700;
+  cursor: pointer; transition: background-color 0.25s ease, border-color 0.25s ease;
+}
+.d-btn--vermelho { background: var(--vermelho); color: #fff; border-color: var(--vermelho); }
+.d-btn--vermelho:hover { background: var(--vermelho-2); border-color: var(--vermelho-2); }
+.d-btn--linha { color: var(--azul); border-color: var(--azul); background: transparent; }
+.d-btn--linha:hover { background: rgba(29, 53, 87, 0.08); }
+
+/* ── Topo ── */
+.d-topo { background: var(--creme); border-bottom: 3px solid var(--azul); position: sticky; top: 0; z-index: 50; }
+.d-topo__linha {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  width: 100%; max-width: 1060px; margin-inline: auto; padding: 12px clamp(20px, 5vw, 48px);
+}
+.d-marca strong { font-family: var(--titulo); font-size: 1.3rem; font-weight: 400; display: block; line-height: 1.1; }
+.d-marca span { font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--tinta-2); }
+.d-nav { display: none; gap: 24px; }
+.d-nav a {
+  font-size: 0.98rem; font-weight: 700; color: var(--azul);
+  /* Área de clique de 40px: o texto é pequeno, o alvo não pode ser. */
+  display: inline-flex; align-items: center; min-height: 40px;
+}
+.d-nav a:hover { text-decoration: underline; text-underline-offset: 4px; }
+@media (min-width: 900px) { .d-nav { display: flex; } }
+
+/* ── Hero ── */
+.d-hero { padding-block: clamp(34px, 5vw, 64px) clamp(40px, 5vw, 72px); }
+.d-hero__grade { display: grid; gap: clamp(28px, 4vw, 52px); align-items: center; }
+@media (min-width: 900px) { .d-hero__grade { grid-template-columns: 1.05fr 0.95fr; } }
+.d-hero__selo {
+  display: inline-block; margin: 0 0 16px; padding: 7px 16px;
+  background: var(--azul); color: var(--creme);
+  font-size: 0.78rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+}
+.d-hero h1 { font-size: clamp(2.4rem, 7vw, 4.4rem); }
+.d-hero__sub { margin: 20px 0 0; font-size: 1.12rem; max-width: 40ch; }
+.d-hero__acoes { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+.d-hero__foto { margin: 0; border: 6px solid var(--azul); border-radius: 8px; overflow: hidden; background: var(--creme-2); }
+.d-hero__foto img { width: 100%; height: auto; display: block; }
+
+/* ── Faixa de informação: o que quem liga quer saber ── */
+.d-faixa { background: var(--azul); color: var(--creme); }
+.d-faixa__grade {
+  display: grid; gap: 18px; padding-block: 22px;
+}
+@media (min-width: 760px) { .d-faixa__grade { grid-template-columns: repeat(3, 1fr); gap: 30px; } }
+.d-faixa__rotulo { display: block; font-size: 0.74rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; opacity: 0.75; }
+.d-faixa strong { font-size: 1.06rem; }
+
+/* ── Linha do tempo ── */
+.d-marcos { display: grid; gap: 0; margin-top: clamp(26px, 3.4vw, 44px); }
+.d-marco { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 18px; padding-block: 24px; border-top: 1px solid var(--fio); }
+.d-marco:last-child { border-bottom: 1px solid var(--fio); }
+.d-marco__ano { font-family: var(--titulo); font-size: 1.5rem; color: var(--vermelho); }
+.d-marco h3 { font-size: 1.24rem; }
+.d-marco p { margin: 6px 0 0; color: var(--tinta-2); font-size: 0.98rem; }
+
+/* ── Menu ── */
+.d-grupo + .d-grupo { margin-top: clamp(30px, 3.6vw, 50px); }
+.d-grupo h3 { font-size: 1.6rem; color: var(--azul); padding-bottom: 8px; border-bottom: 3px double var(--fio); }
+.d-itens { display: grid; gap: 0; }
+.d-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 18px; padding-block: 14px; border-bottom: 1px solid var(--fio); }
+.d-item__nome { font-weight: 700; font-size: 1.06rem; }
+.d-item__desc { grid-column: 1; color: var(--tinta-2); font-size: 0.94rem; }
+.d-item__preco { grid-row: 1; grid-column: 2; font-family: var(--titulo); font-size: 1.3rem; color: var(--vermelho); }
+.d-obs { margin-top: 22px; padding: 18px 22px; background: var(--creme-2); border-left: 6px solid var(--vermelho); font-size: 0.98rem; }
+
+/* ── Ofício + família ── */
+.d-cartoes { display: grid; gap: 22px; margin-top: clamp(26px, 3.4vw, 44px); }
+@media (min-width: 760px) { .d-cartoes { grid-template-columns: repeat(3, 1fr); gap: 26px; } }
+.d-cartao h3 { font-size: 1.24rem; }
+.d-cartao p { margin: 8px 0 0; color: var(--tinta-2); font-size: 0.98rem; }
+.d-pessoa img { width: 100%; height: auto; display: block; border: 4px solid var(--azul); border-radius: 6px; }
+.d-pessoa h3 { font-size: 1.24rem; margin-top: 16px; }
+.d-pessoa__papel { color: var(--vermelho); font-weight: 700; font-size: 0.88rem; margin: 5px 0 0; }
+.d-pessoa p:last-child { color: var(--tinta-2); font-size: 0.94rem; margin: 6px 0 0; }
+
+/* ── Galeria ── */
+.d-galeria { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: clamp(26px, 3.4vw, 44px); }
+@media (min-width: 760px) { .d-galeria { grid-template-columns: repeat(4, 1fr); } }
+.d-galeria img { width: 100%; height: auto; display: block; border: 4px solid var(--azul); border-radius: 6px; }
+
+/* ── Avaliação ── */
+.d-avaliacao { display: flex; flex-wrap: wrap; align-items: center; gap: 24px; margin-top: clamp(26px, 3.4vw, 44px); padding: 26px; background: var(--creme-2); border-radius: 8px; }
+.d-avaliacao__nota { font-family: var(--titulo); font-size: 3.2rem; color: var(--azul); line-height: 1; }
+.d-avaliacao__estrelas { color: var(--vermelho); letter-spacing: 0.16em; font-size: 1.1rem; }
+
+/* ── Onde fica ── */
+.d-local { display: grid; gap: 30px; }
+@media (min-width: 860px) { .d-local { grid-template-columns: 1fr 1fr; gap: 48px; } }
+.d-horarios { display: grid; gap: 10px; margin-top: 14px; }
+.d-horarios li { display: flex; justify-content: space-between; gap: 18px; padding-bottom: 8px; border-bottom: 1px solid var(--fio); }
+.d-horarios span:last-child { font-weight: 700; }
+.d-mapa { border: 4px solid var(--azul); border-radius: 8px; background: var(--creme-2); padding: 26px; }
+
+/* ── Rodapé ── */
+.d-rodape { background: var(--azul); color: var(--creme); padding-block: 28px; }
+.d-rodape__linha { display: flex; flex-wrap: wrap; gap: 10px 26px; justify-content: space-between; font-size: 0.9rem; }
+
+/* ── Barra fixa: ligar ── */
+.d-fixo {
+  position: fixed; inset: auto 0 0 0; z-index: 45;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  padding: 10px clamp(14px, 4vw, 22px) calc(10px + env(safe-area-inset-bottom));
+  background: var(--creme); border-top: 3px solid var(--azul);
+}
+.d-fixo .d-btn { min-height: 52px; font-size: 0.98rem; padding: 12px 16px; }
+@media (min-width: 900px) { .d-fixo { display: none; } }
+@media (max-width: 899px) { .tema-diner { padding-bottom: 86px; } }

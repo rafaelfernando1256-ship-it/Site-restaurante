@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 700" width="600" height="700" role="img" aria-label="Illustrated portrait of a member of the Larkspur team">
+<defs><radialGradient id="vin21" cx="50%" cy="46%" r="72%"><stop offset="55%" stop-color="#000" stop-opacity="0"/><stop offset="100%" stop-color="#000" stop-opacity=".34"/></radialGradient><filter id="bl21" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="14"/></filter></defs>
+<rect width="600" height="700" fill="#1B1B17"/>
+<g transform="translate(300 230) scale(1.05)"><circle cx="0" cy="-40" r="150" fill="#2C3A2A" opacity=".9"/><path d="M-168 250 C-168 110 -80 62 0 62 C80 62 168 110 168 250 Z" fill="#2A2A24"/><ellipse cx="0" cy="-34" rx="92" ry="106" fill="#3A382F"/><path d="M-96 -108 C-96 -190 96 -190 96 -108 C96 -92 -96 -92 -96 -108 Z" fill="#EFEAE0"/><rect x="-96" y="-112" width="192" height="30" rx="8" fill="#E2DCD0"/><path d="M-168 250 C-168 150 -96 104 -40 88 L0 150 L40 88 C96 104 168 150 168 250 Z" fill="#33322B"/></g>
+</svg>

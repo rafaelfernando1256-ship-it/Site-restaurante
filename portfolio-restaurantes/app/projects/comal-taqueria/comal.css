@@ -1,0 +1,198 @@
+/* ═══════════════════════════════════════════════════════════════
+   COMAL STREET TACOS — folha de estilo do projeto demonstrativo
+   Escopo total em .tema-comal.
+   Direção: balcão, fila, celular na mão. Tudo aqui empurra para o
+   pedido — por isso a barra de pedido é fixa desde o primeiro
+   scroll e a cor quente só aparece onde há ação.
+   ═══════════════════════════════════════════════════════════════ */
+.tema-comal {
+  --preto: #141210;
+  --preto-2: #1e1a16;
+  --preto-3: #2a241e;
+  --chile: #d6402a;
+  --chile-2: #ef5a42;
+  --masa: #e9b44c;
+  --lima: #9bbf3f;
+  --gelo: #f4f1ea;
+  --gelo-2: #b9b3a7;
+  --gelo-3: #8d877c;
+  --fio: rgba(244, 241, 234, 0.13);
+  --fio-forte: rgba(244, 241, 234, 0.28);
+
+  --titulo: var(--fonte-comal-titulo), Impact, sans-serif;
+  --corpo: var(--fonte-comal-corpo), system-ui, sans-serif;
+
+  background: var(--preto);
+  color: var(--gelo);
+  font-family: var(--corpo);
+  font-size: 16.5px;
+  line-height: 1.6;
+}
+
+.tema-comal h1,
+.tema-comal h2,
+.tema-comal h3 {
+  font-family: var(--titulo);
+  font-weight: 400;
+  line-height: 0.96;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.c-wrap { width: 100%; max-width: 1120px; margin-inline: auto; padding-inline: clamp(20px, 5vw, 48px); }
+.c-secao { padding-block: clamp(56px, 7.5vw, 112px); }
+.c-borda { border-top: 1px solid var(--fio); }
+.c-fundo-2 { background: var(--preto-2); }
+
+.c-etiqueta {
+  display: inline-block; margin: 0 0 18px; padding: 6px 13px;
+  border-radius: 40px; background: var(--masa); color: #241a06;
+  font-size: 0.64rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+}
+.c-titulo { font-size: clamp(2rem, 5.4vw, 3.6rem); max-width: 18ch; }
+.c-apoio { margin: 18px 0 0; color: var(--gelo-2); max-width: 54ch; }
+
+/* ── Botões ── */
+.c-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+  min-height: 52px; padding: 14px 28px;
+  border: 2px solid transparent; border-radius: 40px;
+  font-family: var(--corpo); font-size: 0.86rem; font-weight: 700;
+  letter-spacing: 0.02em; cursor: pointer;
+  transition: transform 0.25s ease, background-color 0.25s ease, border-color 0.25s ease;
+}
+.c-btn:hover { transform: translateY(-2px); }
+.c-btn--chile { background: var(--chile); color: #fff; border-color: var(--chile); }
+.c-btn--chile:hover { background: var(--chile-2); border-color: var(--chile-2); }
+.c-btn--masa { background: var(--masa); color: #241a06; border-color: var(--masa); }
+.c-btn--linha { color: var(--gelo); border-color: var(--fio-forte); }
+.c-btn--linha:hover { border-color: var(--gelo); }
+
+/* ── Topo ── */
+.c-topo { position: sticky; top: 0; z-index: 50; transition: background-color 0.4s ease, border-color 0.4s ease; border-bottom: 1px solid transparent; }
+.c-topo[data-solido="true"] { background: rgba(20, 18, 16, 0.92); backdrop-filter: blur(14px); border-bottom-color: var(--fio); }
+.c-topo__linha {
+  display: flex; align-items: center; justify-content: space-between; gap: 18px;
+  width: 100%; max-width: 1120px; margin-inline: auto; padding: 14px clamp(20px, 5vw, 48px);
+}
+.c-marca {
+  font-family: var(--titulo); font-size: 1.2rem;
+  letter-spacing: -0.01em; text-transform: uppercase;
+  display: inline-flex; align-items: center; min-height: 44px;
+}
+.c-marca span { color: var(--masa); }
+.c-nav { display: none; gap: 26px; }
+.c-nav a {
+  font-size: 0.82rem; font-weight: 600; color: var(--gelo-2); transition: color 0.25s ease;
+  /* Área de clique de 40px: o texto é pequeno, o alvo não pode ser. */
+  display: inline-flex; align-items: center; min-height: 40px;
+}
+.c-nav a:hover { color: var(--masa); }
+@media (min-width: 900px) { .c-nav { display: flex; } }
+
+/* ── Hero ── */
+.c-hero { position: relative; padding-block: clamp(40px, 7vw, 92px) clamp(48px, 7vw, 96px); }
+.c-hero__grade { display: grid; gap: clamp(30px, 4vw, 56px); align-items: center; }
+@media (min-width: 900px) { .c-hero__grade { grid-template-columns: 1.02fr 0.98fr; } }
+.c-hero h1 { font-size: clamp(2.7rem, 9.6vw, 6rem); }
+.c-hero h1 em { font-style: normal; color: var(--masa); display: block; }
+.c-hero__sub { margin: 22px 0 0; color: var(--gelo-2); max-width: 42ch; font-size: 1.04rem; }
+.c-hero__acoes { display: flex; flex-wrap: wrap; gap: 11px; margin-top: 30px; }
+.c-hero__foto { margin: 0; border-radius: 18px; overflow: hidden; background: var(--preto-2); }
+.c-hero__foto img { width: 100%; height: auto; display: block; }
+
+/* ── Faixa rolante ── */
+.c-faixa { background: var(--masa); color: #241a06; overflow: hidden; border-block: 2px solid var(--masa); }
+.c-faixa__trilho { display: flex; width: max-content; animation: c-corre 34s linear infinite; }
+.c-faixa ul { display: flex; }
+.c-faixa li { padding: 10px 22px; font-size: 0.74rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; }
+.c-faixa li::after { content: "◆"; margin-left: 22px; opacity: 0.45; }
+@keyframes c-corre { to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) { .c-faixa__trilho { animation: none; } }
+
+/* ── Menu ── */
+.c-grupo + .c-grupo { margin-top: clamp(34px, 4vw, 58px); }
+.c-grupo h3 { font-size: 1.5rem; color: var(--masa); margin-bottom: 16px; }
+.c-itens { display: grid; gap: 0; }
+@media (min-width: 800px) { .c-itens { grid-template-columns: 1fr 1fr; column-gap: 40px; } }
+.c-item {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 16px;
+  padding-block: 15px; border-top: 1px solid var(--fio);
+}
+.c-item__nome { font-weight: 700; font-size: 1rem; }
+.c-item__desc { grid-column: 1; color: var(--gelo-3); font-size: 0.88rem; }
+.c-item__preco { grid-row: 1; grid-column: 2; font-weight: 700; font-size: 1.05rem; color: var(--masa); }
+.c-tag {
+  display: inline-block; margin-left: 9px; padding: 3px 9px; border-radius: 30px;
+  background: var(--chile); color: #fff;
+  font-size: 0.58rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  vertical-align: 2px;
+}
+
+/* ── Especiais ── */
+.c-especiais { display: grid; gap: 14px; margin-top: 26px; }
+@media (min-width: 760px) { .c-especiais { grid-template-columns: 1fr 1fr; } }
+.c-especial {
+  padding: 22px 24px; border-radius: 16px; border: 2px dashed var(--fio-forte);
+  display: flex; justify-content: space-between; gap: 16px; align-items: baseline;
+}
+/* Nome do especial: é h3 por semântica (vem depois de um h2), mas
+   visualmente continua no tipo do corpo — o display em caixa alta
+   competiria com o título da seção logo acima. */
+.c-especial h3 {
+  margin: 0; font-size: 1.06rem; font-weight: 700;
+  font-family: var(--corpo); line-height: 1.3;
+  letter-spacing: 0; text-transform: none;
+}
+.c-especial p { margin: 5px 0 0; color: var(--gelo-3); font-size: 0.88rem; }
+.c-especial b { color: var(--masa); font-size: 1.16rem; white-space: nowrap; }
+
+/* ── Passos ── */
+.c-passos { display: grid; gap: 22px; margin-top: clamp(26px, 3.4vw, 44px); }
+@media (min-width: 760px) { .c-passos { grid-template-columns: repeat(3, 1fr); gap: 30px; } }
+.c-passo__n {
+  display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%;
+  background: var(--chile); color: #fff; font-family: var(--titulo); font-size: 1.15rem;
+}
+.c-passo h3 { font-size: 1.16rem; margin-top: 15px; }
+.c-passo p { margin: 8px 0 0; color: var(--gelo-2); font-size: 0.93rem; }
+
+/* ── Galeria ── */
+.c-galeria { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: clamp(26px, 3.4vw, 44px); }
+@media (min-width: 760px) { .c-galeria { grid-template-columns: repeat(3, 1fr); gap: 14px; } }
+.c-galeria img { width: 100%; height: auto; display: block; border-radius: 14px; background: var(--preto-2); }
+
+/* ── Catering + avaliação ── */
+.c-duplo { display: grid; gap: 18px; margin-top: clamp(26px, 3.4vw, 44px); }
+@media (min-width: 860px) { .c-duplo { grid-template-columns: 1.3fr 1fr; } }
+.c-caixa { padding: clamp(26px, 3.4vw, 40px); border-radius: 20px; background: var(--preto-2); border: 1px solid var(--fio); }
+.c-caixa--chile { background: var(--chile); border-color: transparent; }
+.c-caixa--chile .c-etiqueta { background: #fff; color: var(--chile); }
+.c-caixa--chile .c-apoio { color: rgba(255, 255, 255, 0.86); }
+.c-nota { display: flex; align-items: baseline; gap: 12px; }
+.c-nota b { font-family: var(--titulo); font-size: 3rem; }
+.c-estrelas { color: var(--masa); letter-spacing: 0.14em; }
+
+/* ── Onde fica ── */
+.c-local { display: grid; gap: 30px; }
+@media (min-width: 860px) { .c-local { grid-template-columns: 1.1fr 0.9fr; gap: 54px; } }
+.c-horarios { display: grid; gap: 9px; margin-top: 16px; }
+.c-horarios li { display: flex; justify-content: space-between; gap: 18px; font-size: 0.95rem; }
+.c-horarios span:last-child { color: var(--gelo-2); }
+
+/* ── Rodapé ── */
+.c-rodape { border-top: 1px solid var(--fio); padding-block: 30px; }
+.c-rodape__linha { display: flex; flex-wrap: wrap; gap: 10px 26px; justify-content: space-between; font-size: 0.82rem; color: var(--gelo-3); }
+
+/* ── Barra fixa de pedido ── */
+.c-fixo {
+  position: fixed; inset: auto 0 0 0; z-index: 45;
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  padding: 11px clamp(16px, 4vw, 24px) calc(11px + env(safe-area-inset-bottom));
+  background: rgba(20, 18, 16, 0.95); backdrop-filter: blur(12px); border-top: 1px solid var(--fio);
+}
+.c-fixo__linha { margin: 0; font-size: 0.8rem; color: var(--gelo-2); }
+.c-fixo__linha b { display: block; font-weight: 700; color: var(--gelo); font-size: 0.95rem; }
+@media (min-width: 900px) { .c-fixo { display: none; } }
+@media (max-width: 899px) { .tema-comal { padding-bottom: 84px; } }

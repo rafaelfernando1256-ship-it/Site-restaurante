@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 700" width="700" height="700" role="img" aria-label="A slice of cherry pie">
+<defs><radialGradient id="vin79" cx="50%" cy="46%" r="72%"><stop offset="55%" stop-color="#000" stop-opacity="0"/><stop offset="100%" stop-color="#000" stop-opacity=".34"/></radialGradient><filter id="bl79" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="14"/></filter></defs>
+<rect width="700" height="700" fill="#EFE6D0"/>
+<g transform="translate(350 366) scale(1.95)"><path d="M-120 60 L0 -70 L120 60 Z" fill="#E3C084"/><path d="M-120 60 L0 -70 L120 60 Z" fill="none" stroke="#B19566" stroke-width="3"/><path d="M-96 46 L0 -42 L96 46 Z" fill="#B23A3A"/><path d="M-96 46 L0 -42 L96 46 Z" fill="none" stroke="#852B2B" stroke-width="2"/><path d="M-120 60 L120 60 L120 84 C60 96 -60 96 -120 84 Z" fill="#D8B074"/><path d="M-60 30 L-22 -10 M10 -12 L52 34" stroke="#EBD0A0" stroke-width="9" stroke-linecap="round" opacity=".8"/></g>
+</svg>
