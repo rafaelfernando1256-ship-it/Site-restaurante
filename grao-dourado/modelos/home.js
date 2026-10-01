@@ -7,7 +7,7 @@ import { MARCA, wa, horariosAgrupados } from '../conteudo/marca.js';
 import { CATEGORIAS, COMBOS, destaques, porSlug, dinheiro } from '../conteudo/cardapio.js';
 import { HERO, ENCOMENDAS, AGENDA, ESPACO, SOBRE, PERGUNTAS, FECHAMENTO } from '../conteudo/pagina.js';
 import { pagina } from './base.js';
-import { botao, cabeca, cardItem, esc, icone, seloAberto } from './ui.js';
+import { botao, cabeca, cardItem, esc, icone, imagem, seloAberto } from './ui.js';
 
 function hero() {
   return `
@@ -27,8 +27,7 @@ function hero() {
       </div>
     </div>
     <div class="hero__arte">
-      <img src="img/hero.svg" alt="Xícara de café sobre grãos torrados"
-           width="900" height="1100" fetchpriority="high" decoding="async">
+      ${imagem(HERO, { alt: 'Capuccino da casa, servido em taça sobre grãos de café', lazy: false })}
     </div>
   </div>
 </section>
@@ -68,7 +67,7 @@ function categorias() {
     <div class="cats">
       ${CATEGORIAS.map((c) => `
       <a class="cat" href="cardapio.html#${esc(c.id)}">
-        <img src="img/${esc(c.arte)}" alt="" width="900" height="620" loading="lazy" decoding="async">
+        ${imagem(c)}
         <span class="cat__sobre">
           <strong>${esc(c.nome)}</strong>
           <small>${esc(c.resumo)}</small>
@@ -93,7 +92,7 @@ function combos() {
         const cheio = c.itens.reduce((s, slug) => s + (porSlug(slug)?.preco || 0), 0);
         const poupa = cheio - c.preco;
         return `<article class="combo">
-          <img src="img/${esc(c.arte)}" alt="" width="900" height="560" loading="lazy" decoding="async">
+          ${imagem(c)}
           <div class="combo__corpo">
             <h3>${esc(c.nome)}</h3>
             <p>${esc(c.desc)}</p>
@@ -120,7 +119,7 @@ function encomendas() {
     <div class="pacotes">
       ${ENCOMENDAS.pacotes.map((p) => `
       <article class="pacote">
-        <img src="img/${esc(p.arte)}" alt="" width="860" height="620" loading="lazy" decoding="async">
+        ${imagem(p)}
         <div class="pacote__corpo">
           <h3>${esc(p.nome)}</h3>
           <p class="pacote__desc">${esc(p.desc)}</p>
@@ -150,7 +149,7 @@ function agenda() {
     <div class="eventos">
       ${AGENDA.eventos.map((e) => `
       <article class="evento">
-        <img src="img/${esc(e.arte)}" alt="" width="860" height="560" loading="lazy" decoding="async">
+        ${imagem(e)}
         <div class="evento__corpo">
           <p class="evento__quando">${icone.relogio} ${esc(e.quando)} · ${esc(e.hora)}</p>
           <h3>${esc(e.nome)}</h3>
@@ -176,8 +175,7 @@ function espaco() {
     ${cabeca({ etiqueta: ESPACO.etiqueta, titulo: ESPACO.titulo, texto: ESPACO.texto })}
     <div class="galeria">
       ${ESPACO.galeria.map((g) => `
-        <img src="img/${esc(g.arte)}" alt="${esc(g.alt)}" width="900" height="680"
-             loading="lazy" decoding="async">`).join('')}
+        ${imagem(g, { alt: g.alt })}`).join('')}
     </div>
     <div class="confortos">
       ${ESPACO.itens.map((i) => `<div class="conforto">
@@ -192,8 +190,7 @@ function sobre() {
 <section class="secao secao--creme" id="sobre">
   <div class="wrap sobre">
     <div class="sobre__arte">
-      <img src="img/${esc(SOBRE.arte)}" alt="Balcão do café com a xícara e os grãos"
-           width="1000" height="760" loading="lazy" decoding="async">
+      ${imagem(SOBRE, { alt: 'O balcão do Grão Dourado' })}
     </div>
     <div class="sobre__texto">
       ${cabeca({ etiqueta: SOBRE.etiqueta, titulo: SOBRE.titulo })}

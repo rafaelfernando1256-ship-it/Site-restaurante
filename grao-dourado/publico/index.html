@@ -84,8 +84,7 @@
       </div>
     </div>
     <div class="hero__arte">
-      <img src="img/hero.svg" alt="Xícara de café sobre grãos torrados"
-           width="900" height="1100" fetchpriority="high" decoding="async">
+      <img src="img/foto/capuccino.jpg" alt="Capuccino da casa, servido em taça sobre grãos de café" width="760" height="948" fetchpriority="high" decoding="async">
     </div>
   </div>
 </section>
@@ -107,9 +106,25 @@
     <p class="cabeca__texto">Os pedidos que mais se repetem no balcão. Toque em adicionar e monte o pedido sem sair da página.</p>
   </header>
     <div class="grade-itens">
-      <article class="item" data-cat="cafes" data-slug="capuccino">
+      <article class="item" data-cat="cafes" data-slug="espresso">
     <div class="item__arte">
-      <img src="img/capuccino.svg" alt="" width="720" height="720" loading="lazy" decoding="async">
+      <img src="img/foto/graos.jpg" alt="" width="760" height="946" loading="lazy" decoding="async">
+      
+    </div>
+    <div class="item__corpo">
+      <h3 class="item__nome">Espresso</h3>
+      <p class="item__desc">Curto, encorpado, com creme de verdade em cima</p>
+      <div class="item__pe">
+        <span class="item__preco">R$ 6,50</span>
+        <button type="button" class="item__add" data-add="espresso"
+                aria-label="Adicionar Espresso ao pedido">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg><span>Adicionar</span>
+        </button>
+      </div>
+    </div>
+  </article><article class="item" data-cat="cafes" data-slug="capuccino">
+    <div class="item__arte">
+      <img src="img/foto/capuccino.jpg" alt="" width="760" height="948" loading="lazy" decoding="async">
       <div class="item__selos"><span class="selo selo--queridinho" title="O que mais sai">Mais pedido</span></div>
     </div>
     <div class="item__corpo">
@@ -123,41 +138,9 @@
         </button>
       </div>
     </div>
-  </article><article class="item" data-cat="salgados" data-slug="empada-frango">
-    <div class="item__arte">
-      <img src="img/empada-frango.svg" alt="" width="720" height="720" loading="lazy" decoding="async">
-      <div class="item__selos"><span class="selo selo--casa" title="Feito aqui dentro, receita nossa">Da casa</span><span class="selo selo--queridinho" title="O que mais sai">Mais pedido</span></div>
-    </div>
-    <div class="item__corpo">
-      <h3 class="item__nome">Empada de frango defumado</h3>
-      <p class="item__desc">Frango defumado com queijo do reino, massa que desmancha</p>
-      <div class="item__pe">
-        <span class="item__preco">R$ 13,00</span>
-        <button type="button" class="item__add" data-add="empada-frango"
-                aria-label="Adicionar Empada de frango defumado ao pedido">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg><span>Adicionar</span>
-        </button>
-      </div>
-    </div>
-  </article><article class="item" data-cat="salgados" data-slug="empada-carne-de-sol">
-    <div class="item__arte">
-      <img src="img/empada-carne.svg" alt="" width="720" height="720" loading="lazy" decoding="async">
-      <div class="item__selos"><span class="selo selo--casa" title="Feito aqui dentro, receita nossa">Da casa</span></div>
-    </div>
-    <div class="item__corpo">
-      <h3 class="item__nome">Empada de carne de sol</h3>
-      <p class="item__desc">Carne de sol na nata, do jeito que se faz no Nordeste</p>
-      <div class="item__pe">
-        <span class="item__preco">R$ 14,00</span>
-        <button type="button" class="item__add" data-add="empada-carne-de-sol"
-                aria-label="Adicionar Empada de carne de sol ao pedido">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg><span>Adicionar</span>
-        </button>
-      </div>
-    </div>
   </article><article class="item" data-cat="salgados" data-slug="quiche-queijo">
     <div class="item__arte">
-      <img src="img/quiche.svg" alt="" width="720" height="720" loading="lazy" decoding="async">
+      <img src="img/foto/quiche.jpg" alt="" width="760" height="337" loading="lazy" decoding="async">
       <div class="item__selos"><span class="selo selo--vegetariano" title="Sem carne">Vegetariano</span></div>
     </div>
     <div class="item__corpo">
@@ -171,25 +154,25 @@
         </button>
       </div>
     </div>
-  </article><article class="item" data-cat="doces" data-slug="bolo-da-moca">
+  </article><article class="item" data-cat="salgados" data-slug="esfiha-caseira">
     <div class="item__arte">
-      <img src="img/bolo-moca.svg" alt="" width="720" height="720" loading="lazy" decoding="async">
-      <div class="item__selos"><span class="selo selo--casa" title="Feito aqui dentro, receita nossa">Da casa</span><span class="selo selo--queridinho" title="O que mais sai">Mais pedido</span></div>
+      <img src="img/foto/esfiha.jpg" alt="" width="760" height="357" loading="lazy" decoding="async">
+      <div class="item__selos"><span class="selo selo--casa" title="Feito aqui dentro, receita nossa">Da casa</span></div>
     </div>
     <div class="item__corpo">
-      <h3 class="item__nome">Bolo da moça</h3>
-      <p class="item__desc">O da receita que a gente já mostrou no Instagram. Leite moça de verdade</p>
+      <h3 class="item__nome">Esfiha da casa</h3>
+      <p class="item__desc">Receita de família, assada na hora e servida quentinha</p>
       <div class="item__pe">
         <span class="item__preco">R$ 11,00</span>
-        <button type="button" class="item__add" data-add="bolo-da-moca"
-                aria-label="Adicionar Bolo da moça ao pedido">
+        <button type="button" class="item__add" data-add="esfiha-caseira"
+                aria-label="Adicionar Esfiha da casa ao pedido">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg><span>Adicionar</span>
         </button>
       </div>
     </div>
   </article><article class="item" data-cat="doces" data-slug="pudim">
     <div class="item__arte">
-      <img src="img/pudim.svg" alt="" width="720" height="720" loading="lazy" decoding="async">
+      <img src="img/foto/pudim.jpg" alt="" width="760" height="866" loading="lazy" decoding="async">
       <div class="item__selos"><span class="selo selo--casa" title="Feito aqui dentro, receita nossa">Da casa</span></div>
     </div>
     <div class="item__corpo">
@@ -203,18 +186,18 @@
         </button>
       </div>
     </div>
-  </article><article class="item" data-cat="geladas" data-slug="frappe">
+  </article><article class="item" data-cat="doces" data-slug="bolo-de-milho">
     <div class="item__arte">
-      <img src="img/frappe.svg" alt="" width="720" height="720" loading="lazy" decoding="async">
-      <div class="item__selos"><span class="selo selo--novo" title="Entrou no cardápio agora">Novo</span></div>
+      <img src="img/foto/bolo-milho.jpg" alt="" width="760" height="923" loading="lazy" decoding="async">
+      <div class="item__selos"><span class="selo selo--casa" title="Feito aqui dentro, receita nossa">Da casa</span><span class="selo selo--vegetariano" title="Sem carne">Vegetariano</span></div>
     </div>
     <div class="item__corpo">
-      <h3 class="item__nome">Frappê de café</h3>
-      <p class="item__desc">Batido, cremoso, com chantilly por cima</p>
+      <h3 class="item__nome">Bolo de milho cremoso</h3>
+      <p class="item__desc">Aquele de tabuleiro, úmido, que pede café preto</p>
       <div class="item__pe">
-        <span class="item__preco">R$ 18,00</span>
-        <button type="button" class="item__add" data-add="frappe"
-                aria-label="Adicionar Frappê de café ao pedido">
+        <span class="item__preco">R$ 10,00</span>
+        <button type="button" class="item__add" data-add="bolo-de-milho"
+                aria-label="Adicionar Bolo de milho cremoso ao pedido">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg><span>Adicionar</span>
         </button>
       </div>
@@ -237,28 +220,28 @@
     <div class="cats">
       
       <a class="cat" href="cardapio.html#cafes">
-        <img src="img/cat-cafes.svg" alt="" width="900" height="620" loading="lazy" decoding="async">
+        <img src="img/foto/graos.jpg" alt="" width="760" height="946" loading="lazy" decoding="async">
         <span class="cat__sobre">
           <strong>Cafés</strong>
           <small>Grão moído na hora, extraído na sua frente</small>
         </span>
       </a>
       <a class="cat" href="cardapio.html#salgados">
-        <img src="img/cat-salgados.svg" alt="" width="900" height="620" loading="lazy" decoding="async">
+        <img src="img/foto/esfiha.jpg" alt="" width="760" height="357" loading="lazy" decoding="async">
         <span class="cat__sobre">
           <strong>Salgados</strong>
           <small>Sai do forno, não da estufa</small>
         </span>
       </a>
       <a class="cat" href="cardapio.html#doces">
-        <img src="img/cat-doces.svg" alt="" width="900" height="620" loading="lazy" decoding="async">
+        <img src="img/foto/pudim.jpg" alt="" width="760" height="866" loading="lazy" decoding="async">
         <span class="cat__sobre">
           <strong>Doces e bolos</strong>
           <small>Receita de família, feita aqui</small>
         </span>
       </a>
       <a class="cat" href="cardapio.html#geladas">
-        <img src="img/cat-geladas.svg" alt="" width="900" height="620" loading="lazy" decoding="async">
+        <img src="img/foto/mocha.jpg" alt="" width="620" height="681" loading="lazy" decoding="async">
         <span class="cat__sobre">
           <strong>Geladas</strong>
           <small>Para o calor de Natal</small>
@@ -277,7 +260,7 @@
   </header>
     <div class="combos">
       <article class="combo">
-          <img src="img/combo-manha.svg" alt="" width="900" height="560" loading="lazy" decoding="async">
+          <img src="img/combo-manha.svg" alt="" width="720" height="720" loading="lazy" decoding="async">
           <div class="combo__corpo">
             <h3>Começo de dia</h3>
             <p>Café coado + empada de frango</p>
@@ -290,7 +273,7 @@
             </button>
           </div>
         </article><article class="combo">
-          <img src="img/combo-tarde.svg" alt="" width="900" height="560" loading="lazy" decoding="async">
+          <img src="img/combo-tarde.svg" alt="" width="720" height="720" loading="lazy" decoding="async">
           <div class="combo__corpo">
             <h3>Tarde boa</h3>
             <p>Capuccino + fatia de bolo da moça</p>
@@ -303,7 +286,7 @@
             </button>
           </div>
         </article><article class="combo">
-          <img src="img/combo-dois.svg" alt="" width="900" height="560" loading="lazy" decoding="async">
+          <img src="img/combo-dois.svg" alt="" width="720" height="720" loading="lazy" decoding="async">
           <div class="combo__corpo">
             <h3>Pra dois</h3>
             <p>Dois cafés + dois salgados, à sua escolha</p>
@@ -330,7 +313,7 @@
     <div class="pacotes">
       
       <article class="pacote">
-        <img src="img/enc-salgados.svg" alt="" width="860" height="620" loading="lazy" decoding="async">
+        <img src="img/foto/empada-arte.jpg" alt="" width="760" height="1018" loading="lazy" decoding="async">
         <div class="pacote__corpo">
           <h3>Cento de salgados</h3>
           <p class="pacote__desc">Empada, esfiha e croissant mini, na proporção que você quiser</p>
@@ -340,7 +323,7 @@
         </div>
       </article>
       <article class="pacote">
-        <img src="img/enc-bolo.svg" alt="" width="860" height="620" loading="lazy" decoding="async">
+        <img src="img/foto/doces-natal.jpg" alt="" width="760" height="430" loading="lazy" decoding="async">
         <div class="pacote__corpo">
           <h3>Bolo de festa</h3>
           <p class="pacote__desc">Bolo da moça, de milho ou chocolate. Recheio e cobertura à escolha</p>
@@ -350,7 +333,7 @@
         </div>
       </article>
       <article class="pacote">
-        <img src="img/enc-quiche.svg" alt="" width="860" height="620" loading="lazy" decoding="async">
+        <img src="img/foto/quiche.jpg" alt="" width="760" height="337" loading="lazy" decoding="async">
         <div class="pacote__corpo">
           <h3>Quiche inteira</h3>
           <p class="pacote__desc">De queijo, de alho-poró ou de frango. Vai pronta para assar ou já assada</p>
@@ -360,7 +343,7 @@
         </div>
       </article>
       <article class="pacote">
-        <img src="img/enc-coffee.svg" alt="" width="860" height="620" loading="lazy" decoding="async">
+        <img src="img/foto/familia.jpg" alt="" width="900" height="845" loading="lazy" decoding="async">
         <div class="pacote__corpo">
           <h3>Coffee break</h3>
           <p class="pacote__desc">Café em garrafa térmica, salgados, bolo fatiado e suco. A gente leva e monta</p>
@@ -384,7 +367,7 @@
     <div class="eventos">
       
       <article class="evento">
-        <img src="img/ev-tango.svg" alt="" width="860" height="560" loading="lazy" decoding="async">
+        <img src="img/foto/ev-lounge.jpg" alt="" width="860" height="1070" loading="lazy" decoding="async">
         <div class="evento__corpo">
           <p class="evento__quando"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 1.9" stroke-linecap="round"/></svg> Primeiro domingo do mês · 18h30</p>
           <h3>Café com Tango</h3>
@@ -394,7 +377,7 @@
         </div>
       </article>
       <article class="evento">
-        <img src="img/ev-arabe.svg" alt="" width="860" height="560" loading="lazy" decoding="async">
+        <img src="img/foto/ev-arabe.jpg" alt="" width="860" height="1070" loading="lazy" decoding="async">
         <div class="evento__corpo">
           <p class="evento__quando"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 1.9" stroke-linecap="round"/></svg> Última sexta do mês · 20h</p>
           <h3>Noite árabe</h3>
@@ -404,7 +387,7 @@
         </div>
       </article>
       <article class="evento">
-        <img src="img/ev-sabado.svg" alt="" width="860" height="560" loading="lazy" decoding="async">
+        <img src="img/foto/ev-brinde.jpg" alt="" width="860" height="1073" loading="lazy" decoding="async">
         <div class="evento__corpo">
           <p class="evento__quando"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 1.9" stroke-linecap="round"/></svg> Todo sábado · 9h às 22h</p>
           <h3>Sábado no lounge</h3>
@@ -431,14 +414,10 @@
   </header>
     <div class="galeria">
       
-        <img src="img/esp-salao.svg" alt="Salão com mesas de madeira e parede de tijolo" width="900" height="680"
-             loading="lazy" decoding="async">
-        <img src="img/esp-balcao.svg" alt="Balcão com a máquina de espresso e o letreiro de café" width="900" height="680"
-             loading="lazy" decoding="async">
-        <img src="img/esp-vitrine.svg" alt="Vitrine com bolos e salgados do dia" width="900" height="680"
-             loading="lazy" decoding="async">
-        <img src="img/esp-mesa.svg" alt="Mesa posta com café e croissant" width="900" height="680"
-             loading="lazy" decoding="async">
+        <img src="img/foto/salao.jpg" alt="O salão: mesas de madeira e parede de tijolo" width="900" height="1120" loading="lazy" decoding="async">
+        <img src="img/foto/balcao-neon.jpg" alt="O balcão, com o letreiro de café aceso" width="900" height="1123" loading="lazy" decoding="async">
+        <img src="img/foto/balcao.jpg" alt="Atendimento no balcão" width="900" height="1120" loading="lazy" decoding="async">
+        <img src="img/foto/mesa.jpg" alt="Mesa do salão, com café servido" width="900" height="1010" loading="lazy" decoding="async">
     </div>
     <div class="confortos">
       <div class="conforto">
@@ -453,8 +432,7 @@
 <section class="secao secao--creme" id="sobre">
   <div class="wrap sobre">
     <div class="sobre__arte">
-      <img src="img/sobre-balcao.svg" alt="Balcão do café com a xícara e os grãos"
-           width="1000" height="760" loading="lazy" decoding="async">
+      <img src="img/foto/cafe-mao.jpg" alt="O balcão do Grão Dourado" width="900" height="1120" loading="lazy" decoding="async">
     </div>
     <div class="sobre__texto">
       <header class="cabeca ">

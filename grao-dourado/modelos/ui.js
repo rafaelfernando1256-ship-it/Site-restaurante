@@ -5,6 +5,25 @@
    ═══════════════════════════════════════════════════════════════ */
 import { MARCA, wa } from '../conteudo/marca.js';
 import { MARCAS, dinheiro } from '../conteudo/cardapio.js';
+import { FOTOS } from '../conteudo/fotos.js';
+
+/**
+ * Imagem de um item ou seção.
+ *
+ * Prefere a FOTO quando existe; cai no desenho em SVG quando não.
+ * As fotos vêm do Instagram da própria casa e ganham do desenho em
+ * qualquer dia — mas nem todo item tem foto, e card misturando os dois
+ * continua tendo que funcionar.
+ */
+export function imagem(obj, { raiz = '', alt = '', classe = '', lazy = true } = {}) {
+  const f = obj.foto && FOTOS[obj.foto];
+  const src = f ? `${raiz}img/foto/${obj.foto}.jpg` : `${raiz}img/${obj.arte}`;
+  const [w, h] = f || [720, 720];
+  return `<img src="${src}" alt="${esc(alt)}" width="${w}" height="${h}"` +
+    (classe ? ` class="${classe}"` : '') +
+    (lazy ? ' loading="lazy"' : ' fetchpriority="high"') +
+    ' decoding="async">';
+}
 
 /** Escapa texto que vai para dentro de atributo ou corpo de HTML. */
 export const esc = (t = '') =>
@@ -62,7 +81,7 @@ export const selo = (id) =>
 export function cardItem(item, { raiz = '' } = {}) {
   return `<article class="item" data-cat="${esc(item.cat)}" data-slug="${esc(item.slug)}">
     <div class="item__arte">
-      <img src="${raiz}img/${esc(item.arte)}" alt="" width="720" height="720" loading="lazy" decoding="async">
+      ${imagem(item, { raiz })}
       ${item.marcas?.length ? `<div class="item__selos">${item.marcas.map(selo).join('')}</div>` : ''}
     </div>
     <div class="item__corpo">

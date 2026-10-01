@@ -15,6 +15,7 @@ export const HERO = {
     'Um café dentro do lounge da Evidance, em Natal. A empada sai do forno, o bolo é receita de família e o grão é moído na hora — na sua frente.',
   ctaPrincipal: 'Ver o cardápio',
   ctaSecundario: 'Pedir no WhatsApp',
+  foto: 'capuccino',
   mensagemWhats:
     'Oi! Vim pelo site e queria fazer um pedido.\n\nItem: \nQuantidade: \nRetirada ou entrega: ',
 };
@@ -36,6 +37,7 @@ export const ENCOMENDAS = {
       desc: 'Empada, esfiha e croissant mini, na proporção que você quiser',
       detalhe: '100 unidades · serve de 20 a 25 pessoas',
       preco: 280,
+      foto: 'empada-arte',
       arte: 'enc-salgados.svg',
     },
     {
@@ -44,6 +46,7 @@ export const ENCOMENDAS = {
       desc: 'Bolo da moça, de milho ou chocolate. Recheio e cobertura à escolha',
       detalhe: 'A partir de 1,5 kg · serve de 15 a 20 pessoas',
       preco: 160,
+      foto: 'doces-natal',
       arte: 'enc-bolo.svg',
     },
     {
@@ -52,6 +55,7 @@ export const ENCOMENDAS = {
       desc: 'De queijo, de alho-poró ou de frango. Vai pronta para assar ou já assada',
       detalhe: '24 cm · serve de 6 a 8 pessoas',
       preco: 95,
+      foto: 'quiche',
       arte: 'enc-quiche.svg',
     },
     {
@@ -60,6 +64,7 @@ export const ENCOMENDAS = {
       desc: 'Café em garrafa térmica, salgados, bolo fatiado e suco. A gente leva e monta',
       detalhe: 'A partir de 15 pessoas · consulte o cardápio do dia',
       preco: 0, // 0 = "sob consulta"
+      foto: 'familia',
       arte: 'enc-coffee.svg',
     },
   ],
@@ -90,6 +95,7 @@ export const AGENDA = {
       quando: 'Primeiro domingo do mês',
       hora: '18h30',
       entrada: 'Entrada franca',
+      foto: 'ev-lounge',
       arte: 'ev-tango.svg',
     },
     {
@@ -100,6 +106,7 @@ export const AGENDA = {
       quando: 'Última sexta do mês',
       hora: '20h',
       entrada: 'Entrada franca',
+      foto: 'ev-arabe',
       arte: 'ev-arabe.svg',
     },
     {
@@ -110,6 +117,7 @@ export const AGENDA = {
       quando: 'Todo sábado',
       hora: '9h às 22h',
       entrada: 'Entrada franca',
+      foto: 'ev-brinde',
       arte: 'ev-sabado.svg',
     },
   ],
@@ -130,10 +138,10 @@ export const ESPACO = {
     { titulo: 'Mesa grande', texto: 'Cabe reunião de seis sem apertar' },
   ],
   galeria: [
-    { arte: 'esp-salao.svg', alt: 'Salão com mesas de madeira e parede de tijolo' },
-    { arte: 'esp-balcao.svg', alt: 'Balcão com a máquina de espresso e o letreiro de café' },
-    { arte: 'esp-vitrine.svg', alt: 'Vitrine com bolos e salgados do dia' },
-    { arte: 'esp-mesa.svg', alt: 'Mesa posta com café e croissant' },
+    { foto: 'salao', arte: 'esp-salao.svg', alt: 'O salão: mesas de madeira e parede de tijolo' },
+    { foto: 'balcao-neon', arte: 'esp-balcao.svg', alt: 'O balcão, com o letreiro de café aceso' },
+    { foto: 'balcao', arte: 'esp-vitrine.svg', alt: 'Atendimento no balcão' },
+    { foto: 'mesa', arte: 'esp-mesa.svg', alt: 'Mesa do salão, com café servido' },
   ],
 };
 
@@ -147,6 +155,7 @@ export const SOBRE = {
     'Estamos no lounge da Evidance, e isso não é acaso: café e dança combinam mais do que parece. Tem gente que chega para a aula e fica para o café, e tem gente que chega para o café e acaba dançando.',
   ],
   assinatura: 'A casa',
+  foto: 'cafe-mao',
   arte: 'sobre-balcao.svg',
 };
 

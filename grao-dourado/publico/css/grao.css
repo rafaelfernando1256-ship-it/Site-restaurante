@@ -322,7 +322,9 @@ button{font:inherit;color:inherit}
 
 /* ── Galeria e confortos ───────────────────────────────────────── */
 .galeria{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
-.galeria img{border-radius:var(--r);aspect-ratio:900/680;object-fit:cover;width:100%}
+/* Retrato, não paisagem: as fotos do espaço vêm do Instagram em 3:4 e
+   num card deitado o object-fit cortava a cabeça das pessoas. */
+.galeria img{border-radius:var(--r);aspect-ratio:3/4;object-fit:cover;width:100%}
 .confortos{display:grid;gap:18px;margin-top:clamp(26px,4vw,40px);
   grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
 .conforto{padding:18px 20px;background:var(--leite);border:1px solid var(--fio);

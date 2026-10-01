@@ -20,6 +20,7 @@ Instagram [@graodouradocoffee](https://instagram.com/graodouradocoffee).
 > | **endereço completo** | o perfil só diz "Lounge da Evidance Natal" |
 > | **datas dos eventos** | o Café com Tango é real; a periodicidade é exemplo |
 > | **nota de avaliação** | não existe no site. Não inventei nenhuma |
+| **as fotos** | são as do Instagram deles. Peça autorização antes de publicar |
 >
 > O aviso aparece em três lugares na própria página: barra fixa no canto,
 > rodapé e `robots.txt` com `Disallow: /`. Aparecer no Google buscando por
@@ -105,10 +106,13 @@ modelos/
 publico/
   css/grao.css   folha única
   js/grao.js     comportamento, sem framework
-  img/           46 ilustrações em SVG
+  img/           46 desenhos em SVG (reserva)
+  img/foto/      20 fotos, recortadas do Instagram da casa
 
-construir.mjs    o build
-gerar-artes.py   desenha as ilustrações
+conteudo/fotos.js  dimensões das fotos (gerado, não edite)
+construir.mjs      o build
+gerar-artes.py     desenha os SVG de reserva
+gerar-fotos.py     recorta as fotos das capturas do Instagram
 ```
 
 | quero | onde |
@@ -147,9 +151,12 @@ e `backdrop-filter` cria bloco de contenção para descendente
 barra. Foi bug real em outro projeto deste repositório; aqui já nasceu
 resolvido, com teste que mede a altura em vez de só ler o texto.
 
-**As ilustrações são SVG gerado por script.** Sem acesso a banco de
-imagem, `gerar-artes.py` desenha as 46 peças. São 183 KB no total — menos
-que uma única foto de celular.
+**Foto onde dá, desenho onde não dá.** O ajudante `imagem()` em
+`modelos/ui.js` prefere o campo `foto` e cai no `arte` quando ele não
+existe — então um item sem foto continua funcionando, e acrescentar uma
+foto depois é preencher um campo. As dimensões saem de
+`conteudo/fotos.js`, gerado junto com as fotos, para o HTML já nascer com
+`width` e `height` e a página não dar salto enquanto carrega.
 
 ---
 
@@ -179,8 +186,8 @@ Tudo contra o build de produção:
 
 | página | requisições | peso | nós no DOM | FCP |
 |---|---|---|---|---|
-| Home | 9 | 223 KB | 588 | 204 ms |
-| Cardápio | 10 | 202 KB | 489 | 160 ms |
+| Home | 9 | 309 KB | 571 | 276 ms |
+| Cardápio | 10 | 302 KB | 489 | 176 ms |
 
 Sem compressão, no servidor de teste. Em hospedagem real chega bem abaixo
 disso. Para comparar: os portfólios em Next.js deste mesmo repositório
@@ -188,16 +195,54 @@ pesam 934 KB na home.
 
 ---
 
-## As imagens são provisórias
+## As imagens
 
-As 46 ilustrações de `publico/img/` foram desenhadas para este projeto
-porque o ambiente onde ele foi montado não tem acesso a banco de imagem.
+O site usa **duas fontes**, e a regra é simples: foto quando existe,
+desenho quando não.
 
-**Site de café vive de foto.** Foto de verdade da empada saindo do forno,
-do balcão, do bolo cortado — ganha de qualquer ilustração em qualquer dia
-da semana, e eles já têm essas fotos no Instagram. Trocar é substituir o
-arquivo em `publico/img/` mantendo o nome, ou mudar o campo `arte` do item
-em `conteudo/cardapio.js`.
+### As 20 fotos
+
+Vieram do Instagram da própria casa, recortadas das capturas do perfil
+por `gerar-fotos.py`. Ficam em `publico/img/foto/`.
+
+O script tira os enfeites que são do Instagram e não da foto — o selo de
+vídeo no canto, o botão flutuante "Mensagem" — e, nas peças
+promocionais, recorta só o pedaço onde não há texto por cima.
+
+**Foto de produto só entra quando dá para ter certeza do que é.** O
+capuccino, o pudim, a quiche, a esfiha, o bolo de milho e os grãos no
+porta-filtro estão lá porque são inequívocos. Onde a foto é ambígua ou o
+texto cobre o prato, fica o desenho — é melhor um desenho honesto que uma
+foto de outra coisa com o nome errado embaixo.
+
+A peça da empada entra **inteira**, com o texto e tudo: a foto por trás
+dela é boa, mas o painel marrom cobre tudo menos uma faixa estreita, e
+recortada essa faixa sai pequena e borrada. A arte completa é deles,
+mostra o produto e diz os recheios.
+
+> ⚠️ **As fotos são da casa, não suas.** Para um exemplo que você mostra
+> a eles, usar o material deles é o que faz sentido — é o negócio deles
+> que você está mostrando. Mas antes de deixar o site no ar em qualquer
+> endereço público, peça autorização. E peça os **originais**: estas
+> saíram de captura de tela de navegador, então estão em 700–900px e um
+> pouco moles. Em arquivo original ficariam bem melhores.
+
+Para refazer os recortes você precisa das capturas do perfil:
+
+```bash
+RECORTES=/caminho/para/os/recortes python3 gerar-fotos.py
+```
+
+### Os 46 desenhos
+
+Estão em `publico/img/` e cobrem o que não tem foto: os itens de cardápio
+sem imagem inequívoca, os três combos (são composições que não existem
+como foto) e o mapa. Foram desenhados por `gerar-artes.py`.
+
+**Troque por foto sempre que conseguir.** Para apontar um item para uma
+foto nova, ponha o arquivo em `publico/img/foto/` e preencha o campo
+`foto` do item em `conteudo/cardapio.js` — sem extensão. O campo `arte`
+continua lá como reserva.
 
 ---
 

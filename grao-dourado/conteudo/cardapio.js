@@ -20,7 +20,10 @@
      desc      uma linha. Duas já é longo demais no celular.
      preco     número, em reais
      cat       id da categoria
-     arte      arquivo em publico/img/
+     arte      desenho em publico/img/ (reserva)
+     foto      foto real em publico/img/foto/<nome>.jpg, sem extensão.
+               Quando existe, é ela que aparece. Só entra onde dá para
+               ter certeza do que é o prato — onde não dá, fica o desenho.
      marcas    selos: 'casa' | 'novo' | 'queridinho' | 'vegetariano'
      destaque  entra na vitrine da home
    ═══════════════════════════════════════════════════════════════ */
@@ -31,24 +34,28 @@ export const CATEGORIAS = [
     nome: 'Cafés',
     resumo: 'Grão moído na hora, extraído na sua frente',
     arte: 'cat-cafes.svg',
+    foto: 'graos',
   },
   {
     id: 'salgados',
     nome: 'Salgados',
     resumo: 'Sai do forno, não da estufa',
     arte: 'cat-salgados.svg',
+    foto: 'esfiha',
   },
   {
     id: 'doces',
     nome: 'Doces e bolos',
     resumo: 'Receita de família, feita aqui',
     arte: 'cat-doces.svg',
+    foto: 'pudim',
   },
   {
     id: 'geladas',
     nome: 'Geladas',
     resumo: 'Para o calor de Natal',
     arte: 'cat-geladas.svg',
+    foto: 'mocha',
   },
 ];
 
@@ -61,7 +68,9 @@ export const ITENS = [
     preco: 6.5,
     cat: 'cafes',
     arte: 'espresso.svg',
+    foto: 'graos',
     marcas: [],
+    destaque: true,
   },
   {
     slug: 'capuccino',
@@ -71,6 +80,7 @@ export const ITENS = [
     preco: 12,
     cat: 'cafes',
     arte: 'capuccino.svg',
+    foto: 'capuccino',
     marcas: ['queridinho'],
     destaque: true,
   },
@@ -99,6 +109,7 @@ export const ITENS = [
     preco: 15,
     cat: 'cafes',
     arte: 'mocha.svg',
+    foto: 'mocha',
     marcas: [],
   },
   {
@@ -120,8 +131,8 @@ export const ITENS = [
     preco: 13,
     cat: 'salgados',
     arte: 'empada-frango.svg',
+    foto: 'empada-arte',
     marcas: ['casa', 'queridinho'],
-    destaque: true,
   },
   {
     slug: 'empada-carne-de-sol',
@@ -131,7 +142,6 @@ export const ITENS = [
     cat: 'salgados',
     arte: 'empada-carne.svg',
     marcas: ['casa'],
-    destaque: true,
   },
   {
     slug: 'quiche-queijo',
@@ -140,6 +150,7 @@ export const ITENS = [
     preco: 15,
     cat: 'salgados',
     arte: 'quiche.svg',
+    foto: 'quiche',
     marcas: ['vegetariano'],
     destaque: true,
   },
@@ -151,7 +162,9 @@ export const ITENS = [
     preco: 11,
     cat: 'salgados',
     arte: 'esfiha.svg',
+    foto: 'esfiha',
     marcas: ['casa'],
+    destaque: true,
   },
   {
     slug: 'croissant',
@@ -193,7 +206,6 @@ export const ITENS = [
     cat: 'doces',
     arte: 'bolo-moca.svg',
     marcas: ['casa', 'queridinho'],
-    destaque: true,
   },
   {
     slug: 'pudim',
@@ -202,6 +214,7 @@ export const ITENS = [
     preco: 12,
     cat: 'doces',
     arte: 'pudim.svg',
+    foto: 'pudim',
     marcas: ['casa'],
     destaque: true,
   },
@@ -212,7 +225,9 @@ export const ITENS = [
     preco: 10,
     cat: 'doces',
     arte: 'bolo-milho.svg',
+    foto: 'bolo-milho',
     marcas: ['casa', 'vegetariano'],
+    destaque: true,
   },
   {
     slug: 'torta-limao',
@@ -260,7 +275,6 @@ export const ITENS = [
     cat: 'geladas',
     arte: 'frappe.svg',
     marcas: ['novo'],
-    destaque: true,
   },
   {
     slug: 'suco',
