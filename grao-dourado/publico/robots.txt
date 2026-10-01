@@ -1,0 +1,7 @@
+User-agent: *
+Disallow: /
+
+# Projeto demonstrativo. Ao publicar como site oficial, troque por:
+# User-agent: *
+# Allow: /
+# Sitemap: https://exemplo.com.br/sitemap.xml

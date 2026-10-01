@@ -1,0 +1,667 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grão Dourado Coffee Shop · Café, salgado e bolo em Natal</title>
+<meta name="description" content="Café feito na hora, empada que sai do forno e bolo de receita de família, no lounge da Evidance, em Natal. Veja o cardápio com preço e peça pelo WhatsApp.">
+<meta name="theme-color" content="#241510">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:site_name" content="Grão Dourado Coffee Shop">
+<meta property="og:title" content="Grão Dourado Coffee Shop · Café, salgado e bolo em Natal">
+<meta property="og:description" content="Café feito na hora, empada que sai do forno e bolo de receita de família, no lounge da Evidance, em Natal. Veja o cardápio com preço e peça pelo WhatsApp.">
+<meta name="robots" content="noindex,follow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Karla:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="css/grao.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"CafeOrCoffeeShop","name":"Grão Dourado Coffee Shop","description":"Unindo o café aos melhores sentimentos","servesCuisine":["Café","Padaria","Lanches"],"priceRange":"R$","address":{"@type":"PostalAddress","streetAddress":"Lounge da Evidance Natal","addressLocality":"Natal","addressRegion":"RN","addressCountry":"BR"},"telephone":"+5584900000000","sameAs":["https://instagram.com/graodouradocoffee"],"openingHoursSpecification":[{"@type":"OpeningHoursSpecification","dayOfWeek":"https://schema.org/Monday","opens":"08:00","closes":"20:00"},{"@type":"OpeningHoursSpecification","dayOfWeek":"https://schema.org/Tuesday","opens":"08:00","closes":"20:00"},{"@type":"OpeningHoursSpecification","dayOfWeek":"https://schema.org/Wednesday","opens":"08:00","closes":"20:00"},{"@type":"OpeningHoursSpecification","dayOfWeek":"https://schema.org/Thursday","opens":"08:00","closes":"20:00"},{"@type":"OpeningHoursSpecification","dayOfWeek":"https://schema.org/Friday","opens":"08:00","closes":"22:00"},{"@type":"OpeningHoursSpecification","dayOfWeek":"https://schema.org/Saturday","opens":"09:00","closes":"22:00"}]}</script>
+</head>
+<body class="p-home">
+
+<a class="pular" href="#conteudo">Pular para o conteúdo</a>
+
+<header class="topo" data-topo>
+  <div class="topo__linha">
+    <a class="marca" href="index.html">
+      <img src="img/logo.svg" alt="" width="240" height="240">
+      <span class="marca__txt">
+        <strong>Grão Dourado</strong>
+        <small>Coffee &amp; Shop</small>
+      </span>
+    </a>
+
+    <nav class="nav" aria-label="Navegação principal"><a href="cardapio.html">Cardápio</a><a href="index.html#encomendas" aria-current="page">Encomendas</a><a href="index.html#agenda" aria-current="page">Agenda</a><a href="index.html#espaco" aria-current="page">O espaço</a><a href="index.html#chegar" aria-current="page">Como chegar</a></nav>
+
+    <div class="topo__acoes">
+      <span class="aberto" data-aberto hidden>
+    <span class="aberto__ponto" aria-hidden="true"></span>
+    <span class="aberto__texto">Verificando…</span>
+  </span>
+      <a class="btn btn--whats btn--sm topo__pedir" href="https://wa.me/5584900000000?text=Oi!%20Vim%20pelo%20site%20do%20Gr%C3%A3o%20Dourado." target="_blank" rel="noopener noreferrer"><span class="btn__ico"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.9-4.45 9.9-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 18.15h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.25-8.23 2.2 0 4.27.86 5.83 2.42a8.19 8.19 0 0 1 2.41 5.82c0 4.54-3.7 8.23-8.24 8.23Zm4.52-6.16c-.25-.13-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.24-.64.8-.78.97-.14.16-.29.18-.54.06-.25-.13-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.01-.38.11-.5.11-.11.25-.29.37-.43.13-.15.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.4-.41-.56-.42h-.47c-.17 0-.43.06-.66.31-.22.25-.87.85-.87 2.07s.89 2.4 1.02 2.56c.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.47-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.15-1.18-.06-.1-.23-.16-.48-.29Z"/></svg></span>Pedir</a>
+      <button type="button" class="hamburguer" data-menu-abre
+              aria-expanded="false" aria-controls="menu-cel" aria-label="Abrir menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- O menu fica FORA do <header> de propósito: o header tem
+     backdrop-filter, e backdrop-filter cria bloco de contenção para
+     descendente position:fixed — o menu colapsaria para a altura da
+     barra em vez de ocupar a tela. -->
+<div class="menucel" id="menu-cel" data-menu hidden>
+  <nav class="menucel__nav" aria-label="Navegação">
+    <a href="cardapio.html">Cardápio</a><a href="index.html#encomendas">Encomendas</a><a href="index.html#agenda">Agenda</a><a href="index.html#espaco">O espaço</a><a href="index.html#chegar">Como chegar</a>
+  </nav>
+  <div class="menucel__pe">
+    <a class="btn btn--whats " href="https://wa.me/5584900000000?text=Oi!%20Vim%20pelo%20site%20do%20Gr%C3%A3o%20Dourado." target="_blank" rel="noopener noreferrer"><span class="btn__ico"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.9-4.45 9.9-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 18.15h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.25-8.23 2.2 0 4.27.86 5.83 2.42a8.19 8.19 0 0 1 2.41 5.82c0 4.54-3.7 8.23-8.24 8.23Zm4.52-6.16c-.25-.13-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.24-.64.8-.78.97-.14.16-.29.18-.54.06-.25-.13-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.01-.38.11-.5.11-.11.25-.29.37-.43.13-.15.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.4-.41-.56-.42h-.47c-.17 0-.43.06-.66.31-.22.25-.87.85-.87 2.07s.89 2.4 1.02 2.56c.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.47-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.15-1.18-.06-.1-.23-.16-.48-.29Z"/></svg></span>Chamar no WhatsApp</a>
+    <a class="social" href="https://instagram.com/graodouradocoffee"
+       target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.8-.25-2.23-.41-.56-.22-.96-.48-1.38-.9a3.7 3.7 0 0 1-.9-1.38c-.16-.42-.36-1.06-.41-2.23C2.17 15.58 2.16 15.2 2.16 12s.01-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41C8.42 2.17 8.8 2.16 12 2.16Zm0 2.12c-3.14 0-3.51.01-4.75.07-1.15.05-1.77.24-2.18.4-.55.21-.94.47-1.35.88-.41.41-.67.8-.88 1.35-.16.41-.35 1.03-.4 2.18-.06 1.24-.07 1.61-.07 4.75s.01 3.51.07 4.75c.05 1.15.24 1.77.4 2.18.21.55.47.94.88 1.35.41.41.8.67 1.35.88.41.16 1.03.35 2.18.4 1.24.06 1.61.07 4.75.07s3.51-.01 4.75-.07c1.15-.05 1.77-.24 2.18-.4.55-.21.94-.47 1.35-.88.41-.41.67-.8.88-1.35.16-.41.35-1.03.4-2.18.06-1.24.07-1.61.07-4.75s-.01-3.51-.07-4.75c-.05-1.15-.24-1.77-.4-2.18a3.6 3.6 0 0 0-.88-1.35 3.6 3.6 0 0 0-1.35-.88c-.41-.16-1.03-.35-2.18-.4-1.24-.06-1.61-.07-4.75-.07Zm0 3.6a6.12 6.12 0 1 1 0 12.24 6.12 6.12 0 0 1 0-12.24Zm0 10.1a3.98 3.98 0 1 0 0-7.96 3.98 3.98 0 0 0 0 7.96Zm7.79-10.34a1.43 1.43 0 1 1-2.86 0 1.43 1.43 0 0 1 2.86 0Z"/></svg><span>@graodouradocoffee</span></a>
+  </div>
+</div>
+<main id="conteudo">
+
+<section class="hero">
+  <div class="wrap hero__grade">
+    <div class="hero__texto">
+      <p class="hero__etiqueta">Café, salgado e bolo feitos aqui</p>
+      <h1 class="hero__titulo">Unindo o café aos<br>melhores sentimentos</h1>
+      <p class="hero__sub">Um café dentro do lounge da Evidance, em Natal. A empada sai do forno, o bolo é receita de família e o grão é moído na hora — na sua frente.</p>
+      <div class="hero__acoes">
+        <a class="btn btn--ouro " href="cardapio.html"><span class="btn__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Ver o cardápio</a>
+        <a class="btn btn--whats " href="https://wa.me/5584900000000?text=Oi!%20Vim%20pelo%20site%20e%20queria%20fazer%20um%20pedido.%0A%0AItem%3A%20%0AQuantidade%3A%20%0ARetirada%20ou%20entrega%3A%20" target="_blank" rel="noopener noreferrer"><span class="btn__ico"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.9-4.45 9.9-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 18.15h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.25-8.23 2.2 0 4.27.86 5.83 2.42a8.19 8.19 0 0 1 2.41 5.82c0 4.54-3.7 8.23-8.24 8.23Zm4.52-6.16c-.25-.13-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.24-.64.8-.78.97-.14.16-.29.18-.54.06-.25-.13-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.01-.38.11-.5.11-.11.25-.29.37-.43.13-.15.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.4-.41-.56-.42h-.47c-.17 0-.43.06-.66.31-.22.25-.87.85-.87 2.07s.89 2.4 1.02 2.56c.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.47-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.15-1.18-.06-.1-.23-.16-.48-.29Z"/></svg></span>Pedir no WhatsApp</a>
+      </div>
+      <div class="hero__estado">
+        <span class="aberto" data-aberto hidden>
+    <span class="aberto__ponto" aria-hidden="true"></span>
+    <span class="aberto__texto">Verificando…</span>
+  </span>
+        <span class="hero__local"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11Z"/><circle cx="12" cy="10" r="2.6"/></svg> Lounge da Evidance Natal · Natal · RN</span>
+      </div>
+    </div>
+    <div class="hero__arte">
+      <img src="img/hero.svg" alt="Xícara de café sobre grãos torrados"
+           width="900" height="1100" fetchpriority="high" decoding="async">
+    </div>
+  </div>
+</section>
+
+<section class="promessas" aria-label="O que a casa garante">
+  <div class="wrap promessas__grade">
+    <div class="promessa">
+        <h2>Feito na hora</h2><p>Salgado sai do forno, não da estufa</p></div><div class="promessa">
+        <h2>Receita de família</h2><p>A massa e o recheio são de casa</p></div><div class="promessa">
+        <h2>Café de verdade</h2><p>Grão moído na hora, extração na frente de você</p></div>
+  </div>
+</section>
+
+<section class="secao" id="destaques">
+  <div class="wrap">
+    <header class="cabeca ">
+    <p class="cabeca__etiqueta">O que mais sai</p>
+    <h2 class="cabeca__titulo">Se for a primeira vez, comece por aqui</h2>
+    <p class="cabeca__texto">Os pedidos que mais se repetem no balcão. Toque em adicionar e monte o pedido sem sair da página.</p>
+  </header>
+    <div class="grade-itens">
+      <article class="item" data-cat="cafes" data-slug="capuccino">
+    <div class="item__arte">
+      <img src="img/capuccino.svg" alt="" width="720" height="720" loading="lazy" decoding="async">
+      <div class="item__selos"><span class="selo selo--queridinho" title="O que mais sai">Mais pedido</span></div>
+    </div>
+    <div class="item__corpo">
+      <h3 class="item__nome">Capuccino</h3>
+      <p class="item__desc">Espresso, leite vaporizado e aquele chapéu de espuma</p>
+      <div class="item__pe">
+        <span class="item__preco">R$ 12,00</span>
+        <button type="button" class="item__add" data-add="capuccino"
+                aria-label="Adicionar Capuccino ao pedido">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg><span>Adicionar</span>
+        </button>
+      </div>
+    </div>
+  </article><article class="item" data-cat="salgados" data-slug="empada-frango">
+    <div class="item__arte">
+      <img src="img/empada-frango.svg" alt="" width="720" height="720" loading="lazy" decoding="async">
+      <div class="item__selos"><span class="selo selo--casa" title="Feito aqui dentro, receita nossa">Da casa</span><span class="selo selo--queridinho" title="O que mais sai">Mais pedido</span></div>
+    </div>
+    <div class="item__corpo">
+      <h3 class="item__nome">Empada de frango defumado</h3>
+      <p class="item__desc">Frango defumado com queijo do reino, massa que desmancha</p>
+      <div class="item__pe">
+        <span class="item__preco">R$ 13,00</span>
+        <button type="button" class="item__add" data-add="empada-frango"
+                aria-label="Adicionar Empada de frango defumado ao pedido">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg><span>Adicionar</span>
+        </button>
+      </div>
+    </div>
+  </article><article class="item" data-cat="salgados" data-slug="empada-carne-de-sol">
+    <div class="item__arte">
+      <img src="img/empada-carne.svg" alt="" width="720" height="720" loading="lazy" decoding="async">
+      <div class="item__selos"><span class="selo selo--casa" title="Feito aqui dentro, receita nossa">Da casa</span></div>
+    </div>
+    <div class="item__corpo">
+      <h3 class="item__nome">Empada de carne de sol</h3>
+      <p class="item__desc">Carne de sol na nata, do jeito que se faz no Nordeste</p>
+      <div class="item__pe">
+        <span class="item__preco">R$ 14,00</span>
+        <button type="button" class="item__add" data-add="empada-carne-de-sol"
+                aria-label="Adicionar Empada de carne de sol ao pedido">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg><span>Adicionar</span>
+        </button>
+      </div>
+    </div>
+  </article><article class="item" data-cat="salgados" data-slug="quiche-queijo">
+    <div class="item__arte">
+      <img src="img/quiche.svg" alt="" width="720" height="720" loading="lazy" decoding="async">
+      <div class="item__selos"><span class="selo selo--vegetariano" title="Sem carne">Vegetariano</span></div>
+    </div>
+    <div class="item__corpo">
+      <h3 class="item__nome">Quiche de queijo</h3>
+      <p class="item__desc">Massa crocante por fora, recheio cremoso por dentro</p>
+      <div class="item__pe">
+        <span class="item__preco">R$ 15,00</span>
+        <button type="button" class="item__add" data-add="quiche-queijo"
+                aria-label="Adicionar Quiche de queijo ao pedido">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg><span>Adicionar</span>
+        </button>
+      </div>
+    </div>
+  </article><article class="item" data-cat="doces" data-slug="bolo-da-moca">
+    <div class="item__arte">
+      <img src="img/bolo-moca.svg" alt="" width="720" height="720" loading="lazy" decoding="async">
+      <div class="item__selos"><span class="selo selo--casa" title="Feito aqui dentro, receita nossa">Da casa</span><span class="selo selo--queridinho" title="O que mais sai">Mais pedido</span></div>
+    </div>
+    <div class="item__corpo">
+      <h3 class="item__nome">Bolo da moça</h3>
+      <p class="item__desc">O da receita que a gente já mostrou no Instagram. Leite moça de verdade</p>
+      <div class="item__pe">
+        <span class="item__preco">R$ 11,00</span>
+        <button type="button" class="item__add" data-add="bolo-da-moca"
+                aria-label="Adicionar Bolo da moça ao pedido">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg><span>Adicionar</span>
+        </button>
+      </div>
+    </div>
+  </article><article class="item" data-cat="doces" data-slug="pudim">
+    <div class="item__arte">
+      <img src="img/pudim.svg" alt="" width="720" height="720" loading="lazy" decoding="async">
+      <div class="item__selos"><span class="selo selo--casa" title="Feito aqui dentro, receita nossa">Da casa</span></div>
+    </div>
+    <div class="item__corpo">
+      <h3 class="item__nome">Pudim</h3>
+      <p class="item__desc">Calda escura, textura lisa, sem furinho nenhum</p>
+      <div class="item__pe">
+        <span class="item__preco">R$ 12,00</span>
+        <button type="button" class="item__add" data-add="pudim"
+                aria-label="Adicionar Pudim ao pedido">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg><span>Adicionar</span>
+        </button>
+      </div>
+    </div>
+  </article><article class="item" data-cat="geladas" data-slug="frappe">
+    <div class="item__arte">
+      <img src="img/frappe.svg" alt="" width="720" height="720" loading="lazy" decoding="async">
+      <div class="item__selos"><span class="selo selo--novo" title="Entrou no cardápio agora">Novo</span></div>
+    </div>
+    <div class="item__corpo">
+      <h3 class="item__nome">Frappê de café</h3>
+      <p class="item__desc">Batido, cremoso, com chantilly por cima</p>
+      <div class="item__pe">
+        <span class="item__preco">R$ 18,00</span>
+        <button type="button" class="item__add" data-add="frappe"
+                aria-label="Adicionar Frappê de café ao pedido">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg><span>Adicionar</span>
+        </button>
+      </div>
+    </div>
+  </article>
+    </div>
+    <p class="secao__pe">
+      <a class="btn btn--linha " href="cardapio.html"><span class="btn__ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Ver o cardápio inteiro</a>
+    </p>
+  </div>
+</section>
+
+<section class="secao secao--escura" id="categorias">
+  <div class="wrap">
+    <header class="cabeca cabeca--claro">
+    <p class="cabeca__etiqueta">Cardápio</p>
+    <h2 class="cabeca__titulo">Quatro frentes, um balcão só</h2>
+    
+  </header>
+    <div class="cats">
+      
+      <a class="cat" href="cardapio.html#cafes">
+        <img src="img/cat-cafes.svg" alt="" width="900" height="620" loading="lazy" decoding="async">
+        <span class="cat__sobre">
+          <strong>Cafés</strong>
+          <small>Grão moído na hora, extraído na sua frente</small>
+        </span>
+      </a>
+      <a class="cat" href="cardapio.html#salgados">
+        <img src="img/cat-salgados.svg" alt="" width="900" height="620" loading="lazy" decoding="async">
+        <span class="cat__sobre">
+          <strong>Salgados</strong>
+          <small>Sai do forno, não da estufa</small>
+        </span>
+      </a>
+      <a class="cat" href="cardapio.html#doces">
+        <img src="img/cat-doces.svg" alt="" width="900" height="620" loading="lazy" decoding="async">
+        <span class="cat__sobre">
+          <strong>Doces e bolos</strong>
+          <small>Receita de família, feita aqui</small>
+        </span>
+      </a>
+      <a class="cat" href="cardapio.html#geladas">
+        <img src="img/cat-geladas.svg" alt="" width="900" height="620" loading="lazy" decoding="async">
+        <span class="cat__sobre">
+          <strong>Geladas</strong>
+          <small>Para o calor de Natal</small>
+        </span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="secao" id="combos">
+  <div class="wrap">
+    <header class="cabeca ">
+    <p class="cabeca__etiqueta">Combinações</p>
+    <h2 class="cabeca__titulo">Café com alguma coisa, que é como se faz</h2>
+    <p class="cabeca__texto">Sai mais em conta do que pedir separado.</p>
+  </header>
+    <div class="combos">
+      <article class="combo">
+          <img src="img/combo-manha.svg" alt="" width="900" height="560" loading="lazy" decoding="async">
+          <div class="combo__corpo">
+            <h3>Começo de dia</h3>
+            <p>Café coado + empada de frango</p>
+            <div class="combo__pe">
+              <span class="combo__preco">R$ 17,00</span>
+              <span class="combo__poupa">economiza R$ 3,00</span>
+            </div>
+            <button type="button" class="btn btn--linha btn--sm" data-add-combo="combo-manha">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>Adicionar
+            </button>
+          </div>
+        </article><article class="combo">
+          <img src="img/combo-tarde.svg" alt="" width="900" height="560" loading="lazy" decoding="async">
+          <div class="combo__corpo">
+            <h3>Tarde boa</h3>
+            <p>Capuccino + fatia de bolo da moça</p>
+            <div class="combo__pe">
+              <span class="combo__preco">R$ 20,00</span>
+              <span class="combo__poupa">economiza R$ 3,00</span>
+            </div>
+            <button type="button" class="btn btn--linha btn--sm" data-add-combo="combo-tarde">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>Adicionar
+            </button>
+          </div>
+        </article><article class="combo">
+          <img src="img/combo-dois.svg" alt="" width="900" height="560" loading="lazy" decoding="async">
+          <div class="combo__corpo">
+            <h3>Pra dois</h3>
+            <p>Dois cafés + dois salgados, à sua escolha</p>
+            <div class="combo__pe">
+              <span class="combo__preco">R$ 34,00</span>
+              <span class="combo__poupa">economiza R$ 2,00</span>
+            </div>
+            <button type="button" class="btn btn--linha btn--sm" data-add-combo="combo-dois">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>Adicionar
+            </button>
+          </div>
+        </article>
+    </div>
+  </div>
+</section>
+
+<section class="secao secao--creme" id="encomendas">
+  <div class="wrap">
+    <header class="cabeca ">
+    <p class="cabeca__etiqueta">Encomendas</p>
+    <h2 class="cabeca__titulo">Para a sua festa, reunião ou aquele domingo em casa</h2>
+    <p class="cabeca__texto">A gente faz por encomenda com antecedência de 48 horas. Peça pelo WhatsApp dizendo o que você quer, para quantas pessoas e para quando.</p>
+  </header>
+    <div class="pacotes">
+      
+      <article class="pacote">
+        <img src="img/enc-salgados.svg" alt="" width="860" height="620" loading="lazy" decoding="async">
+        <div class="pacote__corpo">
+          <h3>Cento de salgados</h3>
+          <p class="pacote__desc">Empada, esfiha e croissant mini, na proporção que você quiser</p>
+          <p class="pacote__detalhe">100 unidades · serve de 20 a 25 pessoas</p>
+          <p class="pacote__preco">a partir de <strong>R$ 280,00</strong></p>
+          <a class="btn btn--linha btn--sm" href="https://wa.me/5584900000000?text=Oi!%20Queria%20fazer%20uma%20encomenda.%0A%0AO%20que%3A%20%0APara%20quantas%20pessoas%3A%20%0APara%20quando%3A%20%0ARetirada%20ou%20entrega%3A%20%0A%0APacote%3A%20Cento%20de%20salgados" target="_blank" rel="noopener noreferrer"><span class="btn__ico"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.9-4.45 9.9-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 18.15h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.25-8.23 2.2 0 4.27.86 5.83 2.42a8.19 8.19 0 0 1 2.41 5.82c0 4.54-3.7 8.23-8.24 8.23Zm4.52-6.16c-.25-.13-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.24-.64.8-.78.97-.14.16-.29.18-.54.06-.25-.13-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.01-.38.11-.5.11-.11.25-.29.37-.43.13-.15.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.4-.41-.56-.42h-.47c-.17 0-.43.06-.66.31-.22.25-.87.85-.87 2.07s.89 2.4 1.02 2.56c.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.47-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.15-1.18-.06-.1-.23-.16-.48-.29Z"/></svg></span>Pedir orçamento</a>
+        </div>
+      </article>
+      <article class="pacote">
+        <img src="img/enc-bolo.svg" alt="" width="860" height="620" loading="lazy" decoding="async">
+        <div class="pacote__corpo">
+          <h3>Bolo de festa</h3>
+          <p class="pacote__desc">Bolo da moça, de milho ou chocolate. Recheio e cobertura à escolha</p>
+          <p class="pacote__detalhe">A partir de 1,5 kg · serve de 15 a 20 pessoas</p>
+          <p class="pacote__preco">a partir de <strong>R$ 160,00</strong></p>
+          <a class="btn btn--linha btn--sm" href="https://wa.me/5584900000000?text=Oi!%20Queria%20fazer%20uma%20encomenda.%0A%0AO%20que%3A%20%0APara%20quantas%20pessoas%3A%20%0APara%20quando%3A%20%0ARetirada%20ou%20entrega%3A%20%0A%0APacote%3A%20Bolo%20de%20festa" target="_blank" rel="noopener noreferrer"><span class="btn__ico"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.9-4.45 9.9-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 18.15h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.25-8.23 2.2 0 4.27.86 5.83 2.42a8.19 8.19 0 0 1 2.41 5.82c0 4.54-3.7 8.23-8.24 8.23Zm4.52-6.16c-.25-.13-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.24-.64.8-.78.97-.14.16-.29.18-.54.06-.25-.13-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.01-.38.11-.5.11-.11.25-.29.37-.43.13-.15.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.4-.41-.56-.42h-.47c-.17 0-.43.06-.66.31-.22.25-.87.85-.87 2.07s.89 2.4 1.02 2.56c.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.47-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.15-1.18-.06-.1-.23-.16-.48-.29Z"/></svg></span>Pedir orçamento</a>
+        </div>
+      </article>
+      <article class="pacote">
+        <img src="img/enc-quiche.svg" alt="" width="860" height="620" loading="lazy" decoding="async">
+        <div class="pacote__corpo">
+          <h3>Quiche inteira</h3>
+          <p class="pacote__desc">De queijo, de alho-poró ou de frango. Vai pronta para assar ou já assada</p>
+          <p class="pacote__detalhe">24 cm · serve de 6 a 8 pessoas</p>
+          <p class="pacote__preco">a partir de <strong>R$ 95,00</strong></p>
+          <a class="btn btn--linha btn--sm" href="https://wa.me/5584900000000?text=Oi!%20Queria%20fazer%20uma%20encomenda.%0A%0AO%20que%3A%20%0APara%20quantas%20pessoas%3A%20%0APara%20quando%3A%20%0ARetirada%20ou%20entrega%3A%20%0A%0APacote%3A%20Quiche%20inteira" target="_blank" rel="noopener noreferrer"><span class="btn__ico"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.9-4.45 9.9-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 18.15h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.25-8.23 2.2 0 4.27.86 5.83 2.42a8.19 8.19 0 0 1 2.41 5.82c0 4.54-3.7 8.23-8.24 8.23Zm4.52-6.16c-.25-.13-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.24-.64.8-.78.97-.14.16-.29.18-.54.06-.25-.13-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.01-.38.11-.5.11-.11.25-.29.37-.43.13-.15.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.4-.41-.56-.42h-.47c-.17 0-.43.06-.66.31-.22.25-.87.85-.87 2.07s.89 2.4 1.02 2.56c.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.47-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.15-1.18-.06-.1-.23-.16-.48-.29Z"/></svg></span>Pedir orçamento</a>
+        </div>
+      </article>
+      <article class="pacote">
+        <img src="img/enc-coffee.svg" alt="" width="860" height="620" loading="lazy" decoding="async">
+        <div class="pacote__corpo">
+          <h3>Coffee break</h3>
+          <p class="pacote__desc">Café em garrafa térmica, salgados, bolo fatiado e suco. A gente leva e monta</p>
+          <p class="pacote__detalhe">A partir de 15 pessoas · consulte o cardápio do dia</p>
+          <p class="pacote__preco"><strong>Sob consulta</strong></p>
+          <a class="btn btn--linha btn--sm" href="https://wa.me/5584900000000?text=Oi!%20Queria%20fazer%20uma%20encomenda.%0A%0AO%20que%3A%20%0APara%20quantas%20pessoas%3A%20%0APara%20quando%3A%20%0ARetirada%20ou%20entrega%3A%20%0A%0APacote%3A%20Coffee%20break" target="_blank" rel="noopener noreferrer"><span class="btn__ico"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.9-4.45 9.9-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 18.15h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.25-8.23 2.2 0 4.27.86 5.83 2.42a8.19 8.19 0 0 1 2.41 5.82c0 4.54-3.7 8.23-8.24 8.23Zm4.52-6.16c-.25-.13-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.24-.64.8-.78.97-.14.16-.29.18-.54.06-.25-.13-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.01-.38.11-.5.11-.11.25-.29.37-.43.13-.15.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.4-.41-.56-.42h-.47c-.17 0-.43.06-.66.31-.22.25-.87.85-.87 2.07s.89 2.4 1.02 2.56c.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.47-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.15-1.18-.06-.1-.23-.16-.48-.29Z"/></svg></span>Pedir orçamento</a>
+        </div>
+      </article>
+    </div>
+    <p class="secao__aviso">Encomenda com 48 horas de antecedência. Valores de demonstração — confirme com a casa.</p>
+  </div>
+</section>
+
+<section class="secao secao--escura" id="agenda">
+  <div class="wrap">
+    <header class="cabeca cabeca--claro">
+    <p class="cabeca__etiqueta">Na nossa casa</p>
+    <h2 class="cabeca__titulo">Tem noite que o café vira palco</h2>
+    <p class="cabeca__texto">A gente fica dentro do lounge da Evidance, e isso rende. Música ao vivo, roda de dança, aula aberta — e sempre com café na mão.</p>
+  </header>
+    <div class="eventos">
+      
+      <article class="evento">
+        <img src="img/ev-tango.svg" alt="" width="860" height="560" loading="lazy" decoding="async">
+        <div class="evento__corpo">
+          <p class="evento__quando"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 1.9" stroke-linecap="round"/></svg> Primeiro domingo do mês · 18h30</p>
+          <h3>Café com Tango</h3>
+          <p class="evento__artista">Vagner Victor, ao vivo</p>
+          <p class="evento__chamada">Desperte sua alma com café e bons tangos</p>
+          <span class="evento__entrada">Entrada franca</span>
+        </div>
+      </article>
+      <article class="evento">
+        <img src="img/ev-arabe.svg" alt="" width="860" height="560" loading="lazy" decoding="async">
+        <div class="evento__corpo">
+          <p class="evento__quando"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 1.9" stroke-linecap="round"/></svg> Última sexta do mês · 20h</p>
+          <h3>Noite árabe</h3>
+          <p class="evento__artista">Com as turmas de dança do ventre da Evidance</p>
+          <p class="evento__chamada">Apresentação, chá, café e doce árabe</p>
+          <span class="evento__entrada">Entrada franca</span>
+        </div>
+      </article>
+      <article class="evento">
+        <img src="img/ev-sabado.svg" alt="" width="860" height="560" loading="lazy" decoding="async">
+        <div class="evento__corpo">
+          <p class="evento__quando"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 1.9" stroke-linecap="round"/></svg> Todo sábado · 9h às 22h</p>
+          <h3>Sábado no lounge</h3>
+          <p class="evento__artista">Playlist da casa</p>
+          <p class="evento__chamada">O dia inteiro de portas abertas, com o cardápio completo</p>
+          <span class="evento__entrada">Entrada franca</span>
+        </div>
+      </article>
+    </div>
+    <p class="secao__pe secao__pe--claro">
+      A programação muda. O jeito mais rápido de saber o que tem essa semana é o Instagram.
+      <a class="link-claro" href="https://instagram.com/graodouradocoffee"
+         target="_blank" rel="noopener noreferrer">@graodouradocoffee</a>
+    </p>
+  </div>
+</section>
+
+<section class="secao" id="espaco">
+  <div class="wrap">
+    <header class="cabeca ">
+    <p class="cabeca__etiqueta">O espaço</p>
+    <h2 class="cabeca__titulo">Mesa para ficar, não só para passar</h2>
+    <p class="cabeca__texto">Tijolo aparente, luz morna e cadeira que não apressa ninguém. Dá para trabalhar de manhã, conversar à tarde e assistir a uma apresentação à noite — tudo na mesma mesa.</p>
+  </header>
+    <div class="galeria">
+      
+        <img src="img/esp-salao.svg" alt="Salão com mesas de madeira e parede de tijolo" width="900" height="680"
+             loading="lazy" decoding="async">
+        <img src="img/esp-balcao.svg" alt="Balcão com a máquina de espresso e o letreiro de café" width="900" height="680"
+             loading="lazy" decoding="async">
+        <img src="img/esp-vitrine.svg" alt="Vitrine com bolos e salgados do dia" width="900" height="680"
+             loading="lazy" decoding="async">
+        <img src="img/esp-mesa.svg" alt="Mesa posta com café e croissant" width="900" height="680"
+             loading="lazy" decoding="async">
+    </div>
+    <div class="confortos">
+      <div class="conforto">
+        <h3>Wi-Fi liberado</h3><p>Senha no balcão, sem consumo mínimo</p></div><div class="conforto">
+        <h3>Tomada na parede</h3><p>Dá para trabalhar sem ficar de olho na bateria</p></div><div class="conforto">
+        <h3>Ar-condicionado</h3><p>Natal é quente; aqui dentro não</p></div><div class="conforto">
+        <h3>Mesa grande</h3><p>Cabe reunião de seis sem apertar</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="secao secao--creme" id="sobre">
+  <div class="wrap sobre">
+    <div class="sobre__arte">
+      <img src="img/sobre-balcao.svg" alt="Balcão do café com a xícara e os grãos"
+           width="1000" height="760" loading="lazy" decoding="async">
+    </div>
+    <div class="sobre__texto">
+      <header class="cabeca ">
+    <p class="cabeca__etiqueta">Quem faz</p>
+    <h2 class="cabeca__titulo">Café é desculpa. O que a gente quer é a conversa que vem junto</h2>
+    
+  </header>
+      <p>O Grão Dourado nasceu de uma ideia simples: um lugar onde o café fosse bom o bastante para a pessoa querer ficar, e o atendimento bom o bastante para ela voltar.</p><p>A gente faz quase tudo aqui dentro. A massa da empada, o recheio, o bolo da moça — aquele cuja receita a gente já mostrou no Instagram, porque segredo bom é segredo dividido. O que não dá para fazer em casa, a gente escolhe com cuidado.</p><p>Estamos no lounge da Evidance, e isso não é acaso: café e dança combinam mais do que parece. Tem gente que chega para a aula e fica para o café, e tem gente que chega para o café e acaba dançando.</p>
+      <p class="sobre__assina">A casa</p>
+    </div>
+  </div>
+</section>
+
+<section class="secao" id="chegar">
+  <div class="wrap">
+    <header class="cabeca ">
+    <p class="cabeca__etiqueta">Como chegar</p>
+    <h2 class="cabeca__titulo">A gente fica dentro do lounge da Evidance</h2>
+    
+  </header>
+    <div class="chegar">
+      <a class="chegar__mapa" href="https://www.google.com/maps/search/?api=1&amp;query=Evidance+Natal" target="_blank" rel="noopener noreferrer">
+        <img src="img/mapa.svg" alt="Mapa aproximado da localização" width="900" height="520"
+             loading="lazy" decoding="async">
+        <span class="chegar__abrir">Abrir no mapa</span>
+      </a>
+      <div class="chegar__dados">
+        <div class="chegar__bloco">
+          <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11Z"/><circle cx="12" cy="10" r="2.6"/></svg> Endereço</h3>
+          <p>Lounge da Evidance Natal<br>Natal · RN</p>
+          <p class="chegar__ref">Dentro da academia de dança — o café fica no lounge, logo na entrada</p>
+          <p class="chegar__ref">Estacionamento na frente</p>
+        </div>
+        <div class="chegar__bloco">
+          <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 1.9" stroke-linecap="round"/></svg> Horário</h3>
+          <div class="hr"><div class="hr__linha" data-dias="1,2,3,4">
+        <span>Segunda a Quinta</span><span>08h às 20h</span></div><div class="hr__linha" data-dias="5">
+        <span>Sexta</span><span>08h às 22h</span></div><div class="hr__linha" data-dias="6">
+        <span>Sábado</span><span>09h às 22h</span></div><div class="hr__linha hr__linha--off" data-dias="0">
+        <span>Domingo</span><span>Fechado</span></div></div>
+          <span class="aberto" data-aberto hidden>
+    <span class="aberto__ponto" aria-hidden="true"></span>
+    <span class="aberto__texto">Verificando…</span>
+  </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="secao secao--creme" id="perguntas">
+  <div class="wrap wrap--estreito">
+    <header class="cabeca ">
+    <p class="cabeca__etiqueta">Perguntas</p>
+    <h2 class="cabeca__titulo">O que a gente mais responde</h2>
+    
+  </header>
+    <div class="sanfona">
+      
+      <div class="sanfona__item">
+        <h3>
+          <button type="button" class="sanfona__botao" aria-expanded="false" aria-controls="r0">
+            <span>Preciso ser aluno da Evidance para entrar?</span>
+            <span class="sanfona__sinal" aria-hidden="true"></span>
+          </button>
+        </h3>
+        <div class="sanfona__resposta" id="r0" hidden><p>Não. O café é aberto a qualquer pessoa, aluno ou não. A gente fica no lounge, logo na entrada — é só entrar e sentar.</p></div>
+      </div>
+      <div class="sanfona__item">
+        <h3>
+          <button type="button" class="sanfona__botao" aria-expanded="false" aria-controls="r1">
+            <span>Vocês entregam?</span>
+            <span class="sanfona__sinal" aria-hidden="true"></span>
+          </button>
+        </h3>
+        <div class="sanfona__resposta" id="r1" hidden><p>Entregamos na região. Chame no WhatsApp com o endereço que a gente confirma a taxa e o tempo antes de você fechar o pedido.</p></div>
+      </div>
+      <div class="sanfona__item">
+        <h3>
+          <button type="button" class="sanfona__botao" aria-expanded="false" aria-controls="r2">
+            <span>Dá para encomendar bolo ou salgado para festa?</span>
+            <span class="sanfona__sinal" aria-hidden="true"></span>
+          </button>
+        </h3>
+        <div class="sanfona__resposta" id="r2" hidden><p>Dá, com 48 horas de antecedência. Bolo de festa, cento de salgado, quiche inteira e coffee break completo — tem uma seção só disso aqui no site.</p></div>
+      </div>
+      <div class="sanfona__item">
+        <h3>
+          <button type="button" class="sanfona__botao" aria-expanded="false" aria-controls="r3">
+            <span>Tem opção vegetariana?</span>
+            <span class="sanfona__sinal" aria-hidden="true"></span>
+          </button>
+        </h3>
+        <div class="sanfona__resposta" id="r3" hidden><p>Tem. No cardápio, os itens sem carne estão marcados com o selo &quot;Vegetariano&quot;. A quiche de queijo, a tapioca e todos os doces entram nessa lista.</p></div>
+      </div>
+      <div class="sanfona__item">
+        <h3>
+          <button type="button" class="sanfona__botao" aria-expanded="false" aria-controls="r4">
+            <span>Posso trabalhar aí?</span>
+            <span class="sanfona__sinal" aria-hidden="true"></span>
+          </button>
+        </h3>
+        <div class="sanfona__resposta" id="r4" hidden><p>Pode, e muita gente faz. Wi-Fi liberado, tomada na parede e ar-condicionado. Não tem consumo mínimo nem tempo máximo de mesa.</p></div>
+      </div>
+      <div class="sanfona__item">
+        <h3>
+          <button type="button" class="sanfona__botao" aria-expanded="false" aria-controls="r5">
+            <span>Aceitam cartão e Pix?</span>
+            <span class="sanfona__sinal" aria-hidden="true"></span>
+          </button>
+        </h3>
+        <div class="sanfona__resposta" id="r5" hidden><p>Aceitamos. Cartão de crédito, débito, Pix e dinheiro.</p></div>
+      </div>
+      <div class="sanfona__item">
+        <h3>
+          <button type="button" class="sanfona__botao" aria-expanded="false" aria-controls="r6">
+            <span>Tem estacionamento?</span>
+            <span class="sanfona__sinal" aria-hidden="true"></span>
+          </button>
+        </h3>
+        <div class="sanfona__resposta" id="r6" hidden><p>Tem vaga na frente. Em noite de evento costuma encher — se puder, chegue um pouco antes.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="fecha">
+  <div class="wrap fecha__corpo">
+    <h2>A água já está quente</h2>
+    <p>Chame no WhatsApp para pedir, encomendar ou só perguntar o que tem de bolo hoje. A gente responde.</p>
+    <a class="btn btn--whats btn--lg" href="https://wa.me/5584900000000?text=Oi!%20Vim%20pelo%20site%20do%20Gr%C3%A3o%20Dourado." target="_blank" rel="noopener noreferrer"><span class="btn__ico"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.9-4.45 9.9-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 18.15h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.25-8.23 2.2 0 4.27.86 5.83 2.42a8.19 8.19 0 0 1 2.41 5.82c0 4.54-3.7 8.23-8.24 8.23Zm4.52-6.16c-.25-.13-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.24-.64.8-.78.97-.14.16-.29.18-.54.06-.25-.13-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.01-.38.11-.5.11-.11.25-.29.37-.43.13-.15.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.4-.41-.56-.42h-.47c-.17 0-.43.06-.66.31-.22.25-.87.85-.87 2.07s.89 2.4 1.02 2.56c.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.47-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.15-1.18-.06-.1-.23-.16-.48-.29Z"/></svg></span>Chamar no WhatsApp</a>
+    <p class="fecha__num">(84) 9 0000-0000</p>
+  </div>
+</section>
+</main>
+
+<footer class="rodape">
+  <div class="wrap rodape__grade">
+    <div>
+      <a class="marca marca--rod" href="index.html">
+        <img src="img/logo.svg" alt="" width="240" height="240">
+        <span class="marca__txt"><strong>Grão Dourado</strong><small>Coffee &amp; Shop</small></span>
+      </a>
+      <p class="rodape__lema">Unindo o café aos melhores sentimentos</p>
+      <a class="social" href="https://instagram.com/graodouradocoffee"
+         target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.8-.25-2.23-.41-.56-.22-.96-.48-1.38-.9a3.7 3.7 0 0 1-.9-1.38c-.16-.42-.36-1.06-.41-2.23C2.17 15.58 2.16 15.2 2.16 12s.01-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41C8.42 2.17 8.8 2.16 12 2.16Zm0 2.12c-3.14 0-3.51.01-4.75.07-1.15.05-1.77.24-2.18.4-.55.21-.94.47-1.35.88-.41.41-.67.8-.88 1.35-.16.41-.35 1.03-.4 2.18-.06 1.24-.07 1.61-.07 4.75s.01 3.51.07 4.75c.05 1.15.24 1.77.4 2.18.21.55.47.94.88 1.35.41.41.8.67 1.35.88.41.16 1.03.35 2.18.4 1.24.06 1.61.07 4.75.07s3.51-.01 4.75-.07c1.15-.05 1.77-.24 2.18-.4.55-.21.94-.47 1.35-.88.41-.41.67-.8.88-1.35.16-.41.35-1.03.4-2.18.06-1.24.07-1.61.07-4.75s-.01-3.51-.07-4.75c-.05-1.15-.24-1.77-.4-2.18a3.6 3.6 0 0 0-.88-1.35 3.6 3.6 0 0 0-1.35-.88c-.41-.16-1.03-.35-2.18-.4-1.24-.06-1.61-.07-4.75-.07Zm0 3.6a6.12 6.12 0 1 1 0 12.24 6.12 6.12 0 0 1 0-12.24Zm0 10.1a3.98 3.98 0 1 0 0-7.96 3.98 3.98 0 0 0 0 7.96Zm7.79-10.34a1.43 1.43 0 1 1-2.86 0 1.43 1.43 0 0 1 2.86 0Z"/></svg><span>@graodouradocoffee</span></a>
+    </div>
+
+    <div>
+      <h2 class="rodape__tit">Onde fica</h2>
+      <p>Lounge da Evidance Natal<br>Natal · RN</p>
+      <p class="rodape__nota">Dentro da academia de dança — o café fica no lounge, logo na entrada</p>
+      <a class="rodape__link" href="https://www.google.com/maps/search/?api=1&amp;query=Evidance+Natal"
+         target="_blank" rel="noopener noreferrer">Abrir no mapa</a>
+    </div>
+
+    <div>
+      <h2 class="rodape__tit">Horário</h2>
+      <div class="hr"><div class="hr__linha" data-dias="1,2,3,4">
+        <span>Segunda a Quinta</span><span>08h às 20h</span></div><div class="hr__linha" data-dias="5">
+        <span>Sexta</span><span>08h às 22h</span></div><div class="hr__linha" data-dias="6">
+        <span>Sábado</span><span>09h às 22h</span></div><div class="hr__linha hr__linha--off" data-dias="0">
+        <span>Domingo</span><span>Fechado</span></div></div>
+    </div>
+
+    <div>
+      <h2 class="rodape__tit">Falar com a gente</h2>
+      <p class="rodape__whats">(84) 9 0000-0000</p>
+      <a class="btn btn--whats " href="https://wa.me/5584900000000?text=Oi!%20Vim%20pelo%20site%20do%20Gr%C3%A3o%20Dourado." target="_blank" rel="noopener noreferrer"><span class="btn__ico"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.9-4.45 9.9-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 18.15h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.25-8.23 2.2 0 4.27.86 5.83 2.42a8.19 8.19 0 0 1 2.41 5.82c0 4.54-3.7 8.23-8.24 8.23Zm4.52-6.16c-.25-.13-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.24-.64.8-.78.97-.14.16-.29.18-.54.06-.25-.13-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.01-.38.11-.5.11-.11.25-.29.37-.43.13-.15.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.4-.41-.56-.42h-.47c-.17 0-.43.06-.66.31-.22.25-.87.85-.87 2.07s.89 2.4 1.02 2.56c.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.47-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.15-1.18-.06-.1-.23-.16-.48-.29Z"/></svg></span>Chamar no WhatsApp</a>
+      <nav class="rodape__nav" aria-label="Páginas">
+        <a href="cardapio.html#cafes">Cafés</a><a href="cardapio.html#salgados">Salgados</a><a href="cardapio.html#doces">Doces e bolos</a><a href="cardapio.html#geladas">Geladas</a>
+      </nav>
+    </div>
+  </div>
+
+  <div class="wrap rodape__base">
+    <p><strong>Site demonstrativo, feito de fora como exemplo.</strong> Não é o site oficial do Grão Dourado. Preços, horários e telefone são exemplos e precisam ser confirmados com a casa.</p>
+    <p>Feito como exemplo, a partir do que está público no Instagram da casa.</p>
+  </div>
+</footer>
+
+<!-- Barra de demonstração. Fica visível porque o site é sobre um
+     negócio real que não pediu por ele: esconder isso no rodapé
+     seria o mesmo que não avisar. -->
+<aside class="demo" role="note">
+  <strong>Site demonstrativo, feito de fora como exemplo</strong>
+  <span>Não é o site oficial do Grão Dourado. Preços, horários e telefone são exemplos e precisam ser confirmados com a casa.</span>
+</aside>
+
+<!-- Pedido montado no cliente, enviado pelo WhatsApp. Não há
+     pagamento aqui e não existe servidor: é interface. -->
+<div class="pedido" data-pedido hidden>
+  <button type="button" class="pedido__fechar" data-pedido-fecha aria-label="Fechar o pedido">&times;</button>
+  <h2 class="pedido__tit">Seu pedido</h2>
+  <ul class="pedido__lista" data-pedido-lista></ul>
+  <p class="pedido__total"><span>Total</span><strong data-pedido-total>R$ 0,00</strong></p>
+  <p class="pedido__nota">O envio abre o WhatsApp com a lista escrita. A confirmação e o pagamento acontecem na conversa.</p>
+  <a class="btn btn--whats btn--bloco" data-pedido-enviar href="https://wa.me/5584900000000"
+     target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38a9.9 9.9 0 0 0 4.79 1.22h.01c5.46 0 9.9-4.45 9.9-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2Zm0 18.15h-.01a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.25-8.23 2.2 0 4.27.86 5.83 2.42a8.19 8.19 0 0 1 2.41 5.82c0 4.54-3.7 8.23-8.24 8.23Zm4.52-6.16c-.25-.13-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.13-.16.24-.64.8-.78.97-.14.16-.29.18-.54.06-.25-.13-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.01-.38.11-.5.11-.11.25-.29.37-.43.13-.15.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.4-.41-.56-.42h-.47c-.17 0-.43.06-.66.31-.22.25-.87.85-.87 2.07s.89 2.4 1.02 2.56c.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.47-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.15-1.18-.06-.1-.23-.16-.48-.29Z"/></svg>Enviar pelo WhatsApp</a>
+</div>
+<button type="button" class="pedido__bolha" data-pedido-abre hidden>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 8h14l-1 12H6L5 8Z" stroke-linejoin="round"/><path d="M9 8V6a3 3 0 0 1 6 0v2" stroke-linecap="round"/></svg><span data-pedido-contagem>0</span>
+</button>
+
+<!-- Dados que o comportamento precisa. Vão enxutos de propósito:
+     só o que o carrinho e o selo de horário consultam. -->
+<script>window.GRAO={"whatsapp":"5584900000000","horarios":[{"n":0,"curto":"dom","abre":null,"fecha":null},{"n":1,"curto":"seg","abre":480,"fecha":1200},{"n":2,"curto":"ter","abre":480,"fecha":1200},{"n":3,"curto":"qua","abre":480,"fecha":1200},{"n":4,"curto":"qui","abre":480,"fecha":1200},{"n":5,"curto":"sex","abre":480,"fecha":1320},{"n":6,"curto":"sáb","abre":540,"fecha":1320}],"itens":[{"slug":"espresso","nome":"Espresso","preco":6.5},{"slug":"capuccino","nome":"Capuccino","preco":12},{"slug":"coado","nome":"Coado na hora","preco":7},{"slug":"latte","nome":"Latte","preco":13},{"slug":"mocha","nome":"Mocha","preco":15},{"slug":"pingado","nome":"Pingado","preco":8},{"slug":"empada-frango","nome":"Empada de frango defumado","preco":13},{"slug":"empada-carne-de-sol","nome":"Empada de carne de sol","preco":14},{"slug":"quiche-queijo","nome":"Quiche de queijo","preco":15},{"slug":"esfiha-caseira","nome":"Esfiha da casa","preco":11},{"slug":"croissant","nome":"Croissant","preco":12},{"slug":"croissant-queijo","nome":"Croissant de queijo e presunto","preco":16},{"slug":"tapioca","nome":"Tapioca de queijo coalho","preco":14},{"slug":"bolo-da-moca","nome":"Bolo da moça","preco":11},{"slug":"pudim","nome":"Pudim","preco":12},{"slug":"bolo-de-milho","nome":"Bolo de milho cremoso","preco":10},{"slug":"torta-limao","nome":"Torta de limão","preco":14},{"slug":"brownie","nome":"Brownie","preco":12},{"slug":"cookie","nome":"Cookie de chocolate","preco":9},{"slug":"cafe-gelado","nome":"Café gelado","preco":13},{"slug":"frappe","nome":"Frappê de café","preco":18},{"slug":"suco","nome":"Suco da fruta","preco":11},{"slug":"agua","nome":"Água","preco":5}],"combos":[{"slug":"combo-manha","itens":["coado","empada-frango"]},{"slug":"combo-tarde","itens":["capuccino","bolo-da-moca"]},{"slug":"combo-dois","itens":["coado","coado","esfiha-caseira","esfiha-caseira"]}]};</script>
+<script src="js/grao.js" defer></script>
+</body>
+</html>
