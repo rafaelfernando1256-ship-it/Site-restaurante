@@ -1,0 +1,40 @@
+# Copie para config.toml e ajuste. config.toml não vai pro git.
+
+[geral]
+pais             = "BR"
+idioma           = "pt-BR"
+porta_servidor   = 4500
+modelo_claude    = "claude-sonnet-5"
+# manual = você anota o que vê no app (padrão, confiável, de graça).
+# creative-center = raspagem da página do TikTok — leia o aviso em
+#   nucleo/tendencias.py antes de ligar.
+# apify = serviço pago, exige APIFY_TOKEN no ambiente.
+fonte_tendencias = "manual"
+
+[video]
+largura     = 1080
+altura      = 1920
+fps         = 60
+largura_css = 390   # largura em CSS px com que a página é aberta
+crf         = 20    # menor = mais qualidade e arquivo maior
+preset      = "veryfast"
+
+[marca]
+nome  = "Seu Estúdio"
+fonte = "Anton"
+# Cores no formato ASS: &HBBGGRR& — a ordem é invertida em relação ao
+# hex da web. #FFE533 vira &H0033E5FF&.
+cor_texto    = "&H00FFFFFF&"
+cor_contorno = "&H00000000&"
+cor_destaque = "&H0033E5FF&"
+
+# Sites que o agente pode gravar: slug = pasta, a partir da raiz do repo.
+# A pasta tem que ter um index.html servível.
+[sites]
+vanta-store       = "vanta-store/publico"
+prata-nobre       = "prata-nobre"
+sorveteria        = "sorveteria-alianca"
+chacara           = "chacara-casa-da-sogra"
+aurea             = "aurea/publico"
+volt              = "volt/publico"
+vitrine-joias     = "vitrine-joias/publico"

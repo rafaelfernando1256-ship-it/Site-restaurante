@@ -1,0 +1,159 @@
+{
+  "_leia": "Formatos de vídeo para quem vende site a negócio local. Isto NÃO é dado de tendência ao vivo: é estrutura, e estrutura envelhece devagar. O que muda toda semana é hashtag e som; o que faz o vídeo segurar é o gancho e o ritmo, e isso aqui é sobre o gancho e o ritmo. Cada entrada traz o padrão da primeira frase (os 3 segundos que decidem tudo), a divisão de tempo e o fechamento.",
+
+  "regras": {
+    "primeiros_3s": "A primeira frase precisa ter tensão ou número. Nunca comece com 'oi, tudo bem', apresentação ou logo animado — é aí que o dedo sobe.",
+    "duracao": "15 a 34 segundos. Abaixo de 15 não dá pra provar nada; acima de 35 a retenção despenca neste nicho.",
+    "legenda": "Sempre queimada. A maioria assiste sem som, e o TikTok corta legenda automática no rodapé.",
+    "corte": "Troca de cena a cada 2 a 4 segundos. Plano parado mais de 4s perde gente.",
+    "som": "Use som em alta DENTRO do app, não música no arquivo. O som da biblioteca do TikTok entra na distribuição daquele som; áudio embutido não entra — e ainda arrisca direito autoral.",
+    "cta": "Um só, no fim, e concreto. 'Comenta a cidade' converte mais que 'link na bio' porque comentário é sinal pro algoritmo.",
+    "honestidade": "Nunca diga número de cliente, faturamento ou resultado que você não tem. Mostre o trabalho; o trabalho é a prova."
+  },
+
+  "ganchos": [
+    {
+      "id": "antes-depois",
+      "nome": "Antes e depois",
+      "quando": "O formato mais confiável do nicho. Funciona sempre que você tem um site ruim de referência (ou um PDF de cardápio) pra contrastar.",
+      "primeira_frase": [
+        "O cardápio desse restaurante era um PDF.",
+        "Esse site tava afastando cliente e o dono não sabia.",
+        "Antes. Agora olha depois."
+      ],
+      "batidas": [
+        {"s": "0-3", "faz": "Mostra o problema na tela, sem narrar. A imagem é o gancho."},
+        {"s": "3-8", "faz": "Nomeia o estrago numa frase concreta: 'dá zoom pra ler o preço'."},
+        {"s": "8-20", "faz": "Corta pro novo e rola devagar. Deixa a rolagem respirar."},
+        {"s": "20-26", "faz": "Fecha num detalhe que prova cuidado: o botão de pedir, o horário, o mapa."}
+      ],
+      "cta": "Qual negócio você quer ver virar site? Comenta.",
+      "mostra": "rolagem_longa"
+    },
+    {
+      "id": "custo-escondido",
+      "nome": "O que isso te custa por mês",
+      "quando": "Quando quiser falar de preço sem falar do seu preço. É o formato que mais gera comentário, porque o dono faz a conta junto.",
+      "primeira_frase": [
+        "Uma mesa vazia por noite custa R$ 2.184 por mês.",
+        "Você não perde cliente. Você perde o cliente que já tinha te achado.",
+        "Faz a conta comigo."
+      ],
+      "batidas": [
+        {"s": "0-4", "faz": "Joga o número na tela, grande, antes de explicar."},
+        {"s": "4-12", "faz": "Mostra a conta na tela sendo feita. Número que se move prende."},
+        {"s": "12-22", "faz": "Mostra o site que resolve, rolando."},
+        {"s": "22-28", "faz": "Compara o número do prejuízo com o custo do site, lado a lado."}
+      ],
+      "cta": "Roda a conta com os seus números. Link na bio.",
+      "mostra": "secao_calculadora"
+    },
+    {
+      "id": "tres-segundos",
+      "nome": "Três segundos pra decidir",
+      "quando": "Abertura de UX. Bom pra quem já te segue e precisa entender por que site importa.",
+      "primeira_frase": [
+        "Seu cliente decide em 3 segundos. Cronometra comigo.",
+        "Abre o site de um concorrente seu no celular. Conta os segundos até achar o preço.",
+        "Se o seu cardápio demora mais que isso, já era."
+      ],
+      "batidas": [
+        {"s": "0-3", "faz": "Cronômetro na tela enquanto um site ruim carrega."},
+        {"s": "3-10", "faz": "Mostra o atrito: zoom, pinça, PDF que não abre."},
+        {"s": "10-20", "faz": "Corta pro site bom: cardápio na primeira tela, preço legível."},
+        {"s": "20-26", "faz": "Mesmo cronômetro, agora parando em 2 segundos."}
+      ],
+      "cta": "Testa o seu agora e me conta quanto deu.",
+      "mostra": "rolagem_rapida"
+    },
+    {
+      "id": "pov-dono",
+      "nome": "POV: você é o dono",
+      "quando": "Formato nativo do TikTok. Ótimo pra alcançar fora de quem já te segue.",
+      "primeira_frase": [
+        "POV: você tem o melhor prato do bairro e o pior site da cidade.",
+        "POV: seu site é um link de Instagram que não abre.",
+        "POV: o cliente te achou, abriu o site e desistiu."
+      ],
+      "batidas": [
+        {"s": "0-3", "faz": "Texto POV sobre a tela do site ruim."},
+        {"s": "3-10", "faz": "Lista rápida do que o cliente tentou fazer e não conseguiu."},
+        {"s": "10-22", "faz": "Vira a chave: o mesmo negócio com site que funciona."},
+        {"s": "22-28", "faz": "Fecha no detalhe que o dono reconhece como dele."}
+      ],
+      "cta": "Manda o nome do seu negócio que eu faço um exemplo.",
+      "mostra": "rolagem_longa"
+    },
+    {
+      "id": "fiz-de-graca",
+      "nome": "Fiz um de graça pra esse aqui",
+      "quando": "É a sua oferta virando conteúdo. O formato de maior conversão direta, porque mostra exatamente o que a pessoa recebe se te chamar.",
+      "primeira_frase": [
+        "Fiz o site dessa lanchonete de graça. Ela nem sabe ainda.",
+        "Escolhi um negócio no Google Maps e fiz o site dele num sábado.",
+        "Sem cobrar nada: olha como ficou."
+      ],
+      "batidas": [
+        {"s": "0-4", "faz": "Diz que é de graça já na primeira frase. É o que segura."},
+        {"s": "4-10", "faz": "Mostra o que o negócio tinha antes (perfil, foto, nada)."},
+        {"s": "10-24", "faz": "Rola o site novo inteiro, devagar, sem cortar."},
+        {"s": "24-30", "faz": "Deixa claro que é demonstrativo e que você faz o mesmo pra quem pedir."}
+      ],
+      "cta": "Comenta a cidade e o tipo de negócio. Faço o próximo.",
+      "mostra": "rolagem_longa"
+    },
+    {
+      "id": "detalhe-invisivel",
+      "nome": "O detalhe que ninguém vê",
+      "quando": "Conteúdo de ofício. Vende competência em vez de preço, e atrai quem já entende um pouco.",
+      "primeira_frase": [
+        "Esse botão tem 44 pixels de altura e tem motivo.",
+        "Olha o que acontece quando o polegar erra o alvo.",
+        "Esse detalhe aqui custou duas horas e ninguém vai reparar. É esse o ponto."
+      ],
+      "batidas": [
+        {"s": "0-3", "faz": "Zoom no detalhe, sem contexto. A curiosidade é o gancho."},
+        {"s": "3-12", "faz": "Explica o porquê em linguagem de dono, não de programador."},
+        {"s": "12-20", "faz": "Mostra o mesmo detalhe no site inteiro, em uso."},
+        {"s": "20-25", "faz": "Liga o detalhe a dinheiro: erro de toque é pedido perdido."}
+      ],
+      "cta": "Tem outro detalhe que você quer que eu destrinche?",
+      "mostra": "zoom_detalhe"
+    },
+    {
+      "id": "rolagem-satisfatoria",
+      "nome": "Só a rolagem",
+      "quando": "Sem narração, sem argumento. Vale quando o site é bonito o bastante pra segurar sozinho. Posta em dia de volume, não como peça principal.",
+      "primeira_frase": [
+        "Site de [tipo de negócio], do topo ao rodapé.",
+        "Sem corte. Só rolagem.",
+        "Esse aqui é meu preferido do mês."
+      ],
+      "batidas": [
+        {"s": "0-2", "faz": "Entra já rolando. Nada de tela parada no começo."},
+        {"s": "2-22", "faz": "Uma rolagem só, contínua e suave, do topo ao rodapé."},
+        {"s": "22-26", "faz": "Para no rodapé, no detalhe de contato."}
+      ],
+      "cta": "Salva pra referência.",
+      "mostra": "rolagem_continua"
+    },
+    {
+      "id": "erro-comum",
+      "nome": "O erro que todo mundo comete",
+      "quando": "Formato de lista. Fácil de produzir em série e bom pra construir autoridade.",
+      "primeira_frase": [
+        "Três erros que fazem seu site perder venda. O terceiro é o pior.",
+        "Esse erro tá em 9 de cada 10 sites de restaurante.",
+        "Se o seu site tem isso, você tá perdendo dinheiro hoje."
+      ],
+      "batidas": [
+        {"s": "0-3", "faz": "Anuncia a lista e promete o melhor item pro fim."},
+        {"s": "3-10", "faz": "Erro 1, mostrado na tela, não contado."},
+        {"s": "10-17", "faz": "Erro 2, mesma estrutura, corte mais rápido."},
+        {"s": "17-27", "faz": "Erro 3, o mais caro, com mais tempo de tela."}
+      ],
+      "cta": "Qual deles tá no seu? Comenta o número.",
+      "mostra": "rolagem_segmentada"
+    }
+  ]
+}

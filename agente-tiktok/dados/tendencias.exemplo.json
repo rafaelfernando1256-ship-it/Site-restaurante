@@ -1,0 +1,11 @@
+{
+  "_leia": "Três minutos por semana. Abra o TikTok, role o seu nicho e anote o que estiver se repetindo. Este dado é melhor que qualquer API: é o SEU feed, do SEU público, e não a média do país. Tipos: formato, tema, hashtag, som. 'forca' é opcional, de 0 a 100, só se você tiver um número de verdade.",
+  "atualizado_em": "2026-10-01",
+  "sinais": [
+    { "tipo": "formato", "valor": "antes e depois com corte seco", "observacao": "voltou forte, sem narração" },
+    { "tipo": "tema",    "valor": "quanto custa de verdade",        "observacao": "transparência de preço gera comentário" },
+    { "tipo": "hashtag", "valor": "#empreendedorismo" },
+    { "tipo": "hashtag", "valor": "#negocios" },
+    { "tipo": "som",     "valor": "anote aqui o nome do som que você viu repetir" }
+  ]
+}

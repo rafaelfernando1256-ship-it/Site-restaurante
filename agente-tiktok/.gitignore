@@ -1,0 +1,7 @@
+saida/
+.cache/
+.env
+config.toml
+__pycache__/
+*.pyc
+dados/tendencias.json
