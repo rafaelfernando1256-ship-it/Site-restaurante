@@ -610,6 +610,36 @@ def _():
     igual(c.modelo_do_cerebro, 'claude-y')
 
 
+@teste('gemini: modelo aposentado é trocado pelo mais novo, por número')
+def _():
+    import types as _t
+
+    from nucleo.modelos import resolve_modelo_gemini
+    import nucleo.modelos as M
+
+    def catalogo(nomes):
+        return _t.SimpleNamespace(models=_t.SimpleNamespace(list=lambda: [
+            _t.SimpleNamespace(name=f'models/{n}', supported_actions=['generateContent'])
+            for n in nomes]))
+
+    # o preferido existe: não mexe
+    escolhido, aviso = resolve_modelo_gemini(catalogo(['gemini-3.8-flash']),
+                                             'gemini-3.8-flash')
+    igual((escolhido, aviso), ('gemini-3.8-flash', ''))
+
+    # o preferido sumiu: pega o flash de maior VERSÃO, não o maior alfabético
+    escolhido, aviso = resolve_modelo_gemini(
+        catalogo(['gemini-3.8-flash', 'gemini-10.1-flash', 'gemini-2.0-flash-lite']),
+        'gemini-2.5-flash')
+    igual(escolhido, 'gemini-10.1-flash')
+    verdade('não existe nesta conta' in aviso)
+
+    # catálogo fora do ar não pode derrubar a partida
+    quebrado = _t.SimpleNamespace(models=_t.SimpleNamespace(
+        list=lambda: (_ for _ in ()).throw(RuntimeError('sem rede'))))
+    igual(resolve_modelo_gemini(quebrado, 'gemini-3.8-flash'), ('gemini-3.8-flash', ''))
+
+
 @teste('diagnóstico: chave do Gemini recusada não passa por válida')
 def _():
     import jarvis as J

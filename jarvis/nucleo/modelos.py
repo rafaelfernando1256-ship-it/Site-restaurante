@@ -78,11 +78,19 @@ def modelos_gemini(cli: Any) -> list[str]:
     return nomes
 
 
+def _versao(nome: str) -> list[float]:
+    """Ordena por número, não por letra: 10.1 vem depois de 3.8."""
+    import re
+    nums = re.findall(r'\d+(?:\.\d+)?', nome)
+    return [float(x) for x in nums] or [0.0]
+
+
 def resolve_modelo_gemini(cli: Any, preferido: str) -> tuple[str, str]:
     """
-    O catálogo da Google muda de nome com frequência, e um id que não
-    existe mais só aparece como 404 no meio da primeira frase. Aqui a
-    lista é consultada uma vez e, se o preferido sumiu, escolhe-se o
+    O catálogo da Google aposenta nome de modelo sem avisar, e quem abriu
+    conta ontem não enxerga o que quem abriu ano passado enxerga. Um id
+    que sumiu só aparece como 404 no meio da primeira frase. Aqui a lista
+    é consultada uma vez e, se o preferido não está nela, escolhe-se o
     flash mais novo — dizendo que trocou.
     """
     try:
@@ -91,8 +99,9 @@ def resolve_modelo_gemini(cli: Any, preferido: str) -> tuple[str, str]:
         return preferido, ''
     if not nomes or preferido in nomes:
         return preferido, ''
-    flashes = sorted((n for n in nomes if 'flash' in n and 'lite' not in n), reverse=True)
-    escolhido = flashes[0] if flashes else sorted(nomes, reverse=True)[0]
+    flashes = [n for n in nomes if 'flash' in n and 'lite' not in n
+               and 'thinking' not in n]
+    escolhido = max(flashes or nomes, key=_versao)
     return escolhido, f'"{preferido}" não existe nesta conta; usando "{escolhido}"'
 
 
@@ -113,7 +122,7 @@ def pergunta_gpt(pergunta: str, chave: str, modelo: str = 'gpt-4o') -> str:
         return f'o GPT não respondeu: {e}'
 
 
-def pergunta_gemini(pergunta: str, chave: str, modelo: str = 'gemini-2.5-flash') -> str:
+def pergunta_gemini(pergunta: str, chave: str, modelo: str = 'gemini-3.8-flash') -> str:
     if not chave:
         return 'falta GEMINI_API_KEY no .env'
     try:

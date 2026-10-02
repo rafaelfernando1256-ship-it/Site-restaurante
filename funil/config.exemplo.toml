@@ -6,7 +6,7 @@
 # provedor = "gemini"
 
 modelo = "claude-opus-5-5"          # vale quando provedor = claude
-modelo_gemini = "gemini-2.5-flash"  # vale quando provedor = gemini
+modelo_gemini = "gemini-3.8-flash"  # vale quando provedor = gemini
 
 cidade = "Natal, RN"
 

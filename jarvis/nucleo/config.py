@@ -22,7 +22,7 @@ SAIDA = RAIZ / 'saida'
 
 MODELO_CLAUDE = 'claude-opus-5-5'
 MODELO_GPT = 'gpt-4o'
-MODELO_GEMINI = 'gemini-2.5-flash'
+MODELO_GEMINI = 'gemini-3.8-flash'
 
 
 def _carrega_env(arquivo: Path | None = None) -> None:

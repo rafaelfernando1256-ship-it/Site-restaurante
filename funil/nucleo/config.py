@@ -20,7 +20,7 @@ SAIDA = RAIZ / 'saida'
 MATERIAL = RAIZ / 'material'      # capturas do Instagram, uma pasta por lead
 
 MODELO = 'claude-opus-5-5'
-MODELO_GEMINI = 'gemini-2.5-flash'
+MODELO_GEMINI = 'gemini-3.8-flash'
 
 # Termos de busca padrão. Sem "restaurante" sozinho: o Places devolve
 # shopping e praça de alimentação. Termo específico traz casa específica.

@@ -238,6 +238,64 @@ def _():
     igual(cfg.response_schema, Abordagem, 'sem esquema a saída não é validada')
 
 
+@teste('modelo: modelo aposentado pela Google é trocado sozinho, não derruba')
+def _():
+    from nucleo.a2_abordagem import Abordagem
+    import nucleo.modelo as Mod
+    esperado = Abordagem(gancho='g', mensagem='m', porque='p')
+
+    class Catalogo:
+        def list(self):
+            return [types.SimpleNamespace(name='models/gemini-3.8-flash',
+                                          supported_actions=['generateContent']),
+                    types.SimpleNamespace(name='models/gemini-2.0-flash',
+                                          supported_actions=['generateContent']),
+                    types.SimpleNamespace(name='models/embedding-001',
+                                          supported_actions=['embedContent'])]
+
+    class Cli:
+        def __init__(self):
+            self.pedidos = []
+            self.models = self
+            self._lista = Catalogo()
+
+        def list(self):
+            return self._lista.list()
+
+        def generate_content(self, **kw):
+            self.pedidos.append(kw['model'])
+            if kw['model'] == 'gemini-velho':
+                raise RuntimeError("404 NOT_FOUND: model models/gemini-velho is "
+                                   "no longer available to new users")
+            return types.SimpleNamespace(parsed=esperado, text='{}')
+
+    Mod._substituto = ''
+    try:
+        cli = Cli()
+        r = Mod.pede_json('i', 'c', Abordagem, modelo='gemini-velho', cli=cli,
+                          provedor='gemini', tentativas=1)
+        igual(r, esperado, 'devia ter respondido com o modelo substituto')
+        igual(cli.pedidos, ['gemini-velho', 'gemini-3.8-flash'],
+              f'escolheu mal o substituto: {cli.pedidos}')
+    finally:
+        Mod._substituto = ''
+
+
+@teste('modelo: a troca de modelo vale para as chamadas seguintes')
+def _():
+    import nucleo.modelo as Mod
+    Mod._substituto = ''
+    try:
+        igual(Mod._melhor_gemini(types.SimpleNamespace(models=types.SimpleNamespace(
+            list=lambda: [types.SimpleNamespace(name='models/gemini-3.8-flash',
+                                                supported_actions=['generateContent']),
+                          types.SimpleNamespace(name='models/gemini-10.1-flash',
+                                                supported_actions=['generateContent'])]))),
+              'gemini-10.1-flash', 'tem que pegar a versão maior, não a alfabética')
+    finally:
+        Mod._substituto = ''
+
+
 @teste('modelo: JSON cortado pela metade não vira resposta vazia silenciosa')
 def _():
     from nucleo.a2_abordagem import Abordagem

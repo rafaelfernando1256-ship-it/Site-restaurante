@@ -28,7 +28,7 @@ from pydantic import BaseModel
 E = TypeVar('E', bound=BaseModel)
 
 MODELO_CLAUDE = 'claude-opus-5-5'
-MODELO_GEMINI = 'gemini-2.5-flash'
+MODELO_GEMINI = 'gemini-3.8-flash'
 
 ACEITOS = ('image/png', 'image/jpeg', 'image/gif', 'image/webp')
 
@@ -91,21 +91,77 @@ def _json_claude(instrucao, conteudo, esquema, modelo, imagens, cli, max_tokens)
 
 
 # ── Gemini ──────────────────────────────────────────────────────────
+_substituto: str = ''        # modelo achado no catálogo, quando o pedido sumiu
+
+
+def modelos_gemini(cli: Any) -> list[str]:
+    nomes = []
+    for m in cli.models.list():
+        acoes = getattr(m, 'supported_actions', None) or []
+        if acoes and 'generateContent' not in acoes:
+            continue
+        nome = (getattr(m, 'name', '') or '').replace('models/', '')
+        if nome:
+            nomes.append(nome)
+    return nomes
+
+
+def _melhor_gemini(cli: Any) -> str:
+    """O flash mais novo que esta chave pode usar."""
+    nomes = modelos_gemini(cli)
+    if not nomes:
+        raise RuntimeError('nenhum modelo do Gemini disponível para esta chave')
+    flashes = [n for n in nomes if 'flash' in n and 'lite' not in n
+               and 'thinking' not in n]
+    def versao(n: str):
+        import re
+        nums = re.findall(r'\d+(?:\.\d+)?', n)
+        return [float(x) for x in nums] or [0.0]
+    return max(flashes or nomes, key=versao)
+
+
+def _sumiu(e: Exception) -> bool:
+    texto = str(e)
+    return ('NOT_FOUND' in texto or 'no longer available' in texto
+            or 'is not found' in texto)
+
+
 def _json_gemini(instrucao, conteudo, esquema, modelo, imagens, cli, max_tokens):
     from google.genai import types
+    global _substituto
     c = cli or cliente_gemini()
     partes: list[Any] = [
         types.Part.from_bytes(data=Path(i).read_bytes(), mime_type=_tipo(Path(i)))
         for i in imagens]
     partes.append(types.Part(text=conteudo))
-    r = c.models.generate_content(
-        model=modelo or MODELO_GEMINI,
-        contents=[types.Content(role='user', parts=partes)],
-        config=types.GenerateContentConfig(
-            system_instruction=instrucao,
-            response_mime_type='application/json',
-            response_schema=esquema,
-            max_output_tokens=max_tokens))
+
+    config = types.GenerateContentConfig(
+        system_instruction=instrucao,
+        response_mime_type='application/json',
+        response_schema=esquema,
+        max_output_tokens=max_tokens,
+        # Aqui não existe ferramenta nenhuma; declarar isso desligado tira
+        # um aviso do SDK que só assusta quem está lendo a saída.
+        automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True))
+
+    alvo = _substituto or modelo or MODELO_GEMINI
+    try:
+        r = c.models.generate_content(
+            model=alvo, contents=[types.Content(role='user', parts=partes)],
+            config=config)
+    except Exception as e:
+        # O catálogo da Google aposenta nome de modelo sem avisar, e quem
+        # abriu conta ontem não enxerga o que quem abriu ano passado
+        # enxerga. Em vez de morrer, pergunta o que existe e refaz.
+        if not _sumiu(e):
+            raise
+        _substituto = _melhor_gemini(c)
+        print(f'    (o modelo "{alvo}" não existe para esta chave; '
+              f'usando "{_substituto}" — fixe isso em config.toml)')
+        r = c.models.generate_content(
+            model=_substituto, contents=[types.Content(role='user', parts=partes)],
+            config=config)
+
     saida = getattr(r, 'parsed', None)
     if saida is None:
         # Acontece quando o modelo é cortado por limite de saída: o JSON
