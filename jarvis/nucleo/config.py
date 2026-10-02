@@ -68,6 +68,9 @@ class Config:
     modelo_voz: str = 'pt-BR-AntonioNeural'
     velocidade_voz: str = '+8%'
     modelo_escuta: str = 'small'         # tiny | base | small | medium
+    # auto | local | gemini — quem transcreve o que você fala. "auto" usa o
+    # motor local e só cai no Gemini se o local não carregar.
+    motor_escuta: str = 'auto'
     idioma: str = 'pt'
     silencio_para_parar: float = 1.2     # segundos de silêncio que encerram a fala
 
@@ -151,7 +154,8 @@ def carrega(caminho: Path | None = None) -> Config:
             ('geral', ('nome', 'tratamento', 'provedor', 'modelo', 'modelo_gpt',
                        'modelo_gemini', 'voltas_maximas')),
             ('voz', ('palavra_chave', 'escuta_sempre', 'atalho_fala', 'modelo_voz',
-                     'velocidade_voz', 'modelo_escuta', 'idioma', 'silencio_para_parar')),
+                     'velocidade_voz', 'modelo_escuta', 'motor_escuta', 'idioma',
+                     'silencio_para_parar')),
             ('permissoes', ('raizes_seguras', 'confirmar_por_voz', 'modo_livre')),
             ('integracoes', ('funil_db', 'perfil_navegador', 'whatsapp_chats',
                              'pasta_musica')),

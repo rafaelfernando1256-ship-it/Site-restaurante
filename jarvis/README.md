@@ -236,9 +236,9 @@ Business — e aí troca-se `ferramentas/whatsapp.py`, não o Jarvis inteiro.
 
 | | fica aqui | vai para a nuvem |
 |---|---|---|
-| áudio do microfone | **sempre** | nunca |
+| áudio do microfone | **depende do motor — veja abaixo** | |
 | palavra de ativação | **sempre** | nunca |
-| transcrição do que você falou | roda aqui (faster-whisper) | só o **texto** resultante |
+| transcrição do que você falou | motor local (faster-whisper) | motor do Gemini |
 | conteúdo de arquivo que ele leu | — | vai, quando ele precisa ler para responder |
 | conversas do WhatsApp | — | o trecho lido vai, para extrair as vendas |
 | diário, vendas, memória | **sempre** | nunca |
@@ -246,6 +246,34 @@ Business — e aí troca-se `ferramentas/whatsapp.py`, não o Jarvis inteiro.
 Ele só manda alguma coisa depois que você chama. Antes disso, o
 microfone está rodando um modelo de 1 MB procurando duas palavras, e mais
 nada.
+
+### Os dois motores de transcrição
+
+| | onde roda | o áudio sai da máquina? |
+|---|---|---|
+| **local** (faster-whisper) | na sua CPU | **não** |
+| **gemini** | na nuvem do Google | **sim** |
+
+O padrão é `auto`: usa o local e só cai no Gemini se o local não carregar.
+Para fixar um deles, `config.toml` → `[voz]` → `motor_escuta`.
+
+**Por que o local pode não carregar:** ele depende de bibliotecas
+compiladas sem assinatura digital, e o **Controle de Aplicativo do
+Windows 11** (Smart App Control) bloqueia exatamente isso. O erro aparece
+como `DLL load failed ... política de Controle de Aplicativo bloqueou
+este arquivo` e parece falha de instalação — não é, e reinstalar não
+resolve.
+
+Quando isso acontece, o Jarvis avisa na tela e usa o Gemini. A troca é
+real e você precisa saber dela: o áudio passa a sair da máquina. O que
+não muda é o destino — **o texto do que você fala já ia para o modelo de
+qualquer jeito**, porque é ele que o cérebro recebe. O que muda é o
+formato.
+
+Se preferir manter tudo local, aí sim a saída é desligar o Smart App
+Control (Segurança do Windows → Controle de aplicativo e navegador). Mas
+é **de mão única**: depois de desligado, só volta reinstalando o Windows.
+Eu não faria isso por causa de um microfone.
 
 ---
 
@@ -317,6 +345,7 @@ segundos de silêncio que parecem travamento.
 | ele me chamar de outro jeito | `config.toml` → `tratamento` |
 | trocar a palavra de ativação | `config.toml` → `palavra_chave` |
 | ele entender melhor o que eu falo | `modelo_escuta = "medium"` (mais lento) |
+| forçar transcrição local ou pelo Gemini | `config.toml` → `[voz]` → `motor_escuta` |
 | voz melhor | instale `edge-tts` e deixe `modelo_voz` neural |
 | parar de me perguntar tanto | `modo_livre = true` (o nível **perigo** continua perguntando) |
 | liberar outra pasta para escrita | `raizes_seguras` |
@@ -327,7 +356,7 @@ segundos de silêncio que parecem travamento.
 
 ## O que foi verificado, e o que não deu
 
-**50 testes, 50 passando** — rode com `python testes.py`.
+**53 testes, 53 passando** — rode com `python testes.py`.
 Nenhum toca a rede, o microfone ou a sua máquina: a API do Claude entra
 como dublê, os arquivos vão para pasta temporária, o navegador não abre.
 
@@ -363,7 +392,7 @@ tela. Então:
 
 | | |
 |---|---|
-| **microfone, palavra de ativação e transcrição** | código escrito, **não exercitado com áudio real**. É a primeira coisa a conferir com `jarvis.bat --checar` e depois falando com ele |
+| **microfone, palavra de ativação e transcrição** | código escrito, **não exercitado com áudio real**. É a primeira coisa a conferir com `jarvis.bat --checar` e depois falando com ele. O empacotamento do áudio em WAV e a escolha do motor têm teste; a captura e o reconhecimento, não |
 | **voz (SAPI do Windows)** | idem — a lógica de fila e corte está testada, o som não |
 | **teclado e mouse (pyautogui)** | sem tela aqui; roda na sua |
 | **WhatsApp Web** | os seletores foram escritos a partir da estrutura conhecida do app. **O WhatsApp muda o HTML sem avisar** — se um dia ele não achar a lista de conversas, é em `ferramentas/whatsapp.py`, e só ali, que se mexe |

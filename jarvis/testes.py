@@ -797,6 +797,69 @@ def _():
         anthropic.Anthropic = original
 
 
+@teste('ouvido: sem motor local, a chave do Gemini salva o microfone')
+def _():
+    import importlib
+    import sys as _sys
+
+    from nucleo.ouvido import Ouvido
+    pasta = TMP / 'mod2'
+    pasta.mkdir(exist_ok=True)
+    (pasta / 'faster_whisper.py').write_text(
+        'raise ImportError("DLL load failed while importing resampler")')
+    (pasta / 'sounddevice.py').write_text('')
+    _sys.path.insert(0, str(pasta))
+    for m in ('faster_whisper', 'sounddevice'):
+        _sys.modules.pop(m, None)
+    importlib.invalidate_caches()
+    try:
+        com = cfg_teste(gemini='AQ.chave')
+        ok, como = Ouvido.checa_com(com)
+        igual(ok, True, 'com a chave do Gemini o microfone deveria funcionar')
+        verdade('Gemini' in como)
+        verdade('sair da máquina' in como, 'a troca de privacidade precisa ficar dita')
+
+        sem = cfg_teste(gemini='')
+        ok2, _ = Ouvido.checa_com(sem)
+        igual(ok2, False, 'sem motor e sem chave não há como ouvir')
+    finally:
+        _sys.path.remove(str(pasta))
+        for m in ('faster_whisper', 'sounddevice'):
+            _sys.modules.pop(m, None)
+        importlib.invalidate_caches()
+
+
+@teste('ouvido: o áudio vira um WAV de 16 bits que o Gemini aceita')
+def _():
+    import wave
+    import io
+
+    import numpy as np
+
+    from nucleo.ouvido import Ouvido, TAXA
+    som = (np.sin(np.linspace(0, 400, TAXA)) * 0.5).astype(np.float32)
+    dados = Ouvido.para_wav(som)
+    verdade(dados.startswith(b'RIFF'), 'não é WAV')
+    with wave.open(io.BytesIO(dados)) as w:
+        igual(w.getnchannels(), 1)
+        igual(w.getsampwidth(), 2, 'tem que ser 16 bits')
+        igual(w.getframerate(), TAXA)
+        igual(w.getnframes(), TAXA)
+    # o estouro é cortado, não dá a volta virando ruído
+    alto = np.array([2.0, -2.0, 0.0], dtype=np.float32)
+    quadros = np.frombuffer(Ouvido.para_wav(alto)[44:], dtype=np.int16)
+    igual(list(quadros), [32767, -32767, 0])
+
+
+@teste('ouvido: motor escolhido uma vez, e respeitando o config')
+def _():
+    from nucleo.ouvido import Ouvido
+    o = Ouvido(cfg_teste(motor_escuta='gemini', gemini='x'))
+    igual(o.motor(), 'gemini')
+    o2 = Ouvido(cfg_teste(motor_escuta='local'))
+    igual(o2.motor(), 'local', 'quem pediu local não pode ser mandado para a nuvem')
+
+
 @teste('ouvido: pacote instalado que quebra não vira "falta instalar"')
 def _():
     # O caso real: faster-whisper instalado e falhando ao carregar (DLL,

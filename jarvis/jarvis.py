@@ -139,11 +139,13 @@ def modo_texto(cerebro, voz, cfg) -> int:
 
 def modo_voz(cerebro, voz, cfg, estado) -> int:
     from nucleo.ouvido import Ouvido
-    ok, aviso = Ouvido.checa()
+    ok, aviso = Ouvido.checa_com(cfg)
     if not ok:
         faixa(f'  {aviso}', '33')
         faixa('  Caindo no modo teclado.', '33')
         return modo_texto(cerebro, voz, cfg)
+    if 'Gemini' in aviso:
+        faixa(f'  {aviso}', '33')
 
     ouvido = Ouvido(cfg)
     estado['ouvido'] = ouvido
@@ -327,6 +329,10 @@ def checar(cfg) -> int:
         if tela:
             print(' ' * 46, end='\r')
         _linha(bem, f'{pacote}', motivo or f'({para_que})')
+
+    from nucleo.ouvido import Ouvido
+    ouve, como = Ouvido.checa_com(cfg)
+    _linha(ouve, 'ouvir você', como)
 
     funil = Path(cfg.funil_db).expanduser()
     if funil.exists():

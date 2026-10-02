@@ -42,6 +42,8 @@ class Ouvido:
         self._whisper = None
         self._stream = None
         self._fila: queue.Queue = queue.Queue()
+        self._motor = ''
+        self._porque = ''        # por que o motor local ficou de fora
         self.piso = 0.0          # nível de ruído medido do ambiente
 
     # ── o que está instalado ────────────────────────────────────────
@@ -73,6 +75,26 @@ class Ouvido:
             return False, ('instalado, mas não carrega — '
                            + ' | '.join(q[:200] for q in quebrados))
         return True, 'ok'
+
+    @staticmethod
+    def checa_com(cfg) -> tuple[bool, str]:
+        """
+        Como `checa`, mas sabendo que existe um segundo caminho: com a
+        chave do Gemini, o microfone funciona mesmo sem o motor local.
+        """
+        ok, aviso = Ouvido.checa()
+        if ok:
+            return True, 'motor local (o áudio não sai da máquina)'
+        base = all_ok = True
+        for pacote in ('sounddevice', 'numpy'):
+            try:
+                __import__(pacote)
+            except Exception:
+                base = all_ok = False
+        if base and getattr(cfg, 'gemini', ''):
+            return True, ('motor do Gemini — o motor local não carregou '
+                          f'({aviso}). O áudio passa a sair da máquina.')
+        return False, aviso
 
     # ── microfone ───────────────────────────────────────────────────
     def abre(self):
@@ -188,6 +210,35 @@ class Ouvido:
         return np.concatenate(pedacos).astype(np.float32) / 32768.0
 
     # ── transcrever ─────────────────────────────────────────────────
+    #
+    # DOIS MOTORES. O local (faster-whisper) é o preferido: o áudio não sai
+    # da máquina. Só que ele depende de bibliotecas compiladas sem
+    # assinatura digital, e o Controle de Aplicativo do Windows 11 bloqueia
+    # justamente isso — com uma mensagem que parece erro de instalação e
+    # não é.
+    #
+    # Quando o local não carrega, o áudio vai para o mesmo modelo que já é
+    # o cérebro. Não é equivalente em privacidade, e está escrito assim no
+    # README: o áudio passa a sair da máquina. Mas o TEXTO do que você fala
+    # já ia de qualquer jeito — é ele que o cérebro recebe —, então o que
+    # muda é o formato, não o destino.
+
+    def motor(self) -> str:
+        """local | gemini | nenhum — decidido uma vez, com o motivo guardado."""
+        if self._motor:
+            return self._motor
+        escolha = (self.cfg.motor_escuta or 'auto').lower()
+        if escolha in ('local', 'gemini'):
+            self._motor = escolha
+            return self._motor
+        try:
+            import faster_whisper          # noqa: F401
+            self._motor = 'local'
+        except Exception as e:
+            self._porque = str(e)[:200]
+            self._motor = 'gemini' if self.cfg.gemini else 'nenhum'
+        return self._motor
+
     def _carrega_whisper(self):
         if self._whisper is not None:
             return self._whisper
@@ -196,8 +247,53 @@ class Ouvido:
                                      compute_type='int8')
         return self._whisper
 
+    @staticmethod
+    def para_wav(audio) -> bytes:
+        """float32 -1..1 → WAV de 16 bits. Só biblioteca padrão."""
+        import io
+        import wave
+
+        import numpy as np
+        inteiros = np.clip(audio, -1.0, 1.0)
+        inteiros = (inteiros * 32767).astype(np.int16)
+        buraco = io.BytesIO()
+        with wave.open(buraco, 'wb') as w:
+            w.setnchannels(1)
+            w.setsampwidth(2)
+            w.setframerate(TAXA)
+            w.writeframes(inteiros.tobytes())
+        return buraco.getvalue()
+
+    def _transcreve_gemini(self, audio) -> str:
+        from google.genai import types
+
+        from nucleo.modelos import gemini
+        cli = gemini(self.cfg.gemini)
+        r = cli.models.generate_content(
+            model=self.cfg.modelo_gemini,
+            contents=[
+                types.Part.from_bytes(data=self.para_wav(audio), mime_type='audio/wav'),
+                'Transcreva exatamente o que foi dito neste áudio, em português do '
+                'Brasil. Responda SÓ com a transcrição, sem aspas, sem comentário, '
+                'sem explicação. Se não houver fala, responda com uma linha vazia.',
+            ])
+        texto = (getattr(r, 'text', '') or '').strip().strip('"')
+        # O modelo às vezes insiste em comentar quando não entende nada.
+        if texto.lower() in ('(sem fala)', 'nenhuma fala', 'vazio', 'n/a'):
+            return ''
+        return texto
+
     def transcreve(self, audio) -> str:
         if audio is None or len(audio) < TAXA * 0.3:
+            return ''
+        motor = self.motor()
+        if motor == 'gemini':
+            try:
+                return self._transcreve_gemini(audio)
+            except Exception as e:
+                print(f'  (não consegui transcrever pelo Gemini: {e})')
+                return ''
+        if motor == 'nenhum':
             return ''
         m = self._carrega_whisper()
         partes, _ = m.transcribe(audio, language=self.cfg.idioma, vad_filter=True,

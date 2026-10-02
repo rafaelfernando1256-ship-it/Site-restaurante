@@ -19,6 +19,12 @@ modelo_voz = "pt-BR-AntonioNeural"   # vale para a voz neural (edge-tts)
 velocidade_voz = "+8%"
 modelo_escuta = "small"       # tiny | base | small | medium — maior entende
                               # melhor e demora mais. "small" é o equilíbrio
+
+# Quem transcreve o que você fala:
+#   auto    usa o motor local; cai no Gemini só se o local não carregar
+#   local   só o motor local — o áudio NUNCA sai da máquina
+#   gemini  sempre pelo Gemini — o áudio sai da máquina
+motor_escuta = "auto"
 idioma = "pt"
 silencio_para_parar = 1.2     # segundos de silêncio que encerram a sua fala
 
