@@ -810,6 +810,66 @@ def _():
     verdade(l.slug in est.demo(l.id)['erro'], 'o erro diz a pasta exata')
 
 
+@teste('construtor: recusa página sem noindex, sem WhatsApp ou cortada')
+def _():
+    from nucleo.construtor import valida
+    igual(valida('<!doctype html><html>' + 'x' * 3000
+                 + '<meta name="robots" content="noindex"><a href="https://wa.me/55">x</a>'
+                 + '</html>'), [])
+    problemas = valida('<!doctype html><html>' + 'x' * 3000 + '</html>')
+    verdade(any('noindex' in p for p in problemas))
+    verdade(any('WhatsApp' in p for p in problemas))
+    cortada = valida('<!doctype html><html>' + 'x' * 3000)
+    verdade(any('cortada' in p for p in cortada), 'resposta truncada tem que ser pega')
+
+
+@teste('construtor: tira a cerca de código que o modelo põe em volta')
+def _():
+    from nucleo.construtor import _limpa
+    igual(_limpa('```html\n<!doctype html><html>a</html>\n```'),
+          '<!doctype html><html>a</html>')
+    igual(_limpa('Claro! Aqui está:\n<!doctype html><html>a</html>\nEspero ter ajudado'),
+          '<!doctype html><html>a</html>')
+
+
+@teste('construtor: escreve o site e insiste quando a página volta ruim')
+def _():
+    from nucleo import construtor as C
+    from nucleo.a3_estudio import Leitura, Prato
+    boa = ('<!doctype html><html><head><meta name="robots" content="noindex">'
+           '</head><body>' + 'conteudo ' * 400
+           + '<a href="https://wa.me/5584988887777">Pedir</a></body></html>')
+    chamadas = []
+
+    def falso(instrucao, conteudo, modelo=None, cli=None, max_tokens=8000,
+              provedor='claude'):
+        chamadas.append(conteudo)
+        return '<!doctype html><html></html>' if len(chamadas) == 1 else boa
+
+    original, C.pede_texto = C.pede_texto, falso
+    try:
+        pasta = TMP / 'site'
+        foto = TMP / 'p.png'
+        foto.write_bytes(b'\x89PNG\r\n\x1a\n' + b'0' * 40)
+        leitura = Leitura(nome_exibido='Pizzaria', uma_linha='pizza',
+                          especialidades=['pizza'], pratos=[Prato(nome='Marguerita')],
+                          tom='caseiro', paleta=['#aa0000'], secoes=['capa'],
+                          fotos_boas=['p.png'], nao_sei=['preço das pizzas'])
+        l = Lead(id=1, place_id='p', nome='Pizzaria do Marcos', estado=QUER_DEMO,
+                 cidade='Natal, RN', telefone_e164='5584988887777')
+        publico, pendencias = C.monta_site(l, leitura, [foto], pasta, cfg_falso())
+        verdade((publico / 'index.html').exists())
+        verdade((publico / 'robots.txt').read_text().startswith('User-agent'))
+        verdade((publico / 'img' / 'p.png').exists(), 'a foto não foi copiada')
+        igual(pendencias, ['preço das pizzas'])
+        igual(len(chamadas), 2, 'não insistiu depois da página ruim')
+        verdade('problemas' in chamadas[1], 'a segunda tentativa precisa dizer o que corrigir')
+        verdade('PREÇO NÃO INFORMADO' in chamadas[0],
+                'o que falta precisa chegar ao modelo como falta')
+    finally:
+        C.pede_texto = original
+
+
 # ── Agente 4 ────────────────────────────────────────────────────────
 @teste('a4: nome de projeto é válido e único por lead')
 def _():

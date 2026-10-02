@@ -368,6 +368,27 @@ def empacota(pasta: Path) -> Path:
     return destino
 
 
+def tem_claude_code() -> bool:
+    from shutil import which
+    return which('claude') is not None
+
+
+def constroi_rapido(lead: Lead, leitura: Leitura, imagens: Sequence[Path],
+                    saida: Path, cfg) -> tuple[Path, str]:
+    """
+    O caminho sem Claude Code: o próprio modelo escreve a página inteira.
+    Uma demonstração que vai por WhatsApp não precisa de projeto com
+    build — precisa abrir rápido no celular de quem vai decidir.
+    """
+    from .construtor import monta_site
+    pasta = saida / lead.slug
+    pasta.mkdir(parents=True, exist_ok=True)
+    (pasta / 'leitura.json').write_text(leitura.model_dump_json(indent=2),
+                                        encoding='utf-8')
+    monta_site(lead, leitura, imagens, pasta, cfg)
+    return pasta, f'página única escrita pelo {cfg.modelo_do_cerebro}'
+
+
 def roda(est: Estado, cfg, limite: int = 3, cli: Any = None) -> dict[str, int]:
     """Pega quem disse que quer, lê o Instagram e constrói."""
     conta = {'prontas': 0, 'sem_material': 0, 'falhas': 0}
@@ -391,8 +412,13 @@ def roda(est: Estado, cfg, limite: int = 3, cli: Any = None) -> dict[str, int]:
             print(f'  lendo o Instagram de {l.nome} ({len(imagens)} imagens)...')
             leitura = le(l, imagens, notas, modelo=cfg.modelo_do_cerebro, cli=cli,
                          provedor=cfg.provedor)
-            print(f'  construindo o site de {l.nome}... (isto demora)')
-            pasta, relato = constroi(l, leitura, imagens, cfg.saida, referencia)
+            if tem_claude_code() and cfg.provedor == 'claude':
+                print(f'  construindo o site de {l.nome} com o Claude Code... '
+                      '(isto demora minutos)')
+                pasta, relato = constroi(l, leitura, imagens, cfg.saida, referencia)
+            else:
+                print(f'  escrevendo o site de {l.nome}...')
+                pasta, relato = constroi_rapido(l, leitura, imagens, cfg.saida, cfg)
             zip_ = empacota(pasta)
             est.guarda_demo(l.id, pasta=str(pasta), zip=str(zip_),
                             situacao='construido', erro='')

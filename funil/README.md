@@ -225,11 +225,25 @@ Horário só se estiver escrito. Nada de avaliação, prêmio ou "desde 1998".
 Tudo que falta vai para uma lista `nao_sei` — e essa lista vira texto no
 briefing, lugar em branco no site e assunto na mensagem de entrega.
 
-**A construção** é o Claude Code em modo não interativo (`claude -p`),
-rodando dentro da pasta da demonstração, com `BRIEFING.md` escrito pelo
-agente e `grao-dourado/` como molde. O briefing carrega as regras de
-honestidade inteiras — é o que impede o site de nascer com preço
-inventado e depoimento falso.
+**A construção** tem dois caminhos, escolhidos sozinho:
+
+| quando | como | resultado |
+|---|---|---|
+| você usa o Claude **e** tem o Claude Code instalado | `claude -p` dentro da pasta, com `BRIEFING.md` e `grao-dourado/` como molde | projeto completo, com build |
+| qualquer outro caso | o próprio modelo escreve a página inteira (`nucleo/construtor.py`) | arquivo único, sem dependência |
+
+Nos dois, as regras de honestidade vão junto: preço que não estava na
+foto, horário que ninguém publicou e avaliação que não existe **não são
+preenchidos** — viram um lugar visível para o dono completar, e a lista
+do que faltou entra na mensagem de entrega.
+
+A página única não é um atalho preguiçoso: a demonstração vai por
+WhatsApp para alguém decidir em trinta segundos, no celular. Um arquivo
+sem build carrega na hora e não quebra por caminho de CSS. Projeto com
+estrutura é para depois que ele fechar.
+
+E ela é conferida antes de sair: sem `noindex`, sem botão de WhatsApp ou
+cortada no meio, volta para o modelo com a lista do que corrigir.
 
 **O empacotamento** zipa `publico/`, com o `index.html` **na raiz do
 zip**. Zip com o index dentro de uma subpasta faz a Netlify publicar uma
@@ -279,7 +293,7 @@ sumido) está verificada; o que não dá para verificar daqui é a rede.
 
 ## O que foi verificado
 
-**61 testes, 61 passando** (`python3 testes.py`). Nenhum toca a rede: o
+**64 testes, 64 passando** (`python3 testes.py`). Nenhum toca a rede: o
 cliente do Claude, a API da Netlify e o Claude Code entram como dublê,
 porque o que precisa de teste é a lógica.
 
