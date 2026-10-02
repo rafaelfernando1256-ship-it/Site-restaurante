@@ -89,8 +89,7 @@ python3 funil.py cacar --cidade "Natal, RN"   # agente 1
 python3 funil.py escrever                      # agente 2 escreve
 python3 funil.py painel                        # você lê
 python3 funil.py aprovar --todas
-python3 funil.py enviar                        # links do WhatsApp
-python3 funil.py enviada 7                     # você confirma
+python3 funil.py enviar --abrir                # dois toques por lead
 
 python3 funil.py retorno 7 "pode mandar sim"   # cola a resposta dele
 python3 funil.py triar                         # agente 3 classifica
@@ -102,6 +101,26 @@ python3 funil.py enviar                        # manda o link
 
 `python3 funil.py resumo` a qualquer hora. `python3 funil.py lead 7`
 mostra tudo de um lead: histórico, mensagens, demo, erros.
+
+---
+
+## O caminho totalmente automático do primeiro contato
+
+Existe, é legítimo e é a **API oficial do WhatsApp Business** (Cloud API).
+Com ela o disparo inicial é automatizado dentro das regras, sem risco de
+banimento — já está implementado em `nucleo/a2_abordagem.py`
+(`canal_envio = "cloud"`), desligado esperando a sua conta.
+
+O que ela exige:
+
+1. conta no Meta Business e número verificado;
+2. **template de mensagem aprovado pela Meta** — é ele que vai no primeiro
+   contato, não o texto livre que o agente escreve (o texto livre só vale
+   na janela de 24h depois de a pessoa te responder);
+3. `WHATSAPP_TOKEN` e `WHATSAPP_PHONE_ID` no `.env`.
+
+O preço de automatizar de verdade é esse: a Meta lê e aprova o que você
+manda no primeiro contato. Em troca, você não perde o número.
 
 ---
 

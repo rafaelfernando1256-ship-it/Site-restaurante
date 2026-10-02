@@ -154,18 +154,60 @@ def cmd_enviar(a, cfg) -> int:
     canal = a.canal or cfg.canal_envio
     with _estado(cfg) as est:
         c = a2_abordagem.envia(est, canal=canal, limite=a.limite, pausa=a.pausa)
-        if canal == 'link':
-            if not c['links']:
-                print('\n  nada aprovado para enviar.\n')
-                return 0
-            print(f'\n  {len(c["links"])} para mandar. Abra, confira, envie —'
-                  ' e confirme com o número do fim da linha:\n')
-            for x in c['links']:
-                print(f'  {x["lead"]} ({x["cidade"]})')
-                print(f'    {x["url"]}')
-                print(f'    confirmar:  python3 funil.py enviada {x["msg_id"]}\n')
-        else:
+        if canal != 'link':
             print(f'\n  {c["enviadas"]} enviadas · {c["falhas"]} falhas\n')
+            return 0
+        if not c['links']:
+            print('\n  nada aprovado para enviar.\n')
+            return 0
+
+        if a.abrir:
+            return _enfileira(est, c['links'])
+
+        print(f'\n  {len(c["links"])} para mandar. Abra, confira, envie —'
+              ' e confirme com o número do fim da linha:\n')
+        for x in c['links']:
+            print(f'  {x["lead"]} ({x["cidade"]})')
+            print(f'    {x["url"]}')
+            print(f'    confirmar:  python3 funil.py enviada {x["msg_id"]}\n')
+        print('  dica: "enviar --abrir" abre um por um e já confirma sozinho.\n')
+    return 0
+
+
+def _enfileira(est, links: list[dict]) -> int:
+    """
+    Abre as conversas uma a uma, já com a mensagem escrita. Você lê, dá
+    Enter no WhatsApp e Enter aqui. Dois toques por lead.
+
+    O envio continua sendo seu — e isso não é cerimônia: é você olhando
+    para quem vai receber antes de a mensagem sair. É o que separa
+    prospecção de disparo.
+    """
+    import webbrowser
+
+    from nucleo import a2_abordagem
+    print(f'\n  {len(links)} na fila. Para cada um: confira no WhatsApp, envie,'
+          ' e volte aqui.')
+    print('  [enter] = enviei · [p] = pulo este · [s] = paro por aqui\n')
+    enviados = 0
+    for i, x in enumerate(links, 1):
+        print(f'  ── {i}/{len(links)}  {x["lead"]} ({x["cidade"]})')
+        webbrowser.open(x['url'])
+        try:
+            r = input('     enviou? ').strip().lower()
+        except (EOFError, KeyboardInterrupt):
+            print()
+            break
+        if r in ('s', 'sair', 'q'):
+            break
+        if r in ('p', 'pular'):
+            print('     pulado\n')
+            continue
+        a2_abordagem.marca_enviada(est, x['msg_id'], x['lead_id'])
+        enviados += 1
+        print('     ✓ marcado como enviado\n')
+    print(f'\n  {enviados} enviados. A vigia cuida do resto:'
+          ' python3 funil.py vigiar\n')
     return 0
 
 
@@ -371,6 +413,8 @@ def principal(argv: list[str] | None = None) -> int:
     s.add_argument('--canal', choices=['link', 'cloud'])
     s.add_argument('--limite', type=int, default=50)
     s.add_argument('--pausa', type=float, default=0.0, help='segundos entre envios (cloud)')
+    s.add_argument('--abrir', action='store_true',
+                   help='abre um por um e confirma com enter (dois toques por lead)')
 
     s = sub.add_parser('enviada', help='confirma que VOCÊ mandou pelo link')
     s.add_argument('ids', nargs='+')
