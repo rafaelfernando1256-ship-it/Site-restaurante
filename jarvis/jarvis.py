@@ -179,6 +179,33 @@ def _linha(bem: bool, nome: str, detalhe: str = '') -> None:
           flush=True)
 
 
+def _testa_chave(cfg) -> tuple[bool, str]:
+    """
+    Pergunta à API se a chave vale. Conferir se o campo está preenchido não
+    serve de nada: chave errada passa nesse teste e só falha na primeira
+    frase que você fala. Usa contagem de tokens, que autentica e não cobra.
+    """
+    try:
+        import anthropic
+        cli = anthropic.Anthropic(api_key=cfg.anthropic)
+        cli.messages.count_tokens(model=cfg.modelo,
+                                  messages=[{'role': 'user', 'content': 'oi'}])
+        return True, 'válida'
+    except Exception as e:
+        nome, texto = type(e).__name__, str(e)
+        if 'authentication' in texto.lower() or '401' in texto:
+            return False, ('A ANTHROPIC RECUSOU ESTA CHAVE. Confira se você copiou '
+                           'ela inteira (começa com sk-ant-) e sem espaço sobrando, '
+                           'em console.anthropic.com → API Keys')
+        if 'credit' in texto.lower() or 'billing' in texto.lower():
+            return False, 'a chave é válida mas a conta está sem crédito'
+        if 'not_found' in texto.lower() or '404' in texto:
+            return False, f'a chave vale, mas o modelo "{cfg.modelo}" não existe para ela'
+        if nome in ('APIConnectionError', 'APITimeoutError'):
+            return False, 'não consegui falar com a Anthropic — é a sua internet'
+        return False, f'{nome}: {texto[:160]}'
+
+
 def checar(cfg) -> int:
     import platform
     carrega_tudo()
@@ -187,8 +214,19 @@ def checar(cfg) -> int:
     print(f'  pastas liberadas: {", ".join(cfg.raizes_seguras)}', flush=True)
     print(f'  modelo: {cfg.modelo}\n', flush=True)
 
-    _linha(bool(cfg.anthropic), 'chave do Claude (obrigatória)',
-           '' if cfg.anthropic else 'preencha ANTHROPIC_API_KEY no arquivo .env')
+    faltam_pip, quebrados = [], []
+    tela = sys.stdout.isatty()      # só apaga a linha quando há terminal de verdade
+
+    if not cfg.anthropic:
+        _linha(False, 'chave do Claude (obrigatória)',
+               'preencha ANTHROPIC_API_KEY no arquivo .env')
+    else:
+        if tela:
+            print('  \033[90m… testando a chave do Claude\033[0m', end='\r', flush=True)
+        bem, detalhe = _testa_chave(cfg)
+        if tela:
+            print(' ' * 46, end='\r')
+        _linha(bem, 'chave do Claude (obrigatória)', detalhe)
     _linha(bool(cfg.openai), 'chave do ChatGPT (opcional)')
     _linha(bool(cfg.gemini), 'chave do Gemini (opcional)')
 
@@ -205,8 +243,6 @@ def checar(cfg) -> int:
                ('sounddevice', 'microfone', 'sounddevice'),
                ('openwakeword', 'palavra de ativação', 'openwakeword'),
                ('faster_whisper', 'entender o que você fala', 'faster-whisper')]
-    faltam_pip, quebrados = [], []
-    tela = sys.stdout.isatty()      # só apaga a linha quando há terminal de verdade
     for pacote, para_que, no_pip in pacotes:
         if tela:
             print(f'  \033[90m… carregando {pacote}\033[0m', end='\r', flush=True)

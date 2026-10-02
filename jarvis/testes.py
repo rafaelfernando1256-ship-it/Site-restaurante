@@ -561,6 +561,51 @@ def _():
             verdade(ct >= 4.5, f'tema {nome}, {campo}: {ct:.2f}:1')
 
 
+@teste('config: chave salva pelo Bloco de Notas (com BOM) continua sendo lida')
+def _():
+    import os
+
+    from nucleo.config import _carrega_env
+    env = TMP / 'com-bom.env'
+    # É assim que o Bloco de Notas do Windows salva em UTF-8.
+    env.write_bytes('\ufeffANTHROPIC_API_KEY=sk-ant-teste-123\n'
+                    'OPENAI_API_KEY="com-aspas"\n'.encode('utf-8'))
+    for k in ('ANTHROPIC_API_KEY', 'OPENAI_API_KEY'):
+        os.environ.pop(k, None)
+    try:
+        _carrega_env(env)
+        igual(os.environ.get('ANTHROPIC_API_KEY'), 'sk-ant-teste-123',
+              'o BOM comeu o nome da chave')
+        igual(os.environ.get('OPENAI_API_KEY'), 'com-aspas', 'as aspas vazaram')
+    finally:
+        for k in ('ANTHROPIC_API_KEY', 'OPENAI_API_KEY'):
+            os.environ.pop(k, None)
+
+
+@teste('diagnóstico: chave recusada pela API é reportada como recusada')
+def _():
+    import types as _t
+
+    import jarvis as J
+
+    class Recusa:
+        class messages:
+            @staticmethod
+            def count_tokens(**kw):
+                raise RuntimeError('Error code: 401 - authentication_error: invalid x-api-key')
+
+    import anthropic
+    original = anthropic.Anthropic
+    anthropic.Anthropic = lambda **kw: Recusa()
+    try:
+        bem, detalhe = J._testa_chave(cfg_teste(anthropic='sk-ant-errada'))
+        igual(bem, False)
+        verdade('RECUSOU' in detalhe, f'mensagem inútil: {detalhe}')
+        verdade('console.anthropic.com' in detalhe, 'precisa dizer onde resolver')
+    finally:
+        anthropic.Anthropic = original
+
+
 @teste('ouvido: pacote instalado que quebra não vira "falta instalar"')
 def _():
     # O caso real: faster-whisper instalado e falhando ao carregar (DLL,

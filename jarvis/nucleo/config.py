@@ -25,11 +25,14 @@ MODELO_GPT = 'gpt-4o'
 MODELO_GEMINI = 'gemini-2.0-flash'
 
 
-def _carrega_env() -> None:
-    arquivo = RAIZ / '.env'
+def _carrega_env(arquivo: Path | None = None) -> None:
+    arquivo = arquivo or (RAIZ / '.env')
     if not arquivo.exists():
         return
-    for linha in arquivo.read_text(encoding='utf-8').splitlines():
+    # utf-8-sig e não utf-8: o Bloco de Notas salva com BOM, e o BOM gruda
+    # na primeira chave do arquivo — "\ufeffANTHROPIC_API_KEY" não é
+    # "ANTHROPIC_API_KEY", e a chave some sem nenhum erro aparecer.
+    for linha in arquivo.read_text(encoding='utf-8-sig').splitlines():
         linha = linha.strip()
         if not linha or linha.startswith('#') or '=' not in linha:
             continue
