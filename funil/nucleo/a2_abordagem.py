@@ -30,7 +30,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-from .claude import pede_json
+from .modelo import pede_json
 from .estado import Estado, Lead, NOVO, RASCUNHO, ABORDADO
 
 AGENTE = 'a2_abordagem'
@@ -89,7 +89,8 @@ def _contexto(l: Lead) -> str:
 
 
 def escreve(est: Estado, limite: int = 20, modelo: str | None = None,
-            cidade: str = '', cli: Any = None) -> dict[str, int]:
+            cidade: str = '', cli: Any = None,
+            provedor: str = 'claude') -> dict[str, int]:
     """Pega leads NOVO, escreve a abordagem e deixa em RASCUNHO."""
     conta = {'escritos': 0, 'falhas': 0}
     for l in est.leads(NOVO, limite=limite, cidade=cidade):
@@ -100,6 +101,7 @@ def escreve(est: Estado, limite: int = 20, modelo: str | None = None,
                 esquema=Abordagem,
                 modelo=modelo,
                 cli=cli,
+                provedor=provedor,
             )
             est.guarda_mensagem(l.id, 'abordagem', r.mensagem.strip())
             est.move(l.id, RASCUNHO, AGENTE, r.porque[:200])

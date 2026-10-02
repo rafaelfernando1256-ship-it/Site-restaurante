@@ -48,11 +48,32 @@ de dado errado.
 
 ```bash
 cd funil
-pip install -r requirements.txt     # anthropic e pydantic, só
+pip install -r requirements.txt     # anthropic, google-genai e pydantic
 cp .env.exemplo .env                # e preencha as chaves
 cp config.exemplo.toml config.toml  # opcional
-python3 testes.py                   # 43 testes, nenhum toca a rede
+python3 testes.py                   # 49 testes, nenhum toca a rede
 ```
+
+### Duas chaves, e só uma delas é obrigatória para começar
+
+| chave | para que | sem ela |
+|---|---|---|
+| **Claude ou Gemini** | escrever as abordagens, triar as respostas, ler o Instagram | nada do agente 2 em diante |
+| **Google Places** | achar restaurante sem site | o agente 1 não roda — mas dá para pôr lead à mão (veja abaixo) |
+
+O cérebro sai sozinho da chave que existir no `.env`. Com as duas
+preenchidas, escolha em `config.toml` → `provedor`.
+
+### Sem a chave do Places ainda? Comece assim
+
+```bash
+python3 funil.py adicionar "Pizzaria do Marcos" \
+  --telefone "+55 84 98888-7777" --instagram "@pizzariadomarcos" \
+  --cidade "Natal, RN" --avaliacoes 180 --nota 4.6
+```
+
+O funil inteiro funciona a partir daí. Serve também para o cliente que
+você já conhece e que não vai aparecer em busca nenhuma.
 
 As chaves vão no `.env` — que está no `.gitignore`, junto com `dados/`,
 `material/` e `saida/`. **Nome, telefone e Instagram de gente real não
@@ -64,6 +85,7 @@ vão para repositório nenhum**, nem privado.
 
 ```bash
 python3 funil.py cacar --cidade "Natal, RN"   # agente 1
+# (ou: python3 funil.py adicionar "Nome do lugar" --telefone ... --instagram ...)
 python3 funil.py escrever                      # agente 2 escreve
 python3 funil.py painel                        # você lê
 python3 funil.py aprovar --todas
@@ -217,7 +239,7 @@ sumido) está verificada; o que não dá para verificar daqui é a rede.
 
 ## O que foi verificado
 
-**43 testes, 43 passando** (`python3 testes.py`). Nenhum toca a rede: o
+**49 testes, 49 passando** (`python3 testes.py`). Nenhum toca a rede: o
 cliente do Claude, a API da Netlify e o Claude Code entram como dublê,
 porque o que precisa de teste é a lógica.
 

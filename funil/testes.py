@@ -19,7 +19,7 @@ import zipfile
 from pathlib import Path
 
 from nucleo import a1_cacador as a1, a2_abordagem as a2, a3_estudio as a3, a4_entrega as a4
-from nucleo import config
+from nucleo import config, modelo as M
 from nucleo.estado import (Estado, Lead, TransicaoInvalida, NOVO, RASCUNHO, ABORDADO,
                            RESPONDEU, QUER_DEMO, DEMO_PRONTA, PUBLICADO, SEM_INTERESSE,
                            DESCARTADO, FECHADO)
@@ -208,6 +208,100 @@ def _():
           'casa fechada é zero, não lead')
 
 
+# ── A ponte para o modelo ───────────────────────────────────────────
+class FalsoGemini:
+    """Imita o generate_content do google-genai."""
+
+    def __init__(self, devolve):
+        self.devolve = devolve
+        self.chamadas: list[dict] = []
+        self.models = self
+
+    def generate_content(self, **kw):
+        self.chamadas.append(kw)
+        return types.SimpleNamespace(parsed=self.devolve, text='{"x": 1}')
+
+
+@teste('modelo: o provedor decide o caminho, e o esquema vai junto')
+def _():
+    from nucleo.a2_abordagem import Abordagem
+    esperado = Abordagem(gancho='g', mensagem='m', porque='p')
+    cli = FalsoGemini(esperado)
+    r = M.pede_json('instrução', 'conteúdo', Abordagem, modelo='gemini-x',
+                    cli=cli, provedor='gemini')
+    igual(r, esperado)
+    kw = cli.chamadas[0]
+    igual(kw['model'], 'gemini-x')
+    cfg = kw['config']
+    igual(cfg.system_instruction, 'instrução', 'a instrução precisa ir como sistema')
+    igual(cfg.response_mime_type, 'application/json')
+    igual(cfg.response_schema, Abordagem, 'sem esquema a saída não é validada')
+
+
+@teste('modelo: JSON cortado pela metade não vira resposta vazia silenciosa')
+def _():
+    from nucleo.a2_abordagem import Abordagem
+    cli = FalsoGemini(None)
+    try:
+        M.pede_json('i', 'c', Abordagem, cli=cli, provedor='gemini', tentativas=1)
+    except RuntimeError as e:
+        verdade('não devolveu o JSON' in str(e))
+        verdade('veio:' in str(e), 'precisa mostrar o que chegou, para dar para depurar')
+        return
+    raise AssertionError('engoliu a resposta inválida')
+
+
+@teste('modelo: imagem vira anexo nos dois provedores')
+def _():
+    from nucleo.a3_estudio import Leitura
+    foto = TMP / 'foto.png'
+    foto.write_bytes(b'\x89PNG\r\n\x1a\n' + b'0' * 40)
+    cli = FalsoGemini(Leitura(nome_exibido='X', uma_linha='y', especialidades=[],
+                              pratos=[], tom='t', paleta=[], secoes=[],
+                              fotos_boas=[], nao_sei=[]))
+    M.pede_json('i', 'c', Leitura, cli=cli, imagens=[foto], provedor='gemini')
+    partes = cli.chamadas[0]['contents'][0].parts
+    igual(len(partes), 2, 'imagem + texto')
+    verdade(partes[0].inline_data is not None, 'a foto não virou anexo')
+    igual(partes[0].inline_data.mime_type, 'image/png')
+
+
+@teste('modelo: formato de imagem que a API não aceita falha dizendo qual')
+def _():
+    from nucleo.a3_estudio import Leitura
+    ruim = TMP / 'foto.bmp'
+    ruim.write_bytes(b'BM')
+    for provedor in ('claude', 'gemini'):
+        try:
+            M.pede_json('i', 'c', Leitura, cli=FalsoGemini(None), imagens=[ruim],
+                        provedor=provedor, tentativas=1)
+        except ValueError as e:
+            verdade('foto.bmp' in str(e))
+            continue
+        raise AssertionError(f'aceitou .bmp no provedor {provedor}')
+
+
+@teste('adicionar: lead posto à mão nasce pronto para o agente 2')
+def _():
+    import funil as F
+    est = banco()
+    cfg = cfg_falso(banco=est.caminho)
+    est.fechar()
+    argumentos = types.SimpleNamespace(
+        nome='Cantina da Vó', telefone='+55 84 98888-7777', instagram='@cantinadavo',
+        cidade='Natal, RN', categoria='Restaurante', url='', nota=4.6,
+        avaliacoes=180, pontuacao=8, place_id='')
+    F.cmd_adicionar(argumentos, cfg)
+    est2 = Estado(cfg.banco)
+    l = est2.leads()[0]
+    igual(l.nome, 'Cantina da Vó')
+    igual(l.estado, NOVO, 'tem que cair em novo, para o agente 2 pegar')
+    igual(l.telefone_e164, '5584988887777', 'o telefone precisa sair pronto para o wa.me')
+    igual(l.instagram, 'cantinadavo', 'o @ não entra no handle')
+    igual(l.presenca, 'so_rede', 'quem só tem Instagram é o melhor lead')
+    est2.fechar()
+
+
 # ── Agente 2 ────────────────────────────────────────────────────────
 @teste('a2: escreve deixa em rascunho, nunca em abordado')
 def _():
@@ -218,6 +312,18 @@ def _():
     igual(est.lead(l.id).estado, RASCUNHO)
     m = est.mensagens(lead_id=l.id)[0]
     igual(m['situacao'], 'rascunho', 'mensagem nasce em rascunho')
+
+
+@teste('a2: escreve igual pelo Gemini')
+def _():
+    est = banco()
+    l = lead_exemplo(est)
+    from nucleo.a2_abordagem import Abordagem
+    cli = FalsoGemini(Abordagem(gancho='g', mensagem='Oi, vi seu Instagram', porque='p'))
+    c = a2.escreve(est, cli=cli, provedor='gemini', modelo='gemini-2.5-flash')
+    igual(c, {'escritos': 1, 'falhas': 0})
+    igual(est.lead(l.id).estado, RASCUNHO)
+    igual(cli.chamadas[0]['model'], 'gemini-2.5-flash')
 
 
 @teste('a2: contexto diz a verdade sobre a presença do lead')
@@ -573,6 +679,23 @@ def _():
 
 
 # ── Config e painel ─────────────────────────────────────────────────
+@teste('config: o provedor sai da chave que existe')
+def _():
+    for anthropic, gemini_, esperado in (('a', '', 'claude'), ('', 'g', 'gemini'),
+                                         ('a', 'g', 'claude'), ('', '', 'claude')):
+        c = config.Config(anthropic=anthropic, gemini=gemini_)
+        c.provedor = 'gemini' if (c.gemini and not c.anthropic) else 'claude'
+        igual(c.provedor, esperado, f'{anthropic!r}/{gemini_!r}')
+    c = config.Config(provedor='gemini', modelo='claude-x', modelo_gemini='gemini-y')
+    igual(c.modelo_do_cerebro, 'gemini-y')
+    try:
+        c.exige_cerebro()
+    except SystemExit as e:
+        verdade('GEMINI_API_KEY' in str(e), 'tem que cobrar a chave do provedor certo')
+        return
+    raise AssertionError('passou sem chave do Gemini')
+
+
 @teste('config: cobra a variável que falta pelo nome real')
 def _():
     c = config.Config()

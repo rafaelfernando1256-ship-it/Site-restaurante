@@ -72,13 +72,41 @@ def cmd_cacar(a, cfg) -> int:
     return 0
 
 
+def cmd_adicionar(a, cfg) -> int:
+    """
+    Põe um lead à mão. Existe por um motivo prático: a chave da Places API
+    leva uns minutos para sair, e dá para exercitar o funil inteiro antes
+    disso — inclusive com clientes que você já conhece e que não vão
+    aparecer em busca nenhuma.
+    """
+    with _estado(cfg) as est:
+        from nucleo.a1_cacador import classifica, e164, instagram_de
+        url = a.url or (f'https://instagram.com/{a.instagram.lstrip("@")}'
+                        if a.instagram else '')
+        presenca = classifica(url)
+        _id, novo_lead = est.guarda_lead(
+            place_id=a.place_id or f'mao:{a.nome.lower().replace(" ", "-")}',
+            nome=a.nome, cidade=a.cidade or cfg.cidade or '',
+            telefone=a.telefone, telefone_e164=e164(a.telefone),
+            instagram=a.instagram.lstrip('@') or instagram_de(url),
+            categoria=a.categoria, nota=a.nota, avaliacoes=a.avaliacoes,
+            presenca=presenca, url_achada=url, pontuacao=a.pontuacao,
+            dados={'origem': 'mão'})
+        print(f'\n  {"criado" if novo_lead else "atualizado"}: #{_id} {a.nome}'
+              f' · {presenca}'
+              + (f' · @{a.instagram.lstrip("@")}' if a.instagram else '')
+              + (f' · {a.telefone}' if a.telefone else ' · SEM TELEFONE'))
+        print('  próximo: python3 funil.py escrever\n')
+    return 0
+
+
 def cmd_escrever(a, cfg) -> int:
     from nucleo import a2_abordagem
-    cfg.exige('anthropic')
+    cfg.exige_cerebro()
     with _estado(cfg) as est:
-        print('\nAgente 2 — escrevendo as abordagens\n')
-        c = a2_abordagem.escreve(est, limite=a.limite, modelo=cfg.modelo,
-                                 cidade=a.cidade or '')
+        print(f'\nAgente 2 — escrevendo as abordagens ({cfg.modelo_do_cerebro})\n')
+        c = a2_abordagem.escreve(est, limite=a.limite, modelo=cfg.modelo_do_cerebro,
+                                 cidade=a.cidade or '', provedor=cfg.provedor)
         print(f'\n  {c["escritos"]} escritas · {c["falhas"]} falhas')
         print('  revise com: python3 funil.py revisar\n')
     return 0
@@ -159,10 +187,11 @@ def cmd_retorno(a, cfg) -> int:
 
 def cmd_triar(a, cfg) -> int:
     from nucleo import a3_estudio
-    cfg.exige('anthropic')
+    cfg.exige_cerebro()
     with _estado(cfg) as est:
         print('\nAgente 3 — lendo as respostas\n')
-        c = a3_estudio.tria(est, limite=a.limite, modelo=cfg.modelo)
+        c = a3_estudio.tria(est, limite=a.limite, modelo=cfg.modelo_do_cerebro,
+                            provedor=cfg.provedor)
         print(f'\n  {c["quer"]} querem · {c["nao_quer"]} não · '
               f'{c["duvida"]} em dúvida (decida você) · {c["falhas"]} falhas\n')
     return 0
@@ -170,7 +199,7 @@ def cmd_triar(a, cfg) -> int:
 
 def cmd_construir(a, cfg) -> int:
     from nucleo import a3_estudio
-    cfg.exige('anthropic')
+    cfg.exige_cerebro()
     with _estado(cfg) as est:
         print('\nAgente 3 — Instagram → Claude Code → site\n')
         c = a3_estudio.roda(est, cfg, limite=a.limite)
@@ -181,7 +210,8 @@ def cmd_construir(a, cfg) -> int:
 
 def cmd_publicar(a, cfg) -> int:
     from nucleo import a4_entrega
-    cfg.exige('netlify', 'anthropic')
+    cfg.exige('netlify')
+    cfg.exige_cerebro()
     with _estado(cfg) as est:
         print(f'\nAgente 4 — publicando na equipe {cfg.equipe_netlify}\n')
         c = a4_entrega.entrega(est, cfg, limite=a.limite)
@@ -257,6 +287,18 @@ def principal(argv: list[str] | None = None) -> int:
     s.add_argument('--paginas', type=int, default=3)
     s.add_argument('--minimo', type=int, default=4, help='pontuação mínima (0-10)')
 
+    s = sub.add_parser('adicionar', help='põe um lead à mão, sem a Places API')
+    s.add_argument('nome')
+    s.add_argument('--telefone', default='', help='+55 84 98888-7777')
+    s.add_argument('--instagram', default='', help='@perfil')
+    s.add_argument('--cidade', default='')
+    s.add_argument('--categoria', default='Restaurante')
+    s.add_argument('--url', default='', help='o link que ele usa hoje, se tiver')
+    s.add_argument('--nota', type=float, default=0.0)
+    s.add_argument('--avaliacoes', type=int, default=0)
+    s.add_argument('--pontuacao', type=int, default=8)
+    s.add_argument('--place-id', dest='place_id', default='')
+
     s = sub.add_parser('escrever', help='AGENTE 2 — escreve as abordagens')
     s.add_argument('--limite', type=int, default=20)
     s.add_argument('--cidade')
@@ -301,6 +343,7 @@ def principal(argv: list[str] | None = None) -> int:
     cfg = config.carrega(a.config)
     return {
         'resumo': cmd_resumo, 'cacar': cmd_cacar, 'escrever': cmd_escrever,
+        'adicionar': cmd_adicionar,
         'revisar': cmd_revisar, 'aprovar': cmd_aprovar, 'enviar': cmd_enviar,
         'enviada': cmd_enviada, 'retorno': cmd_retorno, 'triar': cmd_triar,
         'construir': cmd_construir, 'publicar': cmd_publicar, 'lead': cmd_lead,

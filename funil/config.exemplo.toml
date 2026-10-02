@@ -1,7 +1,13 @@
 # Copie para config.toml. Aqui não entra segredo — segredo vai no .env.
 
 [geral]
-modelo = "claude-opus-5-5"
+# Quem escreve e decide: "claude" ou "gemini".
+# Deixe comentado para sair sozinho da chave que existir no .env.
+# provedor = "gemini"
+
+modelo = "claude-opus-5-5"          # vale quando provedor = claude
+modelo_gemini = "gemini-2.5-flash"  # vale quando provedor = gemini
+
 cidade = "Natal, RN"
 
 # "link" = o agente escreve, você clica e manda (padrão, e o que mantém

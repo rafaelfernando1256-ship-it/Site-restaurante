@@ -42,7 +42,7 @@ from typing import Any, Sequence
 
 from pydantic import BaseModel, Field
 
-from .claude import pede_json
+from .modelo import pede_json
 from .estado import (Estado, Lead, ABORDADO, RESPONDEU, QUER_DEMO, DEMO_PRONTA,
                      SEM_INTERESSE)
 
@@ -86,7 +86,8 @@ def anota_retorno(est: Estado, lead_id: int, texto: str) -> None:
 
 
 def tria(est: Estado, limite: int = 20, modelo: str | None = None,
-         cli: Any = None, certeza_minima: float = 0.7) -> dict[str, int]:
+         cli: Any = None, certeza_minima: float = 0.7,
+         provedor: str = 'claude') -> dict[str, int]:
     """Classifica quem respondeu. Dúvida fica parada para você ler."""
     conta = {'quer': 0, 'nao_quer': 0, 'duvida': 0, 'falhas': 0}
     for l in est.leads(RESPONDEU, limite=limite):
@@ -99,7 +100,7 @@ def tria(est: Estado, limite: int = 20, modelo: str | None = None,
                 conteudo=f'Mensagem que você mandou para ele:\n'
                          f'{_ultima(est, l.id, "abordagem")}\n\n'
                          f'Resposta dele:\n{retornos[-1]["texto"]}',
-                esquema=Triagem, modelo=modelo, cli=cli,
+                esquema=Triagem, modelo=modelo, cli=cli, provedor=provedor,
             )
         except Exception as e:
             conta['falhas'] += 1
@@ -183,7 +184,8 @@ def reune(pasta: Path) -> tuple[list[Path], str]:
 
 
 def le(lead: Lead, imagens: Sequence[Path], notas: str = '',
-       modelo: str | None = None, cli: Any = None) -> Leitura:
+       modelo: str | None = None, cli: Any = None,
+       provedor: str = 'claude') -> Leitura:
     lista = '\n'.join(f'- {p.name}' for p in imagens)
     texto = (f'Restaurante: {lead.nome}\nCidade: {lead.cidade}\n'
              f'Instagram: @{lead.instagram or "(não sei)"}\n'
@@ -194,7 +196,8 @@ def le(lead: Lead, imagens: Sequence[Path], notas: str = '',
     # 20 imagens é o teto prático de um pedido; o perfil inteiro não cabe
     # e as primeiras capturas são as que têm bio, destaques e grade.
     return pede_json(instrucao=LEITURA_INSTRUCAO, conteudo=texto, esquema=Leitura,
-                     modelo=modelo, imagens=list(imagens)[:20], cli=cli, max_tokens=12000)
+                     modelo=modelo, imagens=list(imagens)[:20], cli=cli,
+                     max_tokens=12000, provedor=provedor)
 
 
 # ── O briefing que vai para o Claude Code ───────────────────────────
@@ -386,7 +389,8 @@ def roda(est: Estado, cfg, limite: int = 3, cli: Any = None) -> dict[str, int]:
             continue
         try:
             print(f'  lendo o Instagram de {l.nome} ({len(imagens)} imagens)...')
-            leitura = le(l, imagens, notas, modelo=cfg.modelo, cli=cli)
+            leitura = le(l, imagens, notas, modelo=cfg.modelo_do_cerebro, cli=cli,
+                         provedor=cfg.provedor)
             print(f'  construindo o site de {l.nome}... (isto demora)')
             pasta, relato = constroi(l, leitura, imagens, cfg.saida, referencia)
             zip_ = empacota(pasta)

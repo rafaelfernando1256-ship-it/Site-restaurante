@@ -1,4 +1,5 @@
-# Só duas. O resto é biblioteca padrão do Python, de propósito: menos
-# dependência, menos coisa para quebrar em máquina sua daqui a seis meses.
-anthropic>=1.11.0
-pydantic>=2.9
+# Só três. O resto é biblioteca padrão do Python, de propósito: menos
+# dependência, menos coisa para quebrar na sua máquina daqui a seis meses.
+anthropic>=1.11.0          # cérebro Claude
+google-genai>=1.0          # cérebro Gemini
+pydantic>=2.9              # as saídas dos agentes, validadas por esquema

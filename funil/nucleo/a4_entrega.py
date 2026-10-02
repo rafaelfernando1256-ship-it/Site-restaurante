@@ -31,7 +31,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-from .claude import pede_json
+from .modelo import pede_json
 from .estado import Estado, Lead, DEMO_PRONTA, PUBLICADO
 
 AGENTE = 'a4_entrega'
@@ -191,7 +191,8 @@ def entrega(est: Estado, cfg, limite: int = 10, cli: Any = None) -> dict[str, An
                           f'Link do exemplo: {url}\n'
                           f'O que ficou em branco por falta de dado:\n'
                           + ('\n'.join(f'- {p}' for p in pendencias) or '- (nada)')),
-                esquema=Entrega, modelo=cfg.modelo, cli=cli,
+                esquema=Entrega, modelo=cfg.modelo_do_cerebro, cli=cli,
+                provedor=cfg.provedor,
             )
             msg_id = est.guarda_mensagem(l.id, 'entrega', r.mensagem.strip())
             est.move(l.id, PUBLICADO, AGENTE, url)

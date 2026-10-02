@@ -20,6 +20,7 @@ SAIDA = RAIZ / 'saida'
 MATERIAL = RAIZ / 'material'      # capturas do Instagram, uma pasta por lead
 
 MODELO = 'claude-opus-5-5'
+MODELO_GEMINI = 'gemini-2.5-flash'
 
 # Termos de busca padrão. Sem "restaurante" sozinho: o Places devolve
 # shopping e praça de alimentação. Termo específico traz casa específica.
@@ -55,12 +56,17 @@ class Config:
     # segredos
     google_places: str = ''
     anthropic: str = ''
+    gemini: str = ''
     netlify: str = ''
     whatsapp_token: str = ''
     whatsapp_phone_id: str = ''
 
     # preferências
+    # claude | gemini — quem escreve as abordagens, tria as respostas e lê
+    # o Instagram. Sai sozinho da chave que existir no .env.
+    provedor: str = ''
     modelo: str = MODELO
+    modelo_gemini: str = MODELO_GEMINI
     cidade: str = ''
     canal_envio: str = 'link'      # link (padrão) | cloud
     equipe_netlify: str = 'conta5197-99'
@@ -71,11 +77,19 @@ class Config:
     saida: Path = SAIDA
     material: Path = MATERIAL
 
+    @property
+    def modelo_do_cerebro(self) -> str:
+        return self.modelo_gemini if self.provedor == 'gemini' else self.modelo
+
+    def exige_cerebro(self) -> None:
+        self.exige('gemini' if self.provedor == 'gemini' else 'anthropic')
+
     def exige(self, *chaves: str) -> None:
         """Falha cedo, com o nome exato da variável que falta."""
         nomes = {
             'google_places': 'GOOGLE_PLACES_KEY',
             'anthropic': 'ANTHROPIC_API_KEY',
+            'gemini': 'GEMINI_API_KEY',
             'netlify': 'NETLIFY_TOKEN',
         }
         faltam = [nomes.get(c, c.upper()) for c in chaves if not getattr(self, c, '')]
@@ -90,6 +104,7 @@ def carrega(caminho: Path | None = None) -> Config:
     c = Config(
         google_places=os.environ.get('GOOGLE_PLACES_KEY', ''),
         anthropic=os.environ.get('ANTHROPIC_API_KEY', ''),
+        gemini=os.environ.get('GEMINI_API_KEY', ''),
         netlify=os.environ.get('NETLIFY_TOKEN', ''),
         whatsapp_token=os.environ.get('WHATSAPP_TOKEN', ''),
         whatsapp_phone_id=os.environ.get('WHATSAPP_PHONE_ID', ''),
@@ -99,7 +114,9 @@ def carrega(caminho: Path | None = None) -> Config:
         with open(arquivo, 'rb') as f:
             t = tomllib.load(f)
         g = t.get('geral', {})
+        c.provedor = g.get('provedor', c.provedor)
         c.modelo = g.get('modelo', c.modelo)
+        c.modelo_gemini = g.get('modelo_gemini', c.modelo_gemini)
         c.cidade = g.get('cidade', c.cidade)
         c.canal_envio = g.get('canal_envio', c.canal_envio)
         c.equipe_netlify = g.get('equipe_netlify', c.equipe_netlify)
@@ -110,4 +127,8 @@ def carrega(caminho: Path | None = None) -> Config:
             if caminhos.get(campo):
                 p = Path(caminhos[campo]).expanduser()
                 setattr(c, campo, p if p.is_absolute() else RAIZ / p)
+
+    # Sem escolha explícita, vale a chave que existe.
+    if c.provedor not in ('claude', 'gemini'):
+        c.provedor = 'gemini' if (c.gemini and not c.anthropic) else 'claude'
     return c
