@@ -39,6 +39,12 @@ TEMPORARIOS = ('APIConnectionError', 'APITimeoutError', 'RateLimitError',
                'InternalServerError', 'APIStatusError', 'OverloadedError',
                'ServerError', 'ConnectError', 'ReadTimeout')
 
+# O nome da exceção muda entre SDKs e entre versões; o texto do erro é mais
+# estável. "Sobrecarga" e "cota" passam; chave errada, não.
+TEXTO_TEMPORARIO = ('UNAVAILABLE', '503', '529', 'RESOURCE_EXHAUSTED',
+                    'high demand', 'overloaded', 'try again later',
+                    'DEADLINE_EXCEEDED', 'INTERNAL')
+
 
 def cliente_claude(chave: str = '') -> Any:
     global _claude
@@ -126,6 +132,36 @@ def _sumiu(e: Exception) -> bool:
             or 'is not found' in texto)
 
 
+def _passageiro(e: Exception) -> bool:
+    texto = str(e)
+    return (type(e).__name__ in TEMPORARIOS
+            or any(m in texto for m in TEXTO_TEMPORARIO))
+
+
+def _reserva(cli: Any, atual: str) -> str:
+    """
+    Outro modelo que esta chave pode usar, para quando o primeiro está
+    congestionado. Sobrecarga costuma ser de um modelo, não da conta — e
+    esperar cinco minutos por um flash lotado enquanto outro está livre é
+    tempo jogado fora.
+    """
+    try:
+        nomes = [n for n in modelos_gemini(cli) if n != atual]
+    except Exception:
+        return ''
+    if not nomes:
+        return ''
+    # Mesma família primeiro (um flash troca bem por outro flash), depois
+    # qualquer um, sempre o de maior versão.
+    familia = 'flash' if 'flash' in atual else 'pro'
+    def versao(n):
+        import re
+        nums = re.findall(r'\d+(?:\.\d+)?', n)
+        return [float(x) for x in nums] or [0.0]
+    iguais = [n for n in nomes if familia in n and 'lite' not in n]
+    return max(iguais or nomes, key=versao)
+
+
 def _json_gemini(instrucao, conteudo, esquema, modelo, imagens, cli, max_tokens):
     from google.genai import types
     global _substituto
@@ -145,22 +181,28 @@ def _json_gemini(instrucao, conteudo, esquema, modelo, imagens, cli, max_tokens)
         automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True))
 
     alvo = _substituto or modelo or MODELO_GEMINI
+    conteudos = [types.Content(role='user', parts=partes)]
     try:
-        r = c.models.generate_content(
-            model=alvo, contents=[types.Content(role='user', parts=partes)],
-            config=config)
+        r = c.models.generate_content(model=alvo, contents=conteudos, config=config)
     except Exception as e:
-        # O catálogo da Google aposenta nome de modelo sem avisar, e quem
-        # abriu conta ontem não enxerga o que quem abriu ano passado
-        # enxerga. Em vez de morrer, pergunta o que existe e refaz.
-        if not _sumiu(e):
+        # Duas falhas diferentes resolvem do mesmo jeito: trocar de modelo.
+        #   • o nome sumiu do catálogo (conta nova não vê modelo antigo);
+        #   • o modelo está congestionado agora (503).
+        # Em ambos, perguntar o que existe e refazer é melhor que desistir.
+        if _sumiu(e):
+            _substituto = _melhor_gemini(c)
+            print(f'    (o modelo "{alvo}" não existe para esta chave; '
+                  f'usando "{_substituto}" — fixe isso em config.toml)')
+        elif _passageiro(e):
+            outro = _reserva(c, alvo)
+            if not outro:
+                raise
+            _substituto = outro
+            print(f'    ("{alvo}" está sobrecarregado agora; tentando "{outro}")')
+        else:
             raise
-        _substituto = _melhor_gemini(c)
-        print(f'    (o modelo "{alvo}" não existe para esta chave; '
-              f'usando "{_substituto}" — fixe isso em config.toml)')
-        r = c.models.generate_content(
-            model=_substituto, contents=[types.Content(role='user', parts=partes)],
-            config=config)
+        r = c.models.generate_content(model=_substituto, contents=conteudos,
+                                      config=config)
 
     saida = getattr(r, 'parsed', None)
     if saida is None:
@@ -176,7 +218,7 @@ def _json_gemini(instrucao, conteudo, esquema, modelo, imagens, cli, max_tokens)
 # ── o que os agentes chamam ─────────────────────────────────────────
 def pede_json(instrucao: str, conteudo: str, esquema: type[E],
               modelo: str | None = None, imagens: Sequence[Path] = (),
-              cli: Any = None, max_tokens: int = 8000, tentativas: int = 3,
+              cli: Any = None, max_tokens: int = 8000, tentativas: int = 4,
               provedor: str = 'claude') -> E:
     """
     Instrução + conteúdo (+ imagens) → instância do esquema, validada.
@@ -185,16 +227,16 @@ def pede_json(instrucao: str, conteudo: str, esquema: type[E],
     e aí nada sai para a rede.
     """
     faz = _json_gemini if provedor == 'gemini' else _json_claude
-    espera = 2.0
+    espera = 3.0
     for t in range(tentativas):
         try:
             return faz(instrucao, conteudo, esquema, modelo, imagens, cli, max_tokens)
         except Exception as e:
-            nome = type(e).__name__
             # Sobrecarga e limite de taxa passam; chave errada ou pedido
             # mal formado não melhora esperando.
-            if (nome in TEMPORARIOS or 'RESOURCE_EXHAUSTED' in str(e)) \
-                    and t < tentativas - 1:
+            if _passageiro(e) and t < tentativas - 1:
+                print(f'    (tentativa {t + 1} falhou: {str(e)[:90]} — '
+                      f'esperando {espera:.0f}s)')
                 time.sleep(espera)
                 espera *= 2
                 continue

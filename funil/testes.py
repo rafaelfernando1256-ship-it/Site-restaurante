@@ -296,6 +296,72 @@ def _():
         Mod._substituto = ''
 
 
+@teste('modelo: sobrecarga de um modelo cai para outro em vez de desistir')
+def _():
+    from nucleo.a2_abordagem import Abordagem
+    import nucleo.modelo as Mod
+    esperado = Abordagem(gancho='g', mensagem='m', porque='p')
+
+    class Cli:
+        def __init__(self):
+            self.pedidos = []
+            self.models = self
+
+        def list(self):
+            return [types.SimpleNamespace(name=f'models/{n}',
+                                          supported_actions=['generateContent'])
+                    for n in ('gemini-3.8-flash', 'gemini-3.2-flash',
+                              'gemini-3.8-pro', 'gemini-2.0-flash-lite')]
+
+        def generate_content(self, **kw):
+            self.pedidos.append(kw['model'])
+            if kw['model'] == 'gemini-3.8-flash':
+                raise RuntimeError("503 UNAVAILABLE: {'message': 'This model is "
+                                   "currently experiencing high demand.'}")
+            return types.SimpleNamespace(parsed=esperado, text='{}')
+
+    Mod._substituto = ''
+    try:
+        cli = Cli()
+        r = Mod.pede_json('i', 'c', Abordagem, modelo='gemini-3.8-flash', cli=cli,
+                          provedor='gemini', tentativas=1)
+        igual(r, esperado)
+        igual(cli.pedidos, ['gemini-3.8-flash', 'gemini-3.2-flash'],
+              f'devia trocar por outro flash: {cli.pedidos}')
+    finally:
+        Mod._substituto = ''
+
+
+@teste('modelo: erro de chave NÃO é tratado como sobrecarga')
+def _():
+    from nucleo.a2_abordagem import Abordagem
+    import nucleo.modelo as Mod
+
+    class Cli:
+        def __init__(self):
+            self.tentativas = 0
+            self.models = self
+
+        def list(self):
+            return []
+
+        def generate_content(self, **kw):
+            self.tentativas += 1
+            raise RuntimeError('400 INVALID_ARGUMENT: API key not valid')
+
+    Mod._substituto = ''
+    cli = Cli()
+    try:
+        Mod.pede_json('i', 'c', Abordagem, cli=cli, provedor='gemini', tentativas=4)
+    except RuntimeError as e:
+        verdade('API key not valid' in str(e))
+        igual(cli.tentativas, 1, 'insistiu numa chave errada')
+        return
+    finally:
+        Mod._substituto = ''
+    raise AssertionError('não propagou o erro de chave')
+
+
 @teste('modelo: JSON cortado pela metade não vira resposta vazia silenciosa')
 def _():
     from nucleo.a2_abordagem import Abordagem
