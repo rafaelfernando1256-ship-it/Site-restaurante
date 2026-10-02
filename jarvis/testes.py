@@ -770,6 +770,22 @@ def _():
             verdade(ct >= 4.5, f'tema {nome}, {campo}: {ct:.2f}:1')
 
 
+@teste('config: config.toml quebrado explica o erro em vez de dar traceback')
+def _():
+    from nucleo.config import carrega
+    ruim = TMP / 'ruim.toml'
+    ruim.write_text('[geral]\nmodelo = "a"\nmodelo = "b"\n')
+    try:
+        carrega(ruim)
+    except SystemExit as e:
+        texto = str(e)
+        verdade('erro de formato' in texto)
+        verdade('MESMA CHAVE' in texto, 'precisa dizer qual é o erro comum')
+        verdade('ruim.toml' in texto, 'precisa dizer qual arquivo')
+        return
+    raise AssertionError('carregou um TOML inválido')
+
+
 @teste('config: chave salva pelo Bloco de Notas (com BOM) continua sendo lida')
 def _():
     import os

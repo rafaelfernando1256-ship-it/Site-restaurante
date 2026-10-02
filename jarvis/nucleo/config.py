@@ -140,6 +140,28 @@ def _padrao_raizes() -> list[str]:
     return achadas or [str(casa)]
 
 
+def _le_toml(arquivo: Path) -> dict:
+    """
+    Lê o config.toml dizendo o que está errado em vez de despejar um
+    traceback. O erro mais comum é chave repetida — TOML recusa duas
+    linhas com o mesmo nome na mesma seção, e a mensagem original não
+    diz que é disso que se trata.
+    """
+    try:
+        with open(arquivo, 'rb') as f:
+            return tomllib.load(f)
+    except tomllib.TOMLDecodeError as e:
+        texto = str(e)
+        dica = ''
+        if 'overwrite' in texto or 'Cannot declare' in texto or 'duplicate' in texto.lower():
+            dica = ('\nIsso quase sempre é a MESMA CHAVE escrita duas vezes na '
+                    'mesma seção.\nApague a linha repetida e salve.')
+        raise SystemExit(f'O arquivo {arquivo} tem um erro de formato:\n'
+                         f'  {texto}{dica}') from e
+    except OSError as e:
+        raise SystemExit(f'não consegui ler {arquivo}: {e}') from e
+
+
 def carrega(caminho: Path | None = None) -> Config:
     c = Config(
         anthropic=os.environ.get('ANTHROPIC_API_KEY', ''),
@@ -148,8 +170,7 @@ def carrega(caminho: Path | None = None) -> Config:
     )
     arquivo = caminho or (RAIZ / 'config.toml')
     if arquivo.exists():
-        with open(arquivo, 'rb') as f:
-            t = tomllib.load(f)
+        t = _le_toml(arquivo)
         for secao, campos in (
             ('geral', ('nome', 'tratamento', 'provedor', 'modelo', 'modelo_gpt',
                        'modelo_gemini', 'voltas_maximas')),

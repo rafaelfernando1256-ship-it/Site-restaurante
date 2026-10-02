@@ -5,6 +5,7 @@
 # Deixe comentado para sair sozinho da chave que existir no .env.
 # provedor = "gemini"
 
+# Cada chave aparece UMA vez por seção — TOML recusa repetida.
 modelo = "claude-opus-5-5"          # vale quando provedor = claude
 modelo_gemini = "gemini-3.8-flash"  # vale quando provedor = gemini
 
