@@ -19,6 +19,7 @@ from pydantic import BaseModel
 E = TypeVar('E', bound=BaseModel)
 
 _claude: Any = None
+_gemini: Any = None
 
 
 def claude(chave: str = '') -> Any:
@@ -56,6 +57,45 @@ def pede_json(instrucao: str, conteudo: str, esquema: type[E], modelo: str,
     raise RuntimeError('o modelo não respondeu')
 
 
+def gemini(chave: str = '') -> Any:
+    global _gemini
+    if _gemini is None:
+        from google import genai
+        _gemini = genai.Client(api_key=chave) if chave else genai.Client()
+    return _gemini
+
+
+def modelos_gemini(cli: Any) -> list[str]:
+    """Os modelos que esta chave pode usar para gerar texto."""
+    nomes = []
+    for m in cli.models.list():
+        acoes = getattr(m, 'supported_actions', None) or []
+        if acoes and 'generateContent' not in acoes:
+            continue
+        nome = (getattr(m, 'name', '') or '').replace('models/', '')
+        if nome:
+            nomes.append(nome)
+    return nomes
+
+
+def resolve_modelo_gemini(cli: Any, preferido: str) -> tuple[str, str]:
+    """
+    O catálogo da Google muda de nome com frequência, e um id que não
+    existe mais só aparece como 404 no meio da primeira frase. Aqui a
+    lista é consultada uma vez e, se o preferido sumiu, escolhe-se o
+    flash mais novo — dizendo que trocou.
+    """
+    try:
+        nomes = modelos_gemini(cli)
+    except Exception:
+        return preferido, ''
+    if not nomes or preferido in nomes:
+        return preferido, ''
+    flashes = sorted((n for n in nomes if 'flash' in n and 'lite' not in n), reverse=True)
+    escolhido = flashes[0] if flashes else sorted(nomes, reverse=True)[0]
+    return escolhido, f'"{preferido}" não existe nesta conta; usando "{escolhido}"'
+
+
 # ── os outros dois ──────────────────────────────────────────────────
 def pergunta_gpt(pergunta: str, chave: str, modelo: str = 'gpt-4o') -> str:
     if not chave:
@@ -73,15 +113,15 @@ def pergunta_gpt(pergunta: str, chave: str, modelo: str = 'gpt-4o') -> str:
         return f'o GPT não respondeu: {e}'
 
 
-def pergunta_gemini(pergunta: str, chave: str, modelo: str = 'gemini-2.0-flash') -> str:
+def pergunta_gemini(pergunta: str, chave: str, modelo: str = 'gemini-2.5-flash') -> str:
     if not chave:
         return 'falta GEMINI_API_KEY no .env'
     try:
-        from google import genai
+        from google import genai      # noqa: F401
     except ImportError:
         return 'falta instalar: pip install google-genai'
     try:
-        c = genai.Client(api_key=chave)
+        c = gemini(chave)
         r = c.models.generate_content(model=modelo, contents=pergunta)
         return (r.text or '').strip()
     except Exception as e:

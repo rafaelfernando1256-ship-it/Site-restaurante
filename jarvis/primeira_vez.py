@@ -115,16 +115,23 @@ def principal() -> int:
     except Exception as e:
         print(f'  (não consegui baixar agora: {e})')
 
-    tem_chave = 'ANTHROPIC_API_KEY=' in env.read_text(encoding='utf-8') and \
-                any(l.startswith('ANTHROPIC_API_KEY=') and len(l) > 20
-                    for l in env.read_text(encoding='utf-8').splitlines())
+    linhas = env.read_text(encoding='utf-8-sig').splitlines()
+    def preenchida(nome: str) -> bool:
+        return any(l.startswith(f'{nome}=') and len(l.split('=', 1)[1].strip()) > 20
+                   for l in linhas)
+
     print('\n  ─────────────────────────────────────────────')
-    if not tem_chave:
-        print('  FALTA UMA COISA: a chave do Claude.')
-        print(f'  Abra {env} e preencha ANTHROPIC_API_KEY=')
-        print('  (pegue em console.anthropic.com → API Keys)')
-    else:
+    if preenchida('ANTHROPIC_API_KEY') or preenchida('GEMINI_API_KEY'):
         print('  Tudo configurado.')
+    else:
+        print('  FALTA UMA COISA: a chave do cérebro. Escolha UMA:')
+        print()
+        print('    Claude   console.anthropic.com → API Keys')
+        print('             (sk-ant-api03-... · é paga, à parte do claude.ai)')
+        print('    Gemini   aistudio.google.com/apikey')
+        print('             (AIza... · tem camada gratuita)')
+        print()
+        print(f'  Abra {env} e preencha a linha da que você escolher.')
     print('  Depois rode:  jarvis.bat --checar')
     print('  ─────────────────────────────────────────────\n')
     return 0

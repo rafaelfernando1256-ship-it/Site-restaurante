@@ -117,6 +117,45 @@ class FalsoClaude:
         return FalsoFluxo(types.SimpleNamespace(content=blocos, stop_reason=parada))
 
 
+class FalsoGemini:
+    """Imita o streaming do google-genai: pedaços com partes de texto ou chamada."""
+
+    def __init__(self, *respostas):
+        self.roteiro = list(respostas)
+        self.chamadas: list[dict] = []
+        self.models = self
+
+    def generate_content_stream(self, **kw):
+        self.chamadas.append({**kw, 'contents': list(kw['contents'])})
+        partes = self.roteiro.pop(0) if self.roteiro else [parte_texto('ok')]
+        # Cada parte vira um pedaço separado, como a API manda.
+        return iter([types.SimpleNamespace(
+            candidates=[types.SimpleNamespace(
+                content=types.SimpleNamespace(parts=[p]))]) for p in partes])
+
+
+def parte_texto(t, pensamento=False):
+    return types.SimpleNamespace(text=t, function_call=None, thought=pensamento)
+
+
+def parte_chamada(nome, args):
+    return types.SimpleNamespace(
+        text=None, thought=False,
+        function_call=types.SimpleNamespace(name=nome, args=args, id='c1'))
+
+
+def monta_gemini(cliente, cfg=None, respostas_porteiro=None):
+    from nucleo.cerebro import CerebroGemini
+    cfg = cfg or cfg_teste(provedor='gemini', gemini='x')
+    cfg.provedor = 'gemini'
+    diario = Diario(TMP / f'g{len(CASOS)}-{time.time_ns()}.db')
+    respostas = list(respostas_porteiro or [])
+    porteiro = Porteiro(cfg, diario,
+                        perguntar_teclado=lambda _: respostas.pop(0) if respostas else 'nao')
+    ctx = Contexto(cfg=cfg, diario=diario, porteiro=porteiro)
+    return CerebroGemini(cfg, diario, porteiro, cliente=cliente, ctx=ctx), diario, porteiro
+
+
 def monta_cerebro(cliente, cfg=None, respostas_porteiro=None):
     cfg = cfg or cfg_teste()
     diario = Diario(TMP / f'd{len(CASOS)}-{time.time_ns()}.db')
@@ -447,6 +486,146 @@ def _():
     verdade('Pastas liberadas' in sistema)
     verdade('Edson' in sistema, 'o que ele lembra precisa chegar ao modelo')
     verdade('Nunca diga que fez algo que você não fez' in sistema)
+
+
+# ══ o laço do Gemini ════════════════════════════════════════════════
+@teste('gemini: usa a ferramenta, lê o resultado e responde')
+def _():
+    alvo = TMP / 'livre' / 'gemini.txt'
+    alvo.write_text('o segredo é 7')
+    cli = FalsoGemini(
+        [parte_chamada('ler_arquivo', {'caminho': str(alvo)})],
+        [parte_texto('O arquivo diz que o segredo é 7.')])
+    c, diario, _ = monta_gemini(cli)
+    igual(c.responde('o que tem no gemini.txt?'), 'O arquivo diz que o segredo é 7.')
+    # o resultado voltou como function_response
+    segunda = cli.chamadas[1]['contents']
+    resposta = segunda[-1].parts[0].function_response
+    igual(resposta.name, 'ler_arquivo')
+    verdade('7' in str(resposta.response))
+    verdade('resultado' in resposta.response, 'sucesso tem que vir como resultado')
+
+
+@teste('gemini: a chamada automática do SDK fica DESLIGADA')
+def _():
+    # Se o SDK executar a função sozinho, a permissão nunca é consultada.
+    # É a linha que separa ter trava de não ter.
+    cli = FalsoGemini([parte_texto('oi')])
+    c, _, _ = monta_gemini(cli)
+    c.responde('oi')
+    cfg_enviada = cli.chamadas[0]['config']
+    igual(cfg_enviada.automatic_function_calling.disable, True)
+    verdade(cfg_enviada.tools, 'as ferramentas precisam ir junto')
+    decls = cfg_enviada.tools[0].function_declarations
+    verdade(len(decls) >= 45, f'poucas ferramentas declaradas: {len(decls)}')
+
+
+@teste('gemini: permissão negada vira resposta honesta, não outro caminho')
+def _():
+    cli = FalsoGemini(
+        [parte_chamada('rodar_comando', {'comando': 'rm -rf /'})],
+        [parte_texto('Não fiz: você não autorizou.')])
+    c, diario, _ = monta_gemini(cli, respostas_porteiro=['nao'])
+    c.responde('apaga tudo')
+    resposta = cli.chamadas[1]['contents'][-1].parts[0].function_response
+    verdade('erro' in resposta.response, 'recusa tem que voltar marcada como erro')
+    texto = str(resposta.response)
+    verdade('NÃO AUTORIZOU' in texto)
+    verdade('Não tente outro caminho' in texto)
+    igual(diario.ultimas(5)[0]['decisao'], 'recusado')
+
+
+@teste('gemini: a mesma trava — voz não autoriza o irreversível')
+def _():
+    cfg = cfg_teste(provedor='gemini', gemini='x', confirmar_por_voz=True)
+    diario = Diario(TMP / f'gv{time.time_ns()}.db')
+    voz_consultada = []
+    porteiro = Porteiro(cfg, diario,
+                        perguntar_voz=lambda t: voz_consultada.append(t) or 'sim',
+                        perguntar_teclado=lambda t: 'nao')
+    from nucleo.cerebro import CerebroGemini
+    cli = FalsoGemini(
+        [parte_chamada('apagar_arquivo', {'caminho': str(TMP / 'livre' / 'x')})],
+        [parte_texto('não autorizado')])
+    c = CerebroGemini(cfg, diario, porteiro, cliente=cli,
+                      ctx=Contexto(cfg=cfg, diario=diario, porteiro=porteiro))
+    c.responde('apaga o x')
+    igual(voz_consultada, [], 'a voz foi consultada para apagar arquivo')
+
+
+@teste('gemini: pensamento do modelo não é falado')
+def _():
+    cli = FalsoGemini([parte_texto('Deixa eu pensar aqui.', pensamento=True),
+                       parte_texto('Pronto, abri.')])
+    c, _, _ = monta_gemini(cli)
+    ditas = []
+    r = c.responde('abre', ao_falar=ditas.append)
+    igual(ditas, ['Pronto, abri.'], f'falou o que não devia: {ditas}')
+    igual(r, 'Pronto, abri.')
+
+
+@teste('gemini: para de insistir depois do teto de voltas')
+def _():
+    cli = FalsoGemini(*[[parte_chamada('listar_pasta', {'pasta': str(TMP)})]
+                        for _ in range(30)])
+    cfg = cfg_teste(provedor='gemini', gemini='x', voltas_maximas=4)
+    c, _, _ = monta_gemini(cli, cfg=cfg)
+    verdade('muitas voltas' in c.responde('fica listando'))
+    igual(len(cli.chamadas), 4)
+
+
+@teste('gemini: todas as ferramentas viram declaração válida para a Google')
+def _():
+    from google.genai import types as gt
+    ruins = []
+    for e in catalogo():
+        try:
+            gt.FunctionDeclaration(name=e['name'], description=e['description'],
+                                   parameters_json_schema=e['input_schema'])
+        except Exception as ex:
+            ruins.append(f'{e["name"]}: {ex}')
+    igual(ruins, [])
+
+
+@teste('config: o provedor sai da chave que existe, sem precisar configurar')
+def _():
+    from nucleo.config import Config
+    igual(config.Config(anthropic='a', gemini='g').provedor, '')
+    # a resolução acontece em carrega(); aqui conferimos a regra
+    for anthropic, gemini_, esperado in (('a', '', 'claude'), ('', 'g', 'gemini'),
+                                         ('a', 'g', 'claude'), ('', '', 'claude')):
+        c = Config(anthropic=anthropic, gemini=gemini_)
+        c.provedor = 'gemini' if (c.gemini and not c.anthropic) else 'claude'
+        igual(c.provedor, esperado, f'{anthropic!r}/{gemini_!r}')
+
+
+@teste('config: a chave e o modelo do cérebro seguem o provedor')
+def _():
+    c = cfg_teste(provedor='gemini', gemini='g', anthropic='a',
+                  modelo_gemini='gemini-x', modelo='claude-y')
+    igual(c.chave_do_cerebro, 'g')
+    igual(c.modelo_do_cerebro, 'gemini-x')
+    c.provedor = 'claude'
+    igual(c.chave_do_cerebro, 'a')
+    igual(c.modelo_do_cerebro, 'claude-y')
+
+
+@teste('diagnóstico: chave do Gemini recusada não passa por válida')
+def _():
+    import jarvis as J
+    import nucleo.modelos as M
+    original = M.modelos_gemini, M.gemini
+    M.gemini = lambda chave='': object()
+    def recusa(cli):
+        raise RuntimeError('400 INVALID_ARGUMENT: API key not valid')
+    M.modelos_gemini = recusa
+    try:
+        bem, detalhe = J._testa_chave(cfg_teste(provedor='gemini', gemini='errada'))
+        igual(bem, False, 'chave falsa passou por válida')
+        verdade('RECUSOU' in detalhe)
+        verdade('aistudio.google.com' in detalhe, 'precisa dizer onde pegar a certa')
+    finally:
+        M.modelos_gemini, M.gemini = original
 
 
 # ══ ferramentas de negócio ══════════════════════════════════════════

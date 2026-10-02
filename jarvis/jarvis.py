@@ -23,7 +23,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from ferramentas import FALTANDO, REGISTRO, Contexto, carrega_tudo       # noqa: E402
 from nucleo import config                                                # noqa: E402
-from nucleo.cerebro import Cerebro                                       # noqa: E402
+from nucleo.cerebro import monta as monta_cerebro                        # noqa: E402
 from nucleo.permissao import Porteiro                            # noqa: E402
 from nucleo.registro import Diario                                       # noqa: E402
 from nucleo.voz import Voz                                               # noqa: E402
@@ -86,7 +86,19 @@ def monta(cfg, modo_voz: bool):
     porteiro = Porteiro(cfg, diario, perguntar_voz=pergunta_voz,
                         perguntar_teclado=pergunta_teclado)
     ctx = Contexto(cfg=cfg, diario=diario, porteiro=porteiro, falar=voz.fala)
-    cerebro = Cerebro(cfg, diario, porteiro, falar=voz.fala, ctx=ctx)
+
+    if cfg.provedor == 'gemini':
+        # Uma consulta ao catálogo evita um 404 no meio da primeira frase.
+        try:
+            from nucleo.modelos import gemini, resolve_modelo_gemini
+            escolhido, aviso = resolve_modelo_gemini(gemini(cfg.gemini), cfg.modelo_gemini)
+            cfg.modelo_gemini = escolhido
+            if aviso:
+                faixa(f'  {aviso}', '33')
+        except Exception:
+            pass
+
+    cerebro = monta_cerebro(cfg, diario=diario, porteiro=porteiro, falar=voz.fala, ctx=ctx)
     return cerebro, voz, diario, ctx, estado
 
 
@@ -179,12 +191,42 @@ def _linha(bem: bool, nome: str, detalhe: str = '') -> None:
           flush=True)
 
 
+def _testa_chave_gemini(cfg) -> tuple[bool, str]:
+    try:
+        from nucleo.modelos import gemini, resolve_modelo_gemini
+    except ImportError:
+        return False, 'falta instalar: pip install google-genai'
+    try:
+        # modelos_gemini e NÃO resolve_modelo_gemini: o resolvedor engole a
+        # exceção de propósito (para não derrubar o Jarvis por causa do
+        # catálogo), e engolir aqui faria uma chave falsa passar por válida.
+        from nucleo.modelos import modelos_gemini
+        cli = gemini(cfg.gemini)
+        nomes = modelos_gemini(cli)
+        if not nomes:
+            return False, 'a chave respondeu, mas nenhum modelo ficou disponível para ela'
+        escolhido, aviso = resolve_modelo_gemini(cli, cfg.modelo_gemini)
+        return True, f'válida · modelo {escolhido}' + (f' — {aviso}' if aviso else '')
+    except Exception as e:
+        texto = str(e)
+        if 'API_KEY_INVALID' in texto or 'API key not valid' in texto:
+            return False, ('O GOOGLE RECUSOU ESTA CHAVE. Pegue uma em '
+                           'aistudio.google.com/apikey e cole inteira no .env')
+        if 'PERMISSION_DENIED' in texto or '403' in texto:
+            return False, 'a chave existe mas não tem acesso à API Generative Language'
+        if type(e).__name__ in ('ConnectError', 'ConnectTimeout', 'APIConnectionError'):
+            return False, 'não consegui falar com o Google — é a sua internet'
+        return False, f'{type(e).__name__}: {texto[:160]}'
+
+
 def _testa_chave(cfg) -> tuple[bool, str]:
     """
     Pergunta à API se a chave vale. Conferir se o campo está preenchido não
     serve de nada: chave errada passa nesse teste e só falha na primeira
     frase que você fala. Usa contagem de tokens, que autentica e não cobra.
     """
+    if cfg.provedor == 'gemini':
+        return _testa_chave_gemini(cfg)
     # Antes de gastar uma ida à rede: a forma da chave já denuncia o erro
     # mais comum, que é copiar o token do claude.ai (sk-ant-usr-...) achando
     # que é a chave da API. Os dois começam com sk-ant- e são coisas
@@ -224,28 +266,34 @@ def checar(cfg) -> int:
     print(f'\n  {cfg.nome} — diagnóstico\n', flush=True)
     print(f'  sistema: {config.sistema()} · Python {platform.python_version()}', flush=True)
     print(f'  pastas liberadas: {", ".join(cfg.raizes_seguras)}', flush=True)
-    print(f'  modelo: {cfg.modelo}\n', flush=True)
+    cerebro = 'Gemini (Google)' if cfg.provedor == 'gemini' else 'Claude (Anthropic)'
+    print(f'  cérebro: {cerebro} · modelo {cfg.modelo_do_cerebro}\n', flush=True)
 
     faltam_pip, quebrados = [], []
     tela = sys.stdout.isatty()      # só apaga a linha quando há terminal de verdade
 
-    if not cfg.anthropic:
-        _linha(False, 'chave do Claude (obrigatória)',
-               'preencha ANTHROPIC_API_KEY no arquivo .env')
+    dono = 'Gemini' if cfg.provedor == 'gemini' else 'Claude'
+    variavel = 'GEMINI_API_KEY' if cfg.provedor == 'gemini' else 'ANTHROPIC_API_KEY'
+    if not cfg.chave_do_cerebro:
+        _linha(False, f'chave do {dono} (obrigatória)',
+               f'preencha {variavel} no arquivo .env')
     else:
         if tela:
-            print('  \033[90m… testando a chave do Claude\033[0m', end='\r', flush=True)
+            print(f'  \033[90m… testando a chave do {dono}\033[0m', end='\r', flush=True)
         bem, detalhe = _testa_chave(cfg)
         if tela:
             print(' ' * 46, end='\r')
-        _linha(bem, 'chave do Claude (obrigatória)', detalhe)
-    _linha(bool(cfg.openai), 'chave do ChatGPT (opcional)')
-    _linha(bool(cfg.gemini), 'chave do Gemini (opcional)')
+        _linha(bem, f'chave do {dono} (obrigatória)', detalhe)
+    for outro, chave in (('Claude', cfg.anthropic), ('ChatGPT', cfg.openai),
+                         ('Gemini', cfg.gemini)):
+        if outro != dono:
+            _linha(bool(chave), f'chave do {outro} (opcional, para consultar)')
 
     # Cada import é impresso ANTES de acontecer: o primeiro carregamento do
     # motor de transcrição leva dezenas de segundos, e uma tela parada sem
     # explicação parece travamento.
     pacotes = [('anthropic', 'falar com o Claude', 'anthropic'),
+               ('google.genai', 'falar com o Gemini', 'google-genai'),
                ('playwright', 'navegador e WhatsApp', 'playwright'),
                ('pptx', 'slides', 'python-pptx'),
                ('pyautogui', 'teclado e mouse', 'pyautogui'),
@@ -302,8 +350,8 @@ def checar(cfg) -> int:
         print(f'    {erro[:400]}')
         print(f'    Para ver o erro inteiro:')
         print(f'    .\\.venv\\Scripts\\python.exe -c "import {pacote}"')
-    if not cfg.anthropic:
-        print('\n  Sem a chave do Claude ele não liga. É a única coisa obrigatória.')
+    if not cfg.chave_do_cerebro:
+        print(f'\n  Sem a chave do {dono} ele não liga. É a única coisa obrigatória.')
     print(flush=True)
     return 0
 
@@ -345,7 +393,7 @@ def principal(argv: list[str] | None = None) -> int:
     if a.checar:
         return checar(cfg)
 
-    cfg.exige('anthropic')
+    cfg.exige_cerebro()
     um_comando = ' '.join(a.pedido).strip()
     falando = a.voz or (not a.texto and not um_comando)
     cerebro, voz, diario, ctx, estado = monta(cfg, modo_voz=falando)

@@ -1,5 +1,8 @@
 # ── o essencial ─────────────────────────────────────────────────────
-anthropic>=1.11.0          # o cérebro
+# Dois cérebros possíveis: você escolhe um em config.toml (provedor).
+# Os dois pacotes entram porque o que não é cérebro vira consultor.
+anthropic>=1.11.0          # cérebro Claude
+google-genai>=1.0          # cérebro Gemini
 pydantic>=2.9              # os argumentos das ferramentas, validados
 
 # ── ouvir e falar ───────────────────────────────────────────────────
@@ -22,4 +25,3 @@ python-pptx>=1.0           # slides
 edge-tts>=6.1              # voz neural, bem melhor em português (precisa de internet)
 playsound3>=3.0            # para tocar a voz neural, se não tiver ffmpeg
 openai>=1.50               # para perguntar ao ChatGPT
-google-genai>=0.3          # para perguntar ao Gemini

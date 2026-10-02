@@ -22,7 +22,7 @@ SAIDA = RAIZ / 'saida'
 
 MODELO_CLAUDE = 'claude-opus-5-5'
 MODELO_GPT = 'gpt-4o'
-MODELO_GEMINI = 'gemini-2.0-flash'
+MODELO_GEMINI = 'gemini-2.5-flash'
 
 
 def _carrega_env(arquivo: Path | None = None) -> None:
@@ -72,6 +72,9 @@ class Config:
     silencio_para_parar: float = 1.2     # segundos de silêncio que encerram a fala
 
     # ── cérebro ─────────────────────────────────────────────────────
+    # claude | gemini — quem DECIDE e usa as ferramentas. O outro continua
+    # disponível como consultor ("o que o Gemini acha disso?").
+    provedor: str = ''
     modelo: str = MODELO_CLAUDE
     modelo_gpt: str = MODELO_GPT
     modelo_gemini: str = MODELO_GEMINI
@@ -90,6 +93,17 @@ class Config:
     perfil_navegador: str = ''           # perfil do Chrome que ele controla
     whatsapp_chats: list[str] = field(default_factory=list)
     pasta_musica: str = ''
+
+    @property
+    def chave_do_cerebro(self) -> str:
+        return self.gemini if self.provedor == 'gemini' else self.anthropic
+
+    @property
+    def modelo_do_cerebro(self) -> str:
+        return self.modelo_gemini if self.provedor == 'gemini' else self.modelo
+
+    def exige_cerebro(self) -> None:
+        self.exige('gemini' if self.provedor == 'gemini' else 'anthropic')
 
     def exige(self, *chaves: str) -> None:
         nomes = {'anthropic': 'ANTHROPIC_API_KEY', 'openai': 'OPENAI_API_KEY',
@@ -134,8 +148,8 @@ def carrega(caminho: Path | None = None) -> Config:
         with open(arquivo, 'rb') as f:
             t = tomllib.load(f)
         for secao, campos in (
-            ('geral', ('nome', 'tratamento', 'modelo', 'modelo_gpt', 'modelo_gemini',
-                       'voltas_maximas')),
+            ('geral', ('nome', 'tratamento', 'provedor', 'modelo', 'modelo_gpt',
+                       'modelo_gemini', 'voltas_maximas')),
             ('voz', ('palavra_chave', 'escuta_sempre', 'atalho_fala', 'modelo_voz',
                      'velocidade_voz', 'modelo_escuta', 'idioma', 'silencio_para_parar')),
             ('permissoes', ('raizes_seguras', 'confirmar_por_voz', 'modo_livre')),
@@ -146,6 +160,11 @@ def carrega(caminho: Path | None = None) -> Config:
             for campo in campos:
                 if campo in bloco:
                     setattr(c, campo, bloco[campo])
+    # Sem escolha explícita, vale a chave que existe. Quem só tem a do
+    # Gemini não deveria precisar aprender o que é "provedor" para ligar.
+    if c.provedor not in ('claude', 'gemini'):
+        c.provedor = 'gemini' if (c.gemini and not c.anthropic) else 'claude'
+
     if not c.raizes_seguras:
         c.raizes_seguras = _padrao_raizes()
     if not c.funil_db:

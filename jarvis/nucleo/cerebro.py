@@ -4,25 +4,22 @@ O CÉREBRO
 O laço: você fala → ele pensa → escolhe ferramentas → **pede permissão
 quando precisa** → executa → olha o resultado → decide de novo → responde.
 
-Por que o laço é escrito à mão e não com o executor pronto do SDK:
-três coisas aqui não são padrão e são o que faz a diferença entre um
-chatbot e um Jarvis.
+Dois cérebros, a mesma cabeça. O Claude e o Gemini falam protocolos
+diferentes — formato de histórico, formato de chamada de função, formato
+de resultado —, mas a parte que importa é idêntica nos dois: a classe
+`Motor` guarda o contexto, a permissão, a execução, o diário e o teto de
+voltas. Trocar de modelo não pode afrouxar nenhuma trava, e a única
+maneira de garantir isso é a trava existir em um lugar só.
 
-  1. **Permissão no meio do laço.** Cada ferramenta é avaliada com os
-     ARGUMENTOS já preenchidos — `rodar_comando("ls")` e
-     `rodar_comando("rm -rf /")` são a mesma ferramenta e níveis
-     opostos. A avaliação tem que acontecer depois de o modelo escolher
-     e antes de a mão se mexer.
-  2. **Ele fala enquanto trabalha.** A resposta sai frase por frase, em
-     fluxo, e cada frase vai para a voz assim que fecha. Esperar o texto
-     inteiro para começar a falar são cinco segundos de silêncio que
-     fazem parecer travado.
-  3. **Falado é curto, escrito é inteiro.** O que sai pelo alto-falante
-     é o resumo; o detalhe fica no terminal, onde dá para ler com calma.
+Por que o laço é escrito à mão e não com o executor pronto do SDK: a
+permissão precisa ser avaliada com os ARGUMENTOS já preenchidos —
+`rodar_comando("ls")` e `rodar_comando("rm -rf /")` são a mesma
+ferramenta e níveis opostos. Isso só dá para decidir depois que o modelo
+escolheu e antes de a mão se mexer. Os dois SDKs oferecem executar a
+função sozinhos; os dois ficam de fora por isso.
 
-Os blocos de pensamento voltam inteiros para a conversa seguinte. Cortar
-o pensamento no meio de uma tarefa com ferramenta faz o modelo perder o
-fio do que já tentou.
+E ele fala enquanto trabalha: a resposta sai frase por frase, em fluxo,
+e cada frase vai para a voz assim que fecha.
 """
 from __future__ import annotations
 
@@ -65,8 +62,13 @@ estime, não arredonde para cima, não complete de cabeça.
 O QUE VOCÊ SABE AGORA
 {contexto}"""
 
+NEGADO = ('VOCÊ NÃO AUTORIZOU esta ação. Ela não foi executada. '
+          'Não tente outro caminho para fazer a mesma coisa.')
 
-class Cerebro:
+
+class Motor:
+    """O que não muda quando o modelo muda."""
+
     def __init__(self, cfg, diario=None, porteiro=None,
                  falar: Callable[[str], None] | None = None,
                  cliente: Any = None, ctx: Contexto | None = None):
@@ -77,17 +79,10 @@ class Cerebro:
         self._cli = cliente
         self.ctx = ctx or Contexto(cfg=cfg, diario=diario, porteiro=porteiro,
                                    falar=self.falar)
-        self.historico: list[dict] = []
+        self.historico: list[Any] = []
         self.ultimo_detalhe = ''
 
-    # ── conexão ─────────────────────────────────────────────────────
-    @property
-    def cliente(self):
-        if self._cli is None:
-            from nucleo.modelos import claude
-            self._cli = claude(self.cfg.anthropic)
-        return self._cli
-
+    # ── o que o modelo precisa saber antes de decidir ───────────────
     def _sistema(self) -> str:
         from nucleo.config import sistema
         agora = datetime.now()
@@ -101,17 +96,100 @@ class Cerebro:
             if fatos:
                 linhas.append('O que você já sabe dele:')
                 linhas += [f'  - {k}: {v}' for k, v in fatos.items()]
-        return '\n'.join(linhas)
+        return PERSONA.format(nome=self.cfg.nome, tratamento=self.cfg.tratamento,
+                              contexto='\n'.join(linhas))
 
-    # ── o laço ──────────────────────────────────────────────────────
-    def responde(self, pedido: str, ao_falar: Callable[[str], None] | None = None) -> str:
+    # ── executar uma ferramenta, com permissão ──────────────────────
+    def executa(self, nome: str, bruto: dict) -> tuple[str, bool]:
+        """Devolve (texto, deu_erro). É aqui que a permissão acontece."""
+        inicio = time.time()
+        f = REGISTRO.get(nome)
+        if f is None:
+            return f'não existe a ferramenta "{nome}"', True
+
+        try:
+            args = f.args(**(bruto or {}))
+        except Exception as e:
+            return f'argumentos inválidos para {nome}: {e}', True
+
+        veredito = f.veredito(args, self.ctx)
+        descricao = f.descreve(args)
+
+        if not veredito.livre:
+            print(f'\n  ⚠ {descricao}  [{veredito.nivel}]')
+            if self.porteiro is None:
+                return 'sem porteiro configurado; ação não autorizada', True
+            if not self.porteiro.autoriza(nome, veredito, descricao):
+                self._anota(nome, bruto, veredito.nivel, 'recusado', descricao, inicio)
+                return NEGADO, True
+
+        try:
+            saida = f.funcao(args, self.ctx)
+            texto = saida if isinstance(saida, str) else json.dumps(saida, ensure_ascii=False)
+            self._anota(nome, bruto, veredito.nivel, 'feito', texto, inicio)
+            self.ultimo_detalhe = texto
+            return texto[:30000], False
+        except Exception as e:
+            falha = f'{type(e).__name__}: {e}'
+            self._anota(nome, bruto, veredito.nivel, 'erro', falha, inicio)
+            return f'a ferramenta falhou — {falha}', True
+
+    def _anota(self, nome, args, nivel, decisao, resultado, inicio):
+        if self.diario:
+            self.diario.acao(nome, args, nivel, decisao, str(resultado)[:3000],
+                             self.ctx.pedido, round(time.time() - inicio, 2))
+
+    # ── falar enquanto o texto chega ────────────────────────────────
+    @staticmethod
+    def _frases(acumulado: str, fecha: bool = False) -> tuple[list[str], str]:
+        """Tira do acumulado as frases já completas. Devolve (frases, resto)."""
+        saiu = []
+        while True:
+            m = re.search(r'[.!?…](\s|$)|\n', acumulado)
+            if not m:
+                break
+            frase, acumulado = acumulado[:m.end()].strip(), acumulado[m.end():]
+            if frase:
+                saiu.append(frase)
+        if fecha and acumulado.strip():
+            saiu.append(acumulado.strip())
+            acumulado = ''
+        return saiu, acumulado
+
+    def _abre_conversa(self, pedido: str) -> None:
         self.ctx.pedido = pedido
         if self.diario:
             self.diario.fala('voce', pedido)
+
+    def _fecha_conversa(self, resposta: str) -> str:
+        if self.diario:
+            self.diario.fala('jarvis', resposta)
+        self._encolhe()
+        return resposta
+
+    def _encolhe(self, teto: int = 40) -> None:
+        if len(self.historico) > teto:
+            self.historico = self.historico[-teto:]
+
+    def esquece_conversa(self) -> None:
+        self.historico.clear()
+
+
+# ══ Claude ══════════════════════════════════════════════════════════
+class CerebroClaude(Motor):
+    @property
+    def cliente(self):
+        if self._cli is None:
+            from nucleo.modelos import claude
+            self._cli = claude(self.cfg.anthropic)
+        return self._cli
+
+    def responde(self, pedido: str, ao_falar: Callable[[str], None] | None = None) -> str:
+        self._abre_conversa(pedido)
         self.historico.append({'role': 'user', 'content': pedido})
 
-        resposta_final = ''
-        for volta in range(self.cfg.voltas_maximas):
+        resposta = ''
+        for _ in range(self.cfg.voltas_maximas):
             msg = self._chama(ao_falar)
             self.historico.append({'role': 'assistant', 'content': msg.content})
 
@@ -119,105 +197,40 @@ class Cerebro:
             texto = '\n'.join(b.text for b in msg.content
                               if getattr(b, 'type', '') == 'text').strip()
             if texto:
-                resposta_final = texto
-
+                resposta = texto
             if msg.stop_reason != 'tool_use' or not usos:
                 break
 
-            resultados = [self._executa(u) for u in usos]
-            self.historico.append({'role': 'user', 'content': resultados})
+            devolve = []
+            for u in usos:
+                saida, erro = self.executa(u.name, u.input or {})
+                devolve.append({'type': 'tool_result', 'tool_use_id': u.id,
+                                'content': saida, 'is_error': erro})
+            self.historico.append({'role': 'user', 'content': devolve})
         else:
-            resposta_final = (resposta_final
-                              or 'parei: a tarefa deu muitas voltas sem terminar.')
-
-        if self.diario:
-            self.diario.fala('jarvis', resposta_final)
-        self._encolhe()
-        return resposta_final
+            resposta = resposta or 'parei: a tarefa deu muitas voltas sem terminar.'
+        return self._fecha_conversa(resposta)
 
     def _chama(self, ao_falar):
-        """Uma ida ao modelo, em fluxo, falando frase por frase."""
         pendente = ''
-
-        def despeja(fecha: bool = False):
-            nonlocal pendente
-            while True:
-                m = re.search(r'[.!?…](\s|$)|\n', pendente)
-                if not m:
-                    break
-                frase, pendente = pendente[:m.end()].strip(), pendente[m.end():]
-                if frase and ao_falar:
-                    ao_falar(frase)
-            if fecha and pendente.strip() and ao_falar:
-                ao_falar(pendente.strip())
-                pendente = ''
-
         with self.cliente.messages.stream(
-            model=self.cfg.modelo,
-            max_tokens=8000,
-            system=PERSONA.format(nome=self.cfg.nome, tratamento=self.cfg.tratamento,
-                                  contexto=self._sistema()),
-            thinking={'type': 'adaptive'},
-            tools=catalogo(),
-            messages=self.historico,
+            model=self.cfg.modelo, max_tokens=8000, system=self._sistema(),
+            thinking={'type': 'adaptive'}, tools=catalogo(), messages=self.historico,
         ) as fluxo:
             for evento in fluxo:
                 if getattr(evento, 'type', '') == 'text':
                     pendente += evento.text
-                    despeja()
+                    frases, pendente = self._frases(pendente)
+                    for f in frases:
+                        if ao_falar:
+                            ao_falar(f)
             final = fluxo.get_final_message()
-        despeja(fecha=True)
+        frases, _ = self._frases(pendente, fecha=True)
+        for f in frases:
+            if ao_falar:
+                ao_falar(f)
         return final
 
-    # ── executar uma ferramenta ─────────────────────────────────────
-    def _executa(self, uso) -> dict:
-        nome, bruto = uso.name, (uso.input or {})
-        f = REGISTRO.get(nome)
-        inicio = time.time()
-
-        if f is None:
-            return _resultado(uso.id, f'não existe a ferramenta "{nome}"', erro=True)
-
-        try:
-            args = f.args(**bruto)
-        except Exception as e:
-            return _resultado(uso.id, f'argumentos inválidos para {nome}: {e}', erro=True)
-
-        veredito = f.veredito(args, self.ctx)
-        descricao = f.descreve(args)
-
-        if not veredito.livre:
-            print(f'\n  ⚠ {descricao}  [{veredito.nivel}]')
-        if veredito.livre is False and self.porteiro is None:
-            return _resultado(uso.id, 'sem porteiro configurado; ação não autorizada',
-                              erro=True)
-
-        if not veredito.livre:
-            autorizado = self.porteiro.autoriza(nome, veredito, descricao)
-            if not autorizado:
-                self._anota(nome, bruto, veredito.nivel, 'recusado', descricao, inicio)
-                return _resultado(uso.id,
-                                  'VOCÊ NÃO AUTORIZOU esta ação. Ela não foi executada. '
-                                  'Não tente outro caminho para fazer a mesma coisa.',
-                                  erro=True)
-
-        try:
-            saida = f.funcao(args, self.ctx)
-            texto = saida if isinstance(saida, str) else json.dumps(saida, ensure_ascii=False)
-            self._anota(nome, bruto, veredito.nivel, 'feito', texto, inicio)
-            self.ultimo_detalhe = texto
-            return _resultado(uso.id, texto)
-        except Exception as e:
-            falha = f'{type(e).__name__}: {e}'
-            self._anota(nome, bruto, veredito.nivel, 'erro', falha, inicio)
-            return _resultado(uso.id, f'a ferramenta falhou — {falha}', erro=True)
-
-    def _anota(self, nome, args, nivel, decisao, resultado, inicio):
-        if self.diario:
-            self.diario.acao(nome, args, nivel, decisao, str(resultado)[:3000],
-                             self.ctx.pedido, round(time.time() - inicio, 2))
-
-    # ── memória curta ───────────────────────────────────────────────
     def _encolhe(self, teto: int = 40) -> None:
         """
         Corta a conversa antiga sem quebrar o par ferramenta/resultado —
@@ -237,10 +250,113 @@ class Cerebro:
             corte += 1
         self.historico = self.historico[corte:]
 
-    def esquece_conversa(self) -> None:
-        self.historico.clear()
+
+# ══ Gemini ══════════════════════════════════════════════════════════
+class CerebroGemini(Motor):
+    """
+    Mesmo laço, outro protocolo.
+
+    Três diferenças que custam caro se forem ignoradas:
+
+    • **O esquema das ferramentas vai como JSON Schema puro**
+      (`parameters_json_schema`). Converter para o formato antigo da
+      Google perderia `default` e tipos aninhados.
+    • **A chamada automática fica DESLIGADA.** O SDK sabe executar a
+      função sozinho; se ele executar, a permissão nunca é consultada.
+      Essa linha é a diferença entre ter e não ter trava.
+    • **O histórico é `Content`, não dicionário**, e o resultado da
+      ferramenta volta como `function_response` com papel de usuário.
+    """
+
+    @property
+    def cliente(self):
+        if self._cli is None:
+            from nucleo.modelos import gemini
+            self._cli = gemini(self.cfg.gemini)
+        return self._cli
+
+    def _config(self):
+        from google.genai import types
+        decls = [types.FunctionDeclaration(name=e['name'], description=e['description'],
+                                           parameters_json_schema=e['input_schema'])
+                 for e in catalogo()]
+        return types.GenerateContentConfig(
+            system_instruction=self._sistema(),
+            tools=[types.Tool(function_declarations=decls)],
+            # Sem isto o SDK executaria a ferramenta sozinho, e a permissão
+            # nunca seria consultada.
+            automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=True),
+            max_output_tokens=8000,
+        )
+
+    def responde(self, pedido: str, ao_falar: Callable[[str], None] | None = None) -> str:
+        from google.genai import types
+        self._abre_conversa(pedido)
+        self.historico.append(types.Content(role='user', parts=[types.Part(text=pedido)]))
+
+        resposta = ''
+        for _ in range(self.cfg.voltas_maximas):
+            texto, chamadas, partes = self._chama(ao_falar)
+            if partes:
+                self.historico.append(types.Content(role='model', parts=partes))
+            if texto:
+                resposta = texto
+            if not chamadas:
+                break
+
+            devolve = []
+            for c in chamadas:
+                saida, erro = self.executa(c.name, dict(c.args or {}))
+                devolve.append(types.Part.from_function_response(
+                    name=c.name,
+                    response={'erro': saida} if erro else {'resultado': saida}))
+            self.historico.append(types.Content(role='user', parts=devolve))
+        else:
+            resposta = resposta or 'parei: a tarefa deu muitas voltas sem terminar.'
+        return self._fecha_conversa(resposta)
+
+    def _chama(self, ao_falar):
+        from google.genai import types
+        pendente, texto_todo, chamadas = '', '', []
+        fluxo = self.cliente.models.generate_content_stream(
+            model=self.cfg.modelo_gemini, contents=self.historico, config=self._config())
+        for pedaco in fluxo:
+            for p in self._partes(pedaco):
+                if getattr(p, 'thought', False):
+                    continue                      # pensamento não se fala
+                if getattr(p, 'function_call', None):
+                    chamadas.append(p.function_call)
+                elif getattr(p, 'text', None):
+                    texto_todo += p.text
+                    pendente += p.text
+                    frases, pendente = self._frases(pendente)
+                    for f in frases:
+                        if ao_falar:
+                            ao_falar(f)
+        frases, _ = self._frases(pendente, fecha=True)
+        for f in frases:
+            if ao_falar:
+                ao_falar(f)
+
+        partes = ([types.Part(text=texto_todo)] if texto_todo.strip() else [])
+        partes += [types.Part(function_call=c) for c in chamadas]
+        return texto_todo.strip(), chamadas, partes
+
+    @staticmethod
+    def _partes(pedaco) -> list:
+        candidatos = getattr(pedaco, 'candidates', None) or []
+        if not candidatos:
+            return []
+        conteudo = getattr(candidatos[0], 'content', None)
+        return list(getattr(conteudo, 'parts', None) or [])
 
 
-def _resultado(uso_id: str, texto: str, erro: bool = False) -> dict:
-    return {'type': 'tool_result', 'tool_use_id': uso_id,
-            'content': texto[:30000], 'is_error': erro}
+# ══ a escolha ═══════════════════════════════════════════════════════
+Cerebro = CerebroClaude          # nome antigo, para não quebrar quem importa
+
+
+def monta(cfg, **kw) -> Motor:
+    """Devolve o cérebro do provedor configurado."""
+    if cfg.provedor == 'gemini':
+        return CerebroGemini(cfg, **kw)
+    return CerebroClaude(cfg, **kw)

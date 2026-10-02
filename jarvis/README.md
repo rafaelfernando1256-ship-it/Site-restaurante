@@ -25,7 +25,7 @@ instalar.bat
 
 Ele instala tudo, baixa o navegador e o modelo da palavra de ativação,
 monta o `config.toml` **com os caminhos da sua máquina** e abre o
-bloco de notas para você colar a chave do Claude. Depois:
+bloco de notas para você colar a chave. Depois:
 
 ```
 jarvis.bat --checar     diz o que está pronto e o que falta
@@ -34,9 +34,33 @@ jarvis.bat --texto      modo teclado, para testar sem microfone
 ```
 
 Precisa de Python 3.10 ou mais novo (na instalação dele, marque **"Add
-python.exe to PATH"**) e de uma chave em console.anthropic.com. As chaves
-do ChatGPT e do Gemini são opcionais — sem elas tudo funciona, você só
-não consegue pedir a opinião dos outros dois.
+python.exe to PATH"**) e de **uma** chave de modelo.
+
+### Qual chave
+
+Você escolhe quem é o cérebro — quem decide e usa as 51 ferramentas:
+
+| | onde pegar | começa com | custo |
+|---|---|---|---|
+| **Claude** | console.anthropic.com → API Keys | `sk-ant-api03-` | pago por uso, **à parte da assinatura do claude.ai** |
+| **Gemini** | aistudio.google.com/apikey | `AIza` | tem camada gratuita |
+
+Preencha uma das duas no `.env` e pronto: sem dizer mais nada, ele usa a
+que existir. Com as duas preenchidas, escolha em `config.toml`:
+
+```toml
+[geral]
+provedor = "gemini"     # ou "claude"
+```
+
+A que não for cérebro continua servindo de consultor: *"o que o Gemini
+acha disso?"*.
+
+> **Atenção à chave do Claude:** `sk-ant-usr-...` é o token do claude.ai e
+> **não funciona** na API. A da API começa com `sk-ant-api03-` e sai de um
+> site diferente (console.anthropic.com).
+
+O ChatGPT (`OPENAI_API_KEY`) é só consultor, nunca cérebro — é opcional.
 
 ---
 
@@ -121,7 +145,7 @@ hoje?"** e ele lê de lá. Nada é apagado antes de 90 dias.
 | **projetos** | criar projeto inteiro com o Claude Code, acompanhar, mandar alterar |
 | **slides** | montar .pptx com nota do apresentador |
 | **música** | tocar arquivo seu ou YouTube Music, listar o que tem na máquina |
-| **conhecimento** | perguntar ao ChatGPT, ao Gemini, ou aos dois para comparar |
+| **conhecimento** | perguntar ao ChatGPT, ao Gemini ou ao Claude — quem não é o cérebro vira consultor |
 | **memória** | lembrar fato, esquecer, contar o que fez hoje |
 
 ---
@@ -259,10 +283,17 @@ ferramentas/
 
 ### Três decisões de projeto
 
-**Um cérebro, dois consultores.** O Claude decide e usa as ferramentas; o
-GPT e o Gemini entram **como ferramenta**, quando você pede a opinião
-deles. Três modelos decidindo o que fazer na sua máquina é três vezes a
-chance de alguém decidir errado e ninguém responsável pelo resultado.
+**Um cérebro, dois consultores.** Um modelo decide e usa as ferramentas;
+os outros entram **como ferramenta**, quando você pede a opinião deles.
+Três modelos decidindo o que fazer na sua máquina é três vezes a chance
+de alguém decidir errado e ninguém responsável pelo resultado.
+
+**Trocar de cérebro não afrouxa nenhuma trava.** O Claude e o Gemini
+falam protocolos diferentes — formato de histórico, de chamada de função,
+de resultado —, mas a classe `Motor` em `nucleo/cerebro.py` guarda a
+permissão, a execução, o diário e o teto de voltas num lugar só. Os dois
+SDKs sabem executar a função sozinhos, e **nos dois isso fica desligado**:
+se o SDK executa, a permissão nunca é consultada.
 
 **O laço é escrito à mão.** Porque a permissão precisa ser avaliada com
 os argumentos já preenchidos: `rodar_comando("ls")` e
@@ -282,6 +313,7 @@ segundos de silêncio que parecem travamento.
 
 | quero | onde |
 |---|---|
+| trocar o cérebro (Claude ↔ Gemini) | `config.toml` → `provedor` |
 | ele me chamar de outro jeito | `config.toml` → `tratamento` |
 | trocar a palavra de ativação | `config.toml` → `palavra_chave` |
 | ele entender melhor o que eu falo | `modelo_escuta = "medium"` (mais lento) |
@@ -295,7 +327,7 @@ segundos de silêncio que parecem travamento.
 
 ## O que foi verificado, e o que não deu
 
-**35 testes, 35 passando** — rode com `python testes.py`.
+**50 testes, 50 passando** — rode com `python testes.py`.
 Nenhum toca a rede, o microfone ou a sua máquina: a API do Claude entra
 como dublê, os arquivos vão para pasta temporária, o navegador não abre.
 
@@ -306,6 +338,10 @@ O que eles garantem:
   nem é consultada para o que é irreversível**; `modo_livre` não abre a
   porta do perigo; "sempre" vale para o reversível e não vale para o
   resto;
+- **os dois laços, Claude e Gemini** — a chamada automática do SDK fica
+  desligada nos dois (se o SDK executasse, a permissão não seria
+  consultada), o pensamento do modelo não é falado, e as 51 ferramentas
+  viram declaração válida nos dois formatos;
 - **o laço** — ferramenta é executada e o resultado volta ao modelo;
   permissão negada vira resposta honesta com ordem explícita de não
   tentar outro caminho; ferramenta inexistente, argumento inválido e

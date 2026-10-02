@@ -60,10 +60,11 @@ echo.
 python primeira_vez.py
 
 echo.
-echo   Abrindo o arquivo da chave do Claude...
+echo   Abrindo o arquivo das chaves...
 start notepad .env
 
 echo.
-echo   Quando salvar a chave, feche o bloco de notas e rode: jarvis.bat
+echo   Preencha a chave do Claude OU a do Gemini, salve, feche,
+echo   e rode: jarvis.bat --checar
 echo.
 pause
