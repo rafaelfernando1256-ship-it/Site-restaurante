@@ -1,0 +1,280 @@
+#!/usr/bin/env python3
+"""
+JARVIS
+
+    python jarvis.py                 modo voz: diga "Hey Jarvis" e fale
+    python jarvis.py --texto         modo teclado: digita em vez de falar
+    python jarvis.py "abre o chrome" um comando só e sai
+    python jarvis.py --checar        diz o que está instalado e o que falta
+    python jarvis.py --ferramentas   lista tudo que ele sabe fazer
+
+No modo voz ele fica quieto até você chamar. A palavra de ativação roda
+na sua máquina; o áudio não sai daqui — só o texto do que você falou, e
+só depois que você chamou.
+"""
+from __future__ import annotations
+
+import argparse
+import sys
+import time
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from ferramentas import FALTANDO, REGISTRO, Contexto, carrega_tudo       # noqa: E402
+from nucleo import config                                                # noqa: E402
+from nucleo.cerebro import Cerebro                                       # noqa: E402
+from nucleo.permissao import Porteiro                            # noqa: E402
+from nucleo.registro import Diario                                       # noqa: E402
+from nucleo.voz import Voz                                               # noqa: E402
+
+SIM = {'sim', 'pode', 'pode sim', 'confirmo', 'confirma', 'isso', 'claro', 'manda',
+       'vai', 'ok', 'okay', 'beleza', 'positivo', 'autorizo', 'faz', 'faça', 'certo'}
+NAO = {'não', 'nao', 'para', 'pare', 'cancela', 'cancelar', 'negativo', 'deixa',
+       'esquece', 'nem', 'espera'}
+
+SEMPRE = {'sempre', 'pode sempre', 'não precisa perguntar', 'nao precisa perguntar'}
+
+PARAR = {'para', 'pare', 'cala', 'calado', 'silêncio', 'silencio', 'chega', 'para tudo'}
+SAIR = {'tchau', 'até logo', 'sair', 'desliga', 'fecha o jarvis', 'bom descanso'}
+
+
+def faixa(texto: str = '', cor: str = '36') -> None:
+    print(f'\033[{cor}m{texto}\033[0m')
+
+
+# ── montagem ────────────────────────────────────────────────────────
+def monta(cfg, modo_voz: bool):
+    diario = Diario(config.DADOS / 'jarvis.db')
+    voz = Voz(cfg, motor='auto' if modo_voz else 'imprime')
+    carrega_tudo()
+
+    estado = {'ouvido': None}
+
+    def pergunta_voz(texto: str) -> str:
+        """Pergunta falando e ouve a resposta. Só vale para nível CUIDADO."""
+        ouvido = estado['ouvido']
+        if ouvido is None:
+            return pergunta_teclado(texto)
+        voz.fala(texto)
+        voz.espera(20)
+        resposta = (ouvido.ouve() or '').strip().lower().rstrip('.!?')
+        print(f'  você: {resposta or "(nada)"}')
+        if not resposta:
+            return 'nao'
+        if any(p in resposta for p in SEMPRE):
+            return 'sempre'
+        if any(p in resposta.split() for p in NAO):
+            return 'nao'
+        return 'sim' if any(p in resposta for p in SIM) else 'nao'
+
+    def pergunta_teclado(texto: str) -> str:
+        voz.cale()
+        print(f'\n  {texto}')
+        print('  \033[90m[enter = sim · n = não · sempre = não perguntar mais '
+              'nesta sessão]\033[0m')
+        try:
+            r = input('  > ').strip().lower()
+        except (EOFError, KeyboardInterrupt):
+            return 'nao'
+        if r in ('sempre', 'sempre sim', 'a'):
+            return 'sempre'
+        if r in ('', 'sim', 's', 'y', 'yes', 'ok'):
+            return 'sim'
+        return 'nao'
+
+    porteiro = Porteiro(cfg, diario, perguntar_voz=pergunta_voz,
+                        perguntar_teclado=pergunta_teclado)
+    ctx = Contexto(cfg=cfg, diario=diario, porteiro=porteiro, falar=voz.fala)
+    cerebro = Cerebro(cfg, diario, porteiro, falar=voz.fala, ctx=ctx)
+    return cerebro, voz, diario, ctx, estado
+
+
+def responde(cerebro, voz, pedido: str, falando: bool) -> str:
+    inicio = time.time()
+    resposta = cerebro.responde(pedido, ao_falar=voz.fala if falando else None)
+    if not falando:
+        print(f'\n  {cerebro.cfg.nome}: {resposta}')
+    print(f'\033[90m  ({time.time() - inicio:.1f}s)\033[0m')
+    return resposta
+
+
+# ── modos ───────────────────────────────────────────────────────────
+def modo_texto(cerebro, voz, cfg) -> int:
+    faixa(f'\n  {cfg.nome} — modo teclado. Escreva o que quer. '
+          '"sair" encerra, "esquece" limpa a conversa.\n')
+    while True:
+        try:
+            pedido = input('  você> ').strip()
+        except (EOFError, KeyboardInterrupt):
+            print()
+            return 0
+        if not pedido:
+            continue
+        if pedido.lower() in SAIR or pedido.lower() == 'sair':
+            return 0
+        if pedido.lower() in ('esquece', 'limpa', 'nova conversa'):
+            cerebro.esquece_conversa()
+            print('  (conversa limpa)')
+            continue
+        try:
+            responde(cerebro, voz, pedido, falando=False)
+        except KeyboardInterrupt:
+            print('\n  (cortado)')
+        except Exception as e:
+            print(f'  erro: {type(e).__name__}: {e}')
+
+
+def modo_voz(cerebro, voz, cfg, estado) -> int:
+    from nucleo.ouvido import Ouvido
+    ok, aviso = Ouvido.checa()
+    if not ok:
+        faixa(f'  {aviso}', '33')
+        faixa('  Caindo no modo teclado.', '33')
+        return modo_texto(cerebro, voz, cfg)
+
+    ouvido = Ouvido(cfg)
+    estado['ouvido'] = ouvido
+    faixa(f'\n  {cfg.nome} acordado. Medindo o barulho da sala...')
+    piso = ouvido.calibra()
+    faixa(f'  pronto. Diga "{cfg.palavra_chave}" para falar comigo. '
+          f'(ruído de fundo: {piso:.0f})\n')
+    voz.fala(f'Pronto, {cfg.tratamento}.')
+
+    while True:
+        try:
+            if not ouvido.espera_chamado():
+                continue
+            voz.cale()                       # se eu estava falando, calo
+            print('\n  🎙  ouvindo...')
+            pedido = ouvido.ouve()
+            if not pedido:
+                continue
+            print(f'  você: {pedido}')
+            baixo = pedido.lower().strip(' .!?')
+            if baixo in PARAR:
+                voz.cale()
+                continue
+            if baixo in SAIR:
+                voz.fala('Até logo.')
+                voz.espera(6)
+                return 0
+            if baixo in ('esquece', 'esqueça', 'nova conversa'):
+                cerebro.esquece_conversa()
+                voz.fala('Conversa limpa.')
+                continue
+            responde(cerebro, voz, pedido, falando=True)
+        except KeyboardInterrupt:
+            print('\n  tchau.')
+            return 0
+        except Exception as e:
+            print(f'  erro: {type(e).__name__}: {e}')
+            voz.fala('Deu um erro aqui. Está escrito na tela.')
+
+
+# ── diagnóstico ─────────────────────────────────────────────────────
+def checar(cfg) -> int:
+    from nucleo.ouvido import Ouvido
+    carrega_tudo()
+    print(f'\n  {cfg.nome} — diagnóstico\n')
+    print(f'  sistema: {config.sistema()}')
+    print(f'  pastas liberadas: {", ".join(cfg.raizes_seguras)}')
+    print(f'  modelo: {cfg.modelo}\n')
+
+    linhas = [
+        ('chave do Claude (obrigatória)', bool(cfg.anthropic)),
+        ('chave do ChatGPT (opcional)', bool(cfg.openai)),
+        ('chave do Gemini (opcional)', bool(cfg.gemini)),
+    ]
+    ok, aviso = Ouvido.checa()
+    linhas.append(('microfone e transcrição', ok))
+    for pacote, para_que in (('pyttsx3', 'voz do Windows'),
+                             ('edge_tts', 'voz neural'),
+                             ('playwright', 'navegador e WhatsApp'),
+                             ('pptx', 'slides'),
+                             ('pyautogui', 'teclado e mouse'),
+                             ('psutil', 'estado da máquina'),
+                             ('openwakeword', 'palavra de ativação')):
+        try:
+            __import__(pacote)
+            linhas.append((f'{pacote} ({para_que})', True))
+        except ImportError:
+            linhas.append((f'{pacote} ({para_que})', False))
+
+    funil = Path(cfg.funil_db).expanduser()
+    linhas.append((f'banco do funil ({funil})', funil.exists()))
+
+    for nome, bem in linhas:
+        print(f'  {"✓" if bem else "✗"} {nome}')
+    if not ok:
+        print(f'\n  {aviso}')
+    if FALTANDO:
+        print('\n  ferramentas que não carregaram:')
+        for m, por in FALTANDO.items():
+            print(f'    {m}: {por}')
+    print(f'\n  {len(REGISTRO)} ferramentas prontas.\n')
+    return 0
+
+
+def lista_ferramentas() -> int:
+    carrega_tudo()
+    por_modulo: dict[str, list] = {}
+    for f in REGISTRO.values():
+        por_modulo.setdefault(f.funcao.__module__.split('.')[-1], []).append(f)
+    print()
+    for modulo, fs in sorted(por_modulo.items()):
+        print(f'  \033[1m{modulo}\033[0m')
+        for f in fs:
+            marca = ('~' if f.avalia else
+                     {'livre': ' ', 'cuidado': '!', 'perigo': '‼'}.get(f.nivel, ' '))
+            print(f'    {marca} {f.nome:<26} {f.descricao.splitlines()[0][:78]}')
+        print()
+    print('  ! pede confirmação   ‼ pede confirmação digitada   '
+          '~ depende do que for pedido\n')
+    return 0
+
+
+# ── entrada ─────────────────────────────────────────────────────────
+def principal(argv: list[str] | None = None) -> int:
+    p = argparse.ArgumentParser(prog='jarvis', description=__doc__,
+                                formatter_class=argparse.RawDescriptionHelpFormatter)
+    p.add_argument('pedido', nargs='*', help='um comando só, sem entrar no laço')
+    p.add_argument('--texto', action='store_true', help='teclado em vez de voz')
+    p.add_argument('--voz', action='store_true', help='força o modo voz')
+    p.add_argument('--checar', action='store_true', help='o que está instalado')
+    p.add_argument('--ferramentas', action='store_true', help='lista o que ele sabe fazer')
+    p.add_argument('--config', type=Path, help='outro config.toml')
+    a = p.parse_args(argv)
+
+    cfg = config.carrega(a.config)
+
+    if a.ferramentas:
+        return lista_ferramentas()
+    if a.checar:
+        return checar(cfg)
+
+    cfg.exige('anthropic')
+    um_comando = ' '.join(a.pedido).strip()
+    falando = a.voz or (not a.texto and not um_comando)
+    cerebro, voz, diario, ctx, estado = monta(cfg, modo_voz=falando)
+
+    try:
+        if um_comando:
+            responde(cerebro, voz, um_comando, falando=False)
+            return 0
+        if falando:
+            return modo_voz(cerebro, voz, cfg, estado)
+        return modo_texto(cerebro, voz, cfg)
+    finally:
+        nav = ctx.partilha.get('navegador')
+        if nav:
+            try:
+                nav.desliga()
+            except Exception:
+                pass
+        voz.cale()
+        diario.fechar()
+
+
+if __name__ == '__main__':
+    raise SystemExit(principal())

@@ -1,0 +1,1 @@
+O banco dele, o diário e o perfil do navegador ficam aqui. Nada disto vai para o git.

@@ -1,0 +1,151 @@
+"""
+CONFIGURAÇÃO
+
+Chave nenhuma dentro do código. A ordem é: ambiente → `.env` → `config.toml`
+(só o que não é segredo).
+
+Um detalhe que decide muita coisa: `RAIZ_SEGURA`. É a lista de pastas em
+que o Jarvis pode escrever sem perguntar. Fora dela, ele pede. Sem isso,
+"apaga os temporários" vira uma frase perigosa.
+"""
+from __future__ import annotations
+
+import os
+import sys
+import tomllib
+from dataclasses import dataclass, field
+from pathlib import Path
+
+RAIZ = Path(__file__).resolve().parent.parent
+DADOS = RAIZ / 'dados'
+SAIDA = RAIZ / 'saida'
+
+MODELO_CLAUDE = 'claude-opus-5-5'
+MODELO_GPT = 'gpt-4o'
+MODELO_GEMINI = 'gemini-2.0-flash'
+
+
+def _carrega_env() -> None:
+    arquivo = RAIZ / '.env'
+    if not arquivo.exists():
+        return
+    for linha in arquivo.read_text(encoding='utf-8').splitlines():
+        linha = linha.strip()
+        if not linha or linha.startswith('#') or '=' not in linha:
+            continue
+        chave, valor = linha.split('=', 1)
+        chave, valor = chave.strip(), valor.strip().strip('"').strip("'")
+        if chave and chave not in os.environ:
+            os.environ[chave] = valor
+
+
+_carrega_env()
+
+
+def sistema() -> str:
+    """windows | mac | linux — decide teclado, mídia e como abre app."""
+    if sys.platform.startswith('win'):
+        return 'windows'
+    if sys.platform == 'darwin':
+        return 'mac'
+    return 'linux'
+
+
+@dataclass
+class Config:
+    # ── segredos ────────────────────────────────────────────────────
+    anthropic: str = ''
+    openai: str = ''
+    gemini: str = ''
+
+    # ── voz ─────────────────────────────────────────────────────────
+    palavra_chave: str = 'hey jarvis'
+    escuta_sempre: bool = True
+    atalho_fala: str = 'ctrl+alt+j'      # vale quando escuta_sempre = false
+    modelo_voz: str = 'pt-BR-AntonioNeural'
+    velocidade_voz: str = '+8%'
+    modelo_escuta: str = 'small'         # tiny | base | small | medium
+    idioma: str = 'pt'
+    silencio_para_parar: float = 1.2     # segundos de silêncio que encerram a fala
+
+    # ── cérebro ─────────────────────────────────────────────────────
+    modelo: str = MODELO_CLAUDE
+    modelo_gpt: str = MODELO_GPT
+    modelo_gemini: str = MODELO_GEMINI
+    voltas_maximas: int = 24             # teto de idas e vindas numa só tarefa
+    nome: str = 'Jarvis'
+    tratamento: str = 'chefe'
+
+    # ── permissões ──────────────────────────────────────────────────
+    # Pastas onde ele escreve sem perguntar. TUDO fora disto pede.
+    raizes_seguras: list[str] = field(default_factory=list)
+    confirmar_por_voz: bool = True       # false = confirma sempre digitando
+    modo_livre: bool = False             # true = não pede em nível CUIDADO
+
+    # ── integrações ─────────────────────────────────────────────────
+    funil_db: str = ''                   # o banco do projeto funil/
+    perfil_navegador: str = ''           # perfil do Chrome que ele controla
+    whatsapp_chats: list[str] = field(default_factory=list)
+    pasta_musica: str = ''
+
+    def exige(self, *chaves: str) -> None:
+        nomes = {'anthropic': 'ANTHROPIC_API_KEY', 'openai': 'OPENAI_API_KEY',
+                 'gemini': 'GEMINI_API_KEY'}
+        faltam = [nomes.get(c, c.upper()) for c in chaves if not getattr(self, c, '')]
+        if faltam:
+            raise SystemExit(
+                'Falta configurar: ' + ', '.join(faltam)
+                + f'\nPonha no ambiente ou em {RAIZ / ".env"} (veja .env.exemplo).')
+
+    def seguro(self, caminho: Path | str) -> bool:
+        """O caminho está dentro de uma raiz onde ele pode mexer sem pedir?"""
+        try:
+            p = Path(caminho).expanduser().resolve()
+        except Exception:
+            return False
+        for r in self.raizes_seguras:
+            try:
+                p.relative_to(Path(r).expanduser().resolve())
+                return True
+            except ValueError:
+                continue
+        return False
+
+
+def _padrao_raizes() -> list[str]:
+    casa = Path.home()
+    nomes = ['Desktop', 'Área de Trabalho', 'Documents', 'Documentos',
+             'Downloads', 'Downloads', 'Projetos', 'Projects']
+    achadas = [str(casa / n) for n in nomes if (casa / n).exists()]
+    return achadas or [str(casa)]
+
+
+def carrega(caminho: Path | None = None) -> Config:
+    c = Config(
+        anthropic=os.environ.get('ANTHROPIC_API_KEY', ''),
+        openai=os.environ.get('OPENAI_API_KEY', ''),
+        gemini=os.environ.get('GEMINI_API_KEY', ''),
+    )
+    arquivo = caminho or (RAIZ / 'config.toml')
+    if arquivo.exists():
+        with open(arquivo, 'rb') as f:
+            t = tomllib.load(f)
+        for secao, campos in (
+            ('geral', ('nome', 'tratamento', 'modelo', 'modelo_gpt', 'modelo_gemini',
+                       'voltas_maximas')),
+            ('voz', ('palavra_chave', 'escuta_sempre', 'atalho_fala', 'modelo_voz',
+                     'velocidade_voz', 'modelo_escuta', 'idioma', 'silencio_para_parar')),
+            ('permissoes', ('raizes_seguras', 'confirmar_por_voz', 'modo_livre')),
+            ('integracoes', ('funil_db', 'perfil_navegador', 'whatsapp_chats',
+                             'pasta_musica')),
+        ):
+            bloco = t.get(secao, {})
+            for campo in campos:
+                if campo in bloco:
+                    setattr(c, campo, bloco[campo])
+    if not c.raizes_seguras:
+        c.raizes_seguras = _padrao_raizes()
+    if not c.funil_db:
+        provavel = RAIZ.parent / 'funil' / 'dados' / 'funil.db'
+        c.funil_db = str(provavel)
+    return c

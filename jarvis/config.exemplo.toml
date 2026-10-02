@@ -1,0 +1,44 @@
+# Copie para config.toml. Segredo não entra aqui — segredo vai no .env.
+
+[geral]
+nome = "Jarvis"
+tratamento = "chefe"          # como ele te chama
+modelo = "claude-opus-5-5"
+voltas_maximas = 24           # teto de ferramentas numa tarefa só
+
+[voz]
+palavra_chave = "hey jarvis"
+escuta_sempre = true
+modelo_voz = "pt-BR-AntonioNeural"   # vale para a voz neural (edge-tts)
+velocidade_voz = "+8%"
+modelo_escuta = "small"       # tiny | base | small | medium — maior entende
+                              # melhor e demora mais. "small" é o equilíbrio
+idioma = "pt"
+silencio_para_parar = 1.2     # segundos de silêncio que encerram a sua fala
+
+[permissoes]
+# As pastas em que ele escreve sem perguntar. TUDO fora daqui pede
+# confirmação digitada. Comece apertado e vá soltando.
+raizes_seguras = [
+  "C:/Users/SEU_USUARIO/Desktop",
+  "C:/Users/SEU_USUARIO/Documents",
+  "C:/Users/SEU_USUARIO/Downloads",
+]
+confirmar_por_voz = true      # false = confirma sempre digitando
+modo_livre = false            # true = não pergunta em nível CUIDADO.
+                              # NUNCA libera o nível PERIGO — nem assim.
+
+[integracoes]
+# O banco do projeto funil/, para responder "quantos clientes em negociação"
+funil_db = "C:/Users/SEU_USUARIO/Site-restaurante/funil/dados/funil.db"
+
+# Pasta do perfil do Chrome que o Jarvis controla. Deixe vazio para ele
+# usar um perfil próprio (recomendado: o Chrome tranca o perfil que já
+# está aberto, e aí o Jarvis falharia sempre que você estivesse usando).
+perfil_navegador = ""
+
+# As conversas de onde sai o faturamento. Nome exato, como aparece no
+# WhatsApp. Vazio = ele lê as 5 conversas mais recentes e avisa.
+whatsapp_chats = ["Pedidos", "Financeiro"]
+
+pasta_musica = "C:/Users/SEU_USUARIO/Music"

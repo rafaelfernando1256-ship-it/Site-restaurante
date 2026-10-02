@@ -1,0 +1,25 @@
+# ── o essencial ─────────────────────────────────────────────────────
+anthropic>=1.11.0          # o cérebro
+pydantic>=2.9              # os argumentos das ferramentas, validados
+
+# ── ouvir e falar ───────────────────────────────────────────────────
+sounddevice>=0.4.6         # microfone (já traz o PortAudio no Windows)
+numpy>=1.26
+faster-whisper>=1.0.3      # transcrição local — o áudio não sai da máquina
+openwakeword>=0.6.0        # a palavra de ativação, local também
+onnxruntime>=1.17          # o motor que roda a palavra de ativação
+pyttsx3>=2.90              # a voz do Windows: offline, instantânea
+
+# ── mãos ────────────────────────────────────────────────────────────
+playwright>=1.47           # navegador, abas e WhatsApp Web
+pyautogui>=0.9.54          # teclado, mouse, teclas de mídia
+pyperclip>=1.9             # colar texto rápido e sem errar acento
+psutil>=5.9                # bateria, memória, disco, processos
+python-pptx>=1.0           # slides
+
+# ── opcionais ───────────────────────────────────────────────────────
+# Instale se quiser, nada quebra sem eles.
+edge-tts>=6.1              # voz neural, bem melhor em português (precisa de internet)
+playsound3>=3.0            # para tocar a voz neural, se não tiver ffmpeg
+openai>=1.50               # para perguntar ao ChatGPT
+google-genai>=0.3          # para perguntar ao Gemini
