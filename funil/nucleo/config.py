@@ -108,8 +108,9 @@ def _le_toml(arquivo: Path) -> dict:
     diz que é disso que se trata.
     """
     try:
-        with open(arquivo, 'rb') as f:
-            return tomllib.load(f)
+        # utf-8-sig: editor do Windows salva com BOM, e o tomllib recusa o
+        # arquivo inteiro por causa de três bytes invisíveis no começo.
+        return tomllib.loads(arquivo.read_text(encoding='utf-8-sig'))
     except tomllib.TOMLDecodeError as e:
         texto = str(e)
         dica = ''
