@@ -34,6 +34,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shutil
 import subprocess
 import zipfile
@@ -74,7 +75,34 @@ Se a pessoa pediu para não ser mais contatada, quer_demo = false e a resposta \
 deve ser só uma desculpa curta e o fim do contato — nunca uma nova tentativa.
 
 A resposta que você escreve vai no WhatsApp, no tom dele, no máximo 2 linhas, \
-sem jargão e sem promessa nova."""
+sem jargão e sem promessa nova.
+
+REGRA ABSOLUTA SOBRE O LINK
+Não existe link ainda. O site é construído DEPOIS desta resposta, e o link \
+vai numa mensagem separada, mais tarde. Então:
+- NUNCA escreva um link, nem um lugar para ele: nada de "[link]", "(link)", \
+"segue o link", "aqui está:", "LINK_AQUI", "vou te mandar: ___".
+- Escreva que você vai montar e mandar: "vou montar e te mando ainda hoje", \
+"te mando o link assim que ficar pronto".
+Um "[link]" enviado de verdade para o cliente é pior que não responder."""
+
+
+# Marcas de lugar que nunca podem chegar ao cliente. O modelo erra isso
+# mesmo instruído, e a mensagem pode ser enviada sozinha pela vigia.
+BURACOS = re.compile(
+    r'\[[^\]]{0,40}\]|<[^>]{0,40}>|\{[^}]{0,40}\}|_{3,}|'
+    r'\bLINK[_ ]?AQUI\b|\bURL[_ ]?AQUI\b|\bxxx+\b', re.I)
+
+
+def tira_buracos(texto: str) -> str:
+    """
+    Remove a FRASE inteira que tem marca de lugar — não só a marca. Tirar
+    só o "[link]" deixaria "Segue o link para você dar uma olhada: ." , que
+    é pior ainda.
+    """
+    frases = re.split(r'(?<=[.!?])\s+', texto.strip())
+    limpas = [f for f in frases if f.strip() and not BURACOS.search(f)]
+    return ' '.join(limpas).strip()
 
 
 def anota_retorno(est: Estado, lead_id: int, texto: str) -> None:
@@ -113,7 +141,14 @@ def tria(est: Estado, limite: int = 20, modelo: str | None = None,
             print(f'  ? {l.nome}: {r.leitura} — decida você')
             continue
 
-        est.guarda_mensagem(l.id, 'resposta', r.resposta.strip())
+        resposta = tira_buracos(r.resposta)
+        if not resposta:
+            # Sobrou nada depois de tirar as frases com buraco: melhor uma
+            # frase sua, curta e verdadeira, do que um "[link]" no cliente.
+            resposta = ('Fechado! Vou montar e te mando o link assim que '
+                        'ficar pronto.') if r.quer_demo else 'Entendido, obrigado!'
+            est.anota(AGENTE, 'resposta_trocada', l.id, r.resposta[:200])
+        est.guarda_mensagem(l.id, 'resposta', resposta)
         if r.quer_demo:
             est.move(l.id, QUER_DEMO, AGENTE, r.leitura[:200])
             conta['quer'] += 1

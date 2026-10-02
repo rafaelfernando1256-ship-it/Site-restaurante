@@ -730,6 +730,43 @@ def _():
             'ficou registrado para você achar')
 
 
+@teste('a3: "[link]" nunca chega ao cliente')
+def _():
+    from nucleo.a3_estudio import tira_buracos
+    igual(tira_buracos('Show! Segue o link: [link]. Me fala o que achou!'),
+          'Show! Me fala o que achou!')
+    for buraco in ('[link]', '{url}', '<seu link>', 'LINK_AQUI', '______'):
+        igual(tira_buracos(f'Olha aqui: {buraco}'), '',
+              f'passou o buraco {buraco}')
+    # frase sem buraco não é tocada
+    boa = 'Combinado. Te mando o link assim que ficar pronto.'
+    igual(tira_buracos(boa), boa)
+
+
+@teste('a3: resposta que vira vazia é trocada por uma frase verdadeira')
+def _():
+    est = banco()
+    l = lead_exemplo(est)
+    est.move(l.id, RASCUNHO, 't'); est.move(l.id, ABORDADO, 't')
+    a3.anota_retorno(est, l.id, 'manda aí')
+    a3.tria(est, cli=duble(quer_demo=True, certeza=0.95, leitura='aceitou',
+                           resposta='Segue o link: [link]'))
+    resposta = [m for m in est.mensagens(lead_id=l.id) if m['tipo'] == 'resposta'][0]
+    verdade('[link]' not in resposta['texto'], 'o buraco foi enviado')
+    verdade('assim que ficar pronto' in resposta['texto'],
+            f'a frase de reserva precisa ser verdadeira: {resposta["texto"]}')
+    verdade(any(e['acao'] == 'resposta_trocada' for e in est.historico(l.id)),
+            'a troca precisa ficar registrada')
+
+
+@teste('a3: a instrução proíbe prometer link que ainda não existe')
+def _():
+    t = a3.TRIAGEM_INSTRUCAO.lower()
+    verdade('não existe link ainda' in t)
+    for proibido in ('[link]', 'segue o link', 'link_aqui'):
+        verdade(proibido in t, f'deveria barrar "{proibido}"')
+
+
 @teste('a3: reune lê imagens e notas da pasta do lead')
 def _():
     pasta = TMP / 'material' / 'casa-1'
