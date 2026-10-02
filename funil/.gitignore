@@ -1,0 +1,15 @@
+# Dados de prospecção: nome, telefone e Instagram de gente real. Não vai
+# para repositório nenhum — nem privado.
+dados/
+material/*
+!material/LEIA.txt
+saida/*
+!saida/LEIA.txt
+
+.env
+config.toml
+
+__pycache__/
+*.pyc
+.venv/
+venv/

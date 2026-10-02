@@ -1,0 +1,30 @@
+# Copie para config.toml. Aqui não entra segredo — segredo vai no .env.
+
+[geral]
+modelo = "claude-opus-5-5"
+cidade = "Natal, RN"
+
+# "link" = o agente escreve, você clica e manda (padrão, e o que mantém
+# o seu número vivo). "cloud" = Cloud API oficial, exige conta aprovada.
+canal_envio = "link"
+
+equipe_netlify = "conta5197-99"
+
+# Termo específico traz casa específica. "restaurante" sozinho traz
+# shopping e praça de alimentação.
+termos = [
+  "restaurante caseiro",
+  "comida regional",
+  "pizzaria",
+  "hamburgueria",
+  "açaí",
+  "cafeteria",
+  "padaria e confeitaria",
+  "tapiocaria",
+]
+
+[caminhos]
+# Relativo a esta pasta, ou absoluto.
+banco = "dados/funil.db"
+saida = "saida"
+material = "material"

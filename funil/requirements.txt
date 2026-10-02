@@ -1,0 +1,4 @@
+# Só duas. O resto é biblioteca padrão do Python, de propósito: menos
+# dependência, menos coisa para quebrar em máquina sua daqui a seis meses.
+anthropic>=1.11.0
+pydantic>=2.9

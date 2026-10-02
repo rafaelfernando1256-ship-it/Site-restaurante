@@ -1,0 +1,1 @@
+Capturas do Instagram, uma pasta por lead: <slug>/ (o slug sai de 'python3 funil.py lead <id>').
