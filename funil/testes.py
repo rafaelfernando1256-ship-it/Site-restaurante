@@ -308,9 +308,11 @@ def _():
             self.models = self
 
         def list(self):
+            # O catálogo de verdade é assim: texto misturado com voz e imagem.
             return [types.SimpleNamespace(name=f'models/{n}',
                                           supported_actions=['generateContent'])
-                    for n in ('gemini-3.8-flash', 'gemini-3.2-flash',
+                    for n in ('gemini-3.8-flash', 'gemini-3.8-flash-tts',
+                              'gemini-3.8-flash-image', 'gemini-3.2-flash',
                               'gemini-3.8-pro', 'gemini-2.0-flash-lite')]
 
         def generate_content(self, **kw):
@@ -328,6 +330,62 @@ def _():
         igual(r, esperado)
         igual(cli.pedidos, ['gemini-3.8-flash', 'gemini-3.2-flash'],
               f'devia trocar por outro flash: {cli.pedidos}')
+    finally:
+        Mod._substituto = ''
+
+
+@teste('modelo: nunca cai num modelo de voz ou de imagem')
+def _():
+    import types as _t
+
+    import nucleo.modelo as Mod
+    catalogo = _t.SimpleNamespace(models=_t.SimpleNamespace(list=lambda: [
+        _t.SimpleNamespace(name=f'models/{n}', supported_actions=['generateContent'])
+        for n in ('gemini-3.8-flash', 'gemini-3.8-flash-tts',
+                  'gemini-3.8-flash-image', 'gemini-3.8-flash-live',
+                  'text-embedding-004', 'veo-3.0-generate', 'imagen-4.0',
+                  'gemma-3-27b-it', 'gemini-3.2-flash')]))
+    fila = Mod._candidatos(catalogo, 'gemini-3.8-flash')
+    for ruim in ('tts', 'image', 'live', 'embedding', 'veo', 'imagen', 'gemma'):
+        verdade(not any(ruim in n for n in fila),
+                f'a fila trouxe um modelo de {ruim}: {fila}')
+    igual(fila[0], 'gemini-3.2-flash')
+
+
+@teste('modelo: se o primeiro substituto recusar, tenta o seguinte')
+def _():
+    from nucleo.a2_abordagem import Abordagem
+    import nucleo.modelo as Mod
+    esperado = Abordagem(gancho='g', mensagem='m', porque='p')
+
+    class Cli:
+        def __init__(self):
+            self.pedidos = []
+            self.models = self
+
+        def list(self):
+            return [types.SimpleNamespace(name=f'models/{n}',
+                                          supported_actions=['generateContent'])
+                    for n in ('gemini-3.8-flash', 'gemini-3.5-flash',
+                              'gemini-3.2-flash')]
+
+        def generate_content(self, **kw):
+            self.pedidos.append(kw['model'])
+            if kw['model'] == 'gemini-3.8-flash':
+                raise RuntimeError('503 UNAVAILABLE: high demand')
+            if kw['model'] == 'gemini-3.5-flash':
+                raise RuntimeError('400 INVALID_ARGUMENT: Developer instruction '
+                                   'is not enabled for this model')
+            return types.SimpleNamespace(parsed=esperado, text='{}')
+
+    Mod._substituto = ''
+    try:
+        cli = Cli()
+        r = Mod.pede_json('i', 'c', Abordagem, modelo='gemini-3.8-flash', cli=cli,
+                          provedor='gemini', tentativas=1)
+        igual(r, esperado)
+        igual(cli.pedidos, ['gemini-3.8-flash', 'gemini-3.5-flash', 'gemini-3.2-flash'],
+              f'não percorreu a fila: {cli.pedidos}')
     finally:
         Mod._substituto = ''
 

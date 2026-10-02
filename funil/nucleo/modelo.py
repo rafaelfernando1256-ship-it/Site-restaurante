@@ -112,18 +112,45 @@ def modelos_gemini(cli: Any) -> list[str]:
     return nomes
 
 
-def _melhor_gemini(cli: Any) -> str:
-    """O flash mais novo que esta chave pode usar."""
-    nomes = modelos_gemini(cli)
+# O catálogo mistura modelos de texto com modelos de voz, imagem, vídeo e
+# embedding — e vários deles declaram "generateContent" mesmo assim. Pegar
+# um desses como substituto rende um 400 ("Developer instruction is not
+# enabled for this model") que parece erro de código e não é.
+ESPECIALIZADOS = ('tts', 'image', 'imagen', 'veo', 'embedding', 'embed', 'aqa',
+                  'live', 'audio', 'rerank', 'vision', 'learnlm', 'gemma',
+                  'computer-use', 'robotics', 'guard')
+
+
+def _versao(nome: str) -> list[float]:
+    """Ordena por número, não por letra: 10.1 vem depois de 3.8."""
+    import re
+    nums = re.findall(r'\d+(?:\.\d+)?', nome)
+    return [float(x) for x in nums] or [0.0]
+
+
+def _de_texto(nome: str) -> bool:
+    baixo = nome.lower()
+    return not any(marca in baixo for marca in ESPECIALIZADOS)
+
+
+def _candidatos(cli: Any, atual: str = '') -> list[str]:
+    """Modelos de texto que esta chave pode usar, do melhor para o pior."""
+    nomes = [n for n in modelos_gemini(cli) if n != atual and _de_texto(n)]
     if not nomes:
-        raise RuntimeError('nenhum modelo do Gemini disponível para esta chave')
-    flashes = [n for n in nomes if 'flash' in n and 'lite' not in n
-               and 'thinking' not in n]
-    def versao(n: str):
-        import re
-        nums = re.findall(r'\d+(?:\.\d+)?', n)
-        return [float(x) for x in nums] or [0.0]
-    return max(flashes or nomes, key=versao)
+        return []
+    familia = 'pro' if 'pro' in (atual or '') else 'flash'
+    primeiros = [n for n in nomes if familia in n and 'lite' not in n]
+    resto = [n for n in nomes if n not in primeiros]
+    return (sorted(primeiros, key=_versao, reverse=True)
+            + sorted(resto, key=_versao, reverse=True))
+
+
+def _melhor_gemini(cli: Any) -> str:
+    """O modelo de texto mais novo que esta chave pode usar."""
+    nomes = _candidatos(cli)
+    if not nomes:
+        raise RuntimeError('nenhum modelo de texto do Gemini disponível para esta chave')
+    return nomes[0]
 
 
 def _sumiu(e: Exception) -> bool:
@@ -138,28 +165,18 @@ def _passageiro(e: Exception) -> bool:
             or any(m in texto for m in TEXTO_TEMPORARIO))
 
 
-def _reserva(cli: Any, atual: str) -> str:
+def _reserva(cli: Any, atual: str) -> list[str]:
     """
-    Outro modelo que esta chave pode usar, para quando o primeiro está
+    Outros modelos que esta chave pode usar, para quando o primeiro está
     congestionado. Sobrecarga costuma ser de um modelo, não da conta — e
-    esperar cinco minutos por um flash lotado enquanto outro está livre é
-    tempo jogado fora.
+    esperar por um flash lotado enquanto outro está livre é tempo jogado
+    fora. Devolve uma fila, não um palpite: o primeiro substituto também
+    pode recusar.
     """
     try:
-        nomes = [n for n in modelos_gemini(cli) if n != atual]
+        return _candidatos(cli, atual)[:3]
     except Exception:
-        return ''
-    if not nomes:
-        return ''
-    # Mesma família primeiro (um flash troca bem por outro flash), depois
-    # qualquer um, sempre o de maior versão.
-    familia = 'flash' if 'flash' in atual else 'pro'
-    def versao(n):
-        import re
-        nums = re.findall(r'\d+(?:\.\d+)?', n)
-        return [float(x) for x in nums] or [0.0]
-    iguais = [n for n in nomes if familia in n and 'lite' not in n]
-    return max(iguais or nomes, key=versao)
+        return []
 
 
 def _json_gemini(instrucao, conteudo, esquema, modelo, imagens, cli, max_tokens):
@@ -190,19 +207,30 @@ def _json_gemini(instrucao, conteudo, esquema, modelo, imagens, cli, max_tokens)
         #   • o modelo está congestionado agora (503).
         # Em ambos, perguntar o que existe e refazer é melhor que desistir.
         if _sumiu(e):
-            _substituto = _melhor_gemini(c)
-            print(f'    (o modelo "{alvo}" não existe para esta chave; '
-                  f'usando "{_substituto}" — fixe isso em config.toml)')
+            motivo = f'o modelo "{alvo}" não existe para esta chave'
         elif _passageiro(e):
-            outro = _reserva(c, alvo)
-            if not outro:
-                raise
-            _substituto = outro
-            print(f'    ("{alvo}" está sobrecarregado agora; tentando "{outro}")')
+            motivo = f'"{alvo}" está sobrecarregado agora'
         else:
             raise
-        r = c.models.generate_content(model=_substituto, contents=conteudos,
-                                      config=config)
+
+        fila = _reserva(c, alvo)
+        if not fila:
+            raise
+        r = ultimo = None
+        for tentativa in fila:
+            print(f'    ({motivo}; tentando "{tentativa}")')
+            try:
+                r = c.models.generate_content(model=tentativa, contents=conteudos,
+                                              config=config)
+                _substituto = tentativa
+                print(f'    (funcionou com "{tentativa}" — '
+                      f'fixe modelo_gemini = "{tentativa}" em config.toml)')
+                break
+            except Exception as falha:
+                ultimo = falha
+                continue
+        if r is None:
+            raise ultimo or e
 
     saida = getattr(r, 'parsed', None)
     if saida is None:
