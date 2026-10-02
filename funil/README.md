@@ -211,13 +211,26 @@ agente classifica: quer ver ou não. Quando a certeza fica abaixo de 0,7,
 **ele não decide** — marca dúvida e deixa para você. Mandar site para
 quem pediu para não mandar nada é pior que não mandar.
 
-**O material do Instagram** sai de uma pasta de capturas de tela:
-`material/<slug>/`. Eu não raspo o Instagram — a Meta proíbe nos Termos,
-a página pública vem vazia sem sessão (e automatizar sessão é o que
-derruba a conta), e o endereço está bloqueado no ambiente onde isto roda.
-Captura de perfil leva vinte segundos e rende mais: grade, bio, destaques
-e o cardápio dos posts fixados. Texto colado em
-`material/<slug>/notas.txt` entra junto.
+**O material do Instagram** vive em `material/<slug>/`, e chega lá de
+dois jeitos:
+
+```bash
+python3 funil.py capturar 7      # o agente tira os prints
+```
+
+Ele abre o perfil num Chrome com a **sua** sessão e captura a capa, a
+grade e os primeiros posts — que é onde mora o cardápio. Ritmo de gente
+olhando perfil: um por vez, rolagem com pausa, poucos posts, e nenhuma
+mídia baixada (são capturas da sua própria janela).
+
+> **O risco.** Os Termos do Instagram proíbem acesso automatizado, e o
+> que está em jogo é a **sua** conta: checkpoint, limite temporário, no
+> limite suspensão. É um risco menor que o do WhatsApp — ninguém recebe
+> mensagem, você só abre uma página que já abriria na mão —, mas existe.
+> Para risco zero, `capturar_sozinho = false` e mande os prints do
+> celular para a mesma pasta: o agente usa os dois caminhos igual.
+
+Texto colado em `material/<slug>/notas.txt` entra junto.
 
 **A leitura** é feita com visão, e tem uma regra acima de todas: *o que
 você não vê, você não preenche*. Preço só se estiver escrito na imagem.
@@ -293,7 +306,7 @@ sumido) está verificada; o que não dá para verificar daqui é a rede.
 
 ## O que foi verificado
 
-**64 testes, 64 passando** (`python3 testes.py`). Nenhum toca a rede: o
+**69 testes, 69 passando** (`python3 testes.py`). Nenhum toca a rede: o
 cliente do Claude, a API da Netlify e o Claude Code entram como dublê,
 porque o que precisa de teste é a lógica.
 

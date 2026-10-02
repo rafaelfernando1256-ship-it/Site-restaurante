@@ -61,6 +61,11 @@ class Config:
     whatsapp_token: str = ''
     whatsapp_phone_id: str = ''
 
+    # ── capturas do Instagram ───────────────────────────────────────
+    capturar_sozinho: bool = True        # tira os prints do perfil do lead
+    posts_por_perfil: int = 3            # quantos posts abrir (cardápio mora neles)
+    perfil_instagram: str = ''           # pasta do Chrome logado no Instagram
+
     # ── a vigia (acompanhamento das conversas em andamento) ─────────
     responder_sozinho: bool = True       # responde quem escreveu para você
     varredura_a_cada: int = 10           # de N em N voltas, confere todo mundo
@@ -152,6 +157,11 @@ def carrega(caminho: Path | None = None) -> Config:
         c.equipe_netlify = g.get('equipe_netlify', c.equipe_netlify)
         if g.get('termos'):
             c.termos = list(g['termos'])
+        insta = t.get('instagram', {})
+        for campo in ('capturar_sozinho', 'posts_por_perfil', 'perfil_instagram'):
+            if campo in insta:
+                setattr(c, campo, insta[campo])
+
         vigia = t.get('vigia', {})
         for campo in ('responder_sozinho', 'varredura_a_cada', 'perfil_whatsapp',
                       'horario', 'intervalo_segundos', 'max_por_dia'):

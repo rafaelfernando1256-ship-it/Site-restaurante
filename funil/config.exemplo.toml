@@ -30,6 +30,14 @@ termos = [
   "tapiocaria",
 ]
 
+[instagram]
+# As capturas do perfil do lead, que alimentam a demonstração.
+# Leia o topo de nucleo/insta.py antes de ligar: os Termos do Instagram
+# proíbem acesso automatizado, e o risco é da SUA conta.
+capturar_sozinho = true       # false = você manda os prints do celular
+posts_por_perfil = 3          # cardápio e preço moram nos posts
+perfil_instagram = ""         # vazio = dados/funil.instagram (login uma vez)
+
 [vigia]
 # O acompanhamento automático das conversas JÁ EM ANDAMENTO: ler quem
 # respondeu, triar, responder, construir e entregar.

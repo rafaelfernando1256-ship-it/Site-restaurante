@@ -32,7 +32,7 @@ import textwrap
 from pathlib import Path
 
 from nucleo import config
-from nucleo.estado import Estado, DESCARTADO
+from nucleo.estado import Estado, DESCARTADO, QUER_DEMO
 
 ORDEM = ['novo', 'rascunho', 'abordado', 'sem_resposta', 'respondeu',
          'sem_interesse', 'quer_demo', 'demo_pronta', 'publicado', 'fechado',
@@ -227,6 +227,46 @@ def cmd_publicar(a, cfg) -> int:
     return 0
 
 
+def cmd_capturar(a, cfg) -> int:
+    """Tira os prints do Instagram de um lead (ou de todos que querem demo)."""
+    from nucleo.a3_estudio import material_de
+    from nucleo.insta import Insta, ja_tem_material
+    with _estado(cfg) as est:
+        if a.lead_id:
+            alvos = [est.lead(a.lead_id)]
+            if not alvos[0]:
+                print(f'lead {a.lead_id} não existe', file=sys.stderr)
+                return 2
+        else:
+            alvos = [l for l in est.leads(QUER_DEMO, limite=a.limite)]
+        alvos = [l for l in alvos if l and l.instagram]
+        if not alvos:
+            print('\n  ninguém com Instagram para capturar.\n')
+            return 0
+
+        olho = Insta(Path(cfg.perfil_instagram
+                          or Path(cfg.banco).parent / 'instagram'))
+        if not olho.logado():
+            print('\n  Você não está logado no Instagram nesta janela.')
+            print('  Entre na conta na janela que abriu — é uma vez só — e rode de novo.')
+            print('  (sem login o Instagram tapa a tela e a captura sai pela metade)\n')
+        try:
+            for l in alvos:
+                pasta = material_de(l, cfg.material)
+                if ja_tem_material(pasta) and not a.refazer:
+                    print(f'  {l.nome}: já tem material em {pasta}')
+                    continue
+                try:
+                    feitos = olho.captura(l.instagram, pasta, posts=a.posts)
+                    print(f'  ✓ {l.nome}: {len(feitos)} capturas em {pasta}')
+                except Exception as e:
+                    print(f'  ✗ {l.nome}: {e}')
+        finally:
+            olho.fecha()
+        print('\n  próximo: python3 funil.py construir\n')
+    return 0
+
+
 def cmd_vigiar(a, cfg) -> int:
     """
     O funil rodando sozinho DEPOIS do primeiro contato: lê quem respondeu,
@@ -348,6 +388,12 @@ def principal(argv: list[str] | None = None) -> int:
     s = sub.add_parser('publicar', help='AGENTE 4 — Netlify e o link para o cliente')
     s.add_argument('--limite', type=int, default=10)
 
+    s = sub.add_parser('capturar', help='tira os prints do Instagram do lead')
+    s.add_argument('lead_id', nargs='?', type=int, default=0)
+    s.add_argument('--posts', type=int, default=3, help='quantos posts abrir')
+    s.add_argument('--limite', type=int, default=5)
+    s.add_argument('--refazer', action='store_true', help='mesmo já tendo material')
+
     s = sub.add_parser('vigiar', help='acompanha as conversas sozinho (respostas, '
                                       'triagem, demonstração e entrega)')
     s.add_argument('--intervalo', type=int, default=90, help='segundos entre as voltas')
@@ -373,6 +419,7 @@ def principal(argv: list[str] | None = None) -> int:
         'enviada': cmd_enviada, 'retorno': cmd_retorno, 'triar': cmd_triar,
         'construir': cmd_construir, 'publicar': cmd_publicar, 'lead': cmd_lead,
         'painel': cmd_painel, 'descartar': cmd_descartar, 'vigiar': cmd_vigiar,
+        'capturar': cmd_capturar,
     }[a.cmd](a, cfg)
 
 

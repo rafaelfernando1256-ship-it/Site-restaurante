@@ -433,9 +433,25 @@ def roda(est: Estado, cfg, limite: int = 3, cli: Any = None) -> dict[str, int]:
     referencia = _cfg.RAIZ.parent / 'grao-dourado'
     if not referencia.exists():
         referencia = _cfg.RAIZ.parent
+    olho = None          # o navegador das capturas, aberto só se precisar
     for l in est.leads(QUER_DEMO, limite=limite):
         pasta_material = material_de(l, cfg.material)
         imagens, notas = reune(pasta_material)
+
+        if not imagens and cfg.capturar_sozinho and l.instagram:
+            try:
+                from .insta import Insta
+                if olho is None:
+                    olho = Insta(Path(cfg.perfil_instagram
+                                      or Path(cfg.banco).parent / 'instagram'))
+                print(f'  capturando o Instagram de @{l.instagram}...')
+                olho.captura(l.instagram, pasta_material, posts=cfg.posts_por_perfil)
+                imagens, notas = reune(pasta_material)
+                print(f'  {len(imagens)} capturas de @{l.instagram}')
+            except Exception as e:
+                est.anota(AGENTE, 'erro_captura', l.id, str(e)[:300])
+                print(f'  ⚠ não consegui capturar @{l.instagram}: {e}')
+
         if not imagens:
             conta['sem_material'] += 1
             est.guarda_demo(l.id, situacao='pendente',
@@ -465,4 +481,6 @@ def roda(est: Estado, cfg, limite: int = 3, cli: Any = None) -> dict[str, int]:
             est.guarda_demo(l.id, situacao='falhou', erro=str(e)[:500])
             est.anota(AGENTE, 'erro', l.id, str(e)[:300])
             print(f'  ✗ {l.nome}: {e}')
+    if olho is not None:
+        olho.fecha()
     return conta

@@ -767,6 +767,51 @@ def _():
         verdade(proibido in t, f'deveria barrar "{proibido}"')
 
 
+@teste('insta: material existente não é recapturado')
+def _():
+    from nucleo.insta import ja_tem_material
+    pasta = TMP / 'insta-cheia'
+    pasta.mkdir(exist_ok=True)
+    igual(ja_tem_material(pasta), False)
+    (pasta / 'leia.txt').write_text('x')
+    igual(ja_tem_material(pasta), False, 'txt não é captura')
+    (pasta / '01-capa.png').write_bytes(b'x')
+    igual(ja_tem_material(pasta), True)
+    igual(ja_tem_material(TMP / 'nao-existe'), False)
+
+
+@teste('a3: captura sozinho quando falta material, e segue se falhar')
+def _():
+    from nucleo import insta as I
+    est = banco()
+    cfg = cfg_falso(banco=est.caminho)
+    cfg.capturar_sozinho = True
+    l = lead_exemplo(est)
+    for p_ in (RASCUNHO, ABORDADO, RESPONDEU, QUER_DEMO):
+        est.move(l.id, p_, 't')
+
+    chamadas = []
+
+    class OlhoFalso:
+        def __init__(self, *a, **k): pass
+        def fecha(self): chamadas.append('fechou')
+        def captura(self, handle, destino, posts=3):
+            chamadas.append(handle)
+            raise I.SemAcesso('o Instagram pediu login')
+
+    original, I.Insta = I.Insta, OlhoFalso
+    try:
+        c = a3.roda(est, cfg)
+    finally:
+        I.Insta = original
+    igual(chamadas[0], 'cantinadavo', 'não tentou capturar')
+    verdade('fechou' in chamadas, 'deixou o navegador aberto')
+    igual(c['sem_material'], 1, 'falha de captura tem que virar "sem material"')
+    igual(est.lead(l.id).estado, QUER_DEMO, 'o lead não pode andar sem material')
+    verdade(any(e['acao'] == 'erro_captura' for e in est.historico(l.id)),
+            'a falha precisa ficar registrada')
+
+
 @teste('a3: reune lê imagens e notas da pasta do lead')
 def _():
     pasta = TMP / 'material' / 'casa-1'
