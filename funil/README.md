@@ -105,6 +105,46 @@ mostra tudo de um lead: histórico, mensagens, demo, erros.
 
 ---
 
+## O modo sozinho
+
+```bash
+python3 funil.py vigiar
+```
+
+Daí em diante ele cuida de tudo que vem **depois** do primeiro contato:
+lê quem respondeu, tria, responde, constrói a demonstração de quem
+aceitou e entrega o link. Deixe rodando numa janela.
+
+```bash
+python3 funil.py vigiar --seco      # mostra o que faria, sem enviar nada
+python3 funil.py vigiar --intervalo 120
+```
+
+### O que ele NÃO faz, e por quê
+
+**O primeiro contato continua sendo um clique seu.** O agente escreve a
+mensagem; `funil.py enviar` abre o WhatsApp com ela pronta; você lê e
+manda. São três segundos por lead.
+
+Esse passo fica manual de propósito, e não é zelo: disparo automático
+para quem nunca pediu contato é spam de qualquer ângulo que se olhe — do
+dono do restaurante que recebe, da Meta que bane o número por isso, e
+seu, que depende desse número para trabalhar. O resto é diferente: quem
+respondeu, respondeu **para você**, e responder a quem te escreveu,
+construir o que foi aceito e entregar o que te pediram não tem nada de
+spam.
+
+**Não insiste.** Quem não respondeu não recebe segunda mensagem daqui.
+Reabordagem é sua, na mão.
+
+**Não decide o que não entendeu.** Triagem com certeza abaixo de 0,7 fica
+parada, registrada, esperando você ler.
+
+**Não para em silêncio.** Sessão caída ou erro em sequência encerra o
+laço dizendo por quê.
+
+---
+
 ## Agente 1 — o caçador
 
 Google Places API (New), oficial. Raspar o Maps viola os Termos, quebra
@@ -239,7 +279,7 @@ sumido) está verificada; o que não dá para verificar daqui é a rede.
 
 ## O que foi verificado
 
-**49 testes, 49 passando** (`python3 testes.py`). Nenhum toca a rede: o
+**61 testes, 61 passando** (`python3 testes.py`). Nenhum toca a rede: o
 cliente do Claude, a API da Netlify e o Claude Code entram como dublê,
 porque o que precisa de teste é a lógica.
 

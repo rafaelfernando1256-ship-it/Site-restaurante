@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 import shutil
+import pathlib
 import tempfile
 import traceback
 import types
@@ -575,6 +576,110 @@ def _():
     ok, detalhe = a2._envia_cloud('5584988887777', 'oi')
     igual(ok, False)
     verdade('WHATSAPP_TOKEN' in detalhe, 'diz qual variável falta')
+
+
+# ── A vigia ─────────────────────────────────────────────────────────
+class FalsoWhats:
+    """Imita o WhatsApp Web sem abrir navegador nenhum."""
+
+    def __init__(self, conversas=(), mensagens=()):
+        self._conversas = list(conversas)
+        self._mensagens = list(mensagens)
+        self.enviadas: list[tuple[str, str]] = []
+        self.abertas: list[str] = []
+
+    def abre(self, **kw): return self
+    def fecha(self): pass
+    def vivo(self): return True
+    def conversas(self, quantas=40): return self._conversas
+
+    def abre_conversa(self, e164):
+        self.abertas.append(e164)
+        return True
+
+    def mensagens(self, quantas=20): return self._mensagens
+
+    def envia(self, e164, texto):
+        self.enviadas.append((e164, texto))
+        return texto
+
+
+def monta_vigia(est, cfg=None, whats=None, seco=False):
+    from nucleo.vigia import Vigia
+    cfg = cfg or cfg_falso(banco=est.caminho)
+    return Vigia(est, cfg, whats=whats or FalsoWhats(), seco=seco)
+
+
+@teste('vigia: NÃO existe disparo automático de primeiro contato')
+def _():
+    from nucleo import vigia as V
+    verdade(not hasattr(V.Vigia, 'manda_abordagens'),
+            'o primeiro contato automático voltou — ele tem que ser um clique seu')
+    fonte = (pathlib.Path(__file__).parent / 'nucleo' / 'vigia.py').read_text(encoding='utf-8')
+    verdade('Não dá o primeiro contato' in fonte,
+            'o arquivo precisa dizer por que esse passo é manual')
+
+
+@teste('vigia: lê a resposta de quem escreveu e passa para a triagem')
+def _():
+    import time as _t
+    est = banco()
+    l = lead_exemplo(est)
+    est.move(l.id, RASCUNHO, 't'); est.move(l.id, ABORDADO, 't')
+    agora = int(_t.time())
+    w = FalsoWhats(
+        conversas=[{'nome': '+55 84 98888-7777', 'texto': 'oi | manda aí',
+                    'nao_lidas': 1}],
+        mensagens=[{'quando': agora, 'autor': 'Marcos', 'texto': 'pode mandar sim',
+                    'minha': False}])
+    v = monta_vigia(est, whats=w, seco=True)
+    igual(v.colhe_respostas(), 1)
+    igual(est.lead(l.id).estado, RESPONDEU)
+    igual(est.mensagens(tipo='retorno', lead_id=l.id)[0]['texto'], 'pode mandar sim')
+
+
+@teste('vigia: a própria mensagem não é lida como resposta do cliente')
+def _():
+    import time as _t
+    est = banco()
+    l = lead_exemplo(est)
+    est.move(l.id, RASCUNHO, 't'); est.move(l.id, ABORDADO, 't')
+    w = FalsoWhats(
+        conversas=[{'nome': '5584988887777', 'texto': 'x', 'nao_lidas': 1}],
+        mensagens=[{'quando': int(_t.time()), 'autor': 'eu',
+                    'texto': 'Oi! Vi que o link do Google...', 'minha': True}])
+    v = monta_vigia(est, whats=w, seco=True)
+    igual(v.colhe_respostas(), 0, 'leu a própria mensagem como resposta')
+    igual(est.lead(l.id).estado, ABORDADO)
+
+
+@teste('vigia: não relê a mesma resposta duas vezes')
+def _():
+    import time as _t
+    est = banco()
+    l = lead_exemplo(est)
+    est.move(l.id, RASCUNHO, 't'); est.move(l.id, ABORDADO, 't')
+    w = FalsoWhats(
+        conversas=[{'nome': '5584988887777', 'texto': 'x', 'nao_lidas': 1}],
+        mensagens=[{'quando': int(_t.time()), 'autor': 'M', 'texto': 'quero ver',
+                    'minha': False}])
+    v = monta_vigia(est, whats=w, seco=True)
+    igual(v.colhe_respostas(), 1)
+    igual(v.colhe_respostas(), 0, 'contou a mesma resposta de novo')
+
+
+@teste('vigia: em modo seco não envia nada')
+def _():
+    import time as _t
+    est = banco()
+    l = lead_exemplo(est)
+    for p_ in (RASCUNHO, ABORDADO, RESPONDEU, QUER_DEMO, DEMO_PRONTA):
+        est.move(l.id, p_, 't')
+    est.guarda_mensagem(l.id, 'entrega', 'olha o link')
+    w = FalsoWhats()
+    v = monta_vigia(est, whats=w, seco=True)
+    v.constroi_e_entrega()
+    igual(w.enviadas, [], 'mandou mensagem em modo seco')
 
 
 # ── Agente 3 ────────────────────────────────────────────────────────

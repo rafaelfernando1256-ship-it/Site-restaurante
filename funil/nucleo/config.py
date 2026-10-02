@@ -61,6 +61,14 @@ class Config:
     whatsapp_token: str = ''
     whatsapp_phone_id: str = ''
 
+    # ── a vigia (acompanhamento das conversas em andamento) ─────────
+    responder_sozinho: bool = True       # responde quem escreveu para você
+    varredura_a_cada: int = 10           # de N em N voltas, confere todo mundo
+    perfil_whatsapp: str = ''            # pasta do perfil logado do WhatsApp Web
+    horario: list = field(default_factory=lambda: [8, 21])
+    intervalo_segundos: list = field(default_factory=lambda: [20, 60])
+    max_por_dia: int = 60
+
     # preferências
     # claude | gemini — quem escreve as abordagens, tria as respostas e lê
     # o Instagram. Sai sozinho da chave que existir no .env.
@@ -144,6 +152,12 @@ def carrega(caminho: Path | None = None) -> Config:
         c.equipe_netlify = g.get('equipe_netlify', c.equipe_netlify)
         if g.get('termos'):
             c.termos = list(g['termos'])
+        vigia = t.get('vigia', {})
+        for campo in ('responder_sozinho', 'varredura_a_cada', 'perfil_whatsapp',
+                      'horario', 'intervalo_segundos', 'max_por_dia'):
+            if campo in vigia:
+                setattr(c, campo, vigia[campo])
+
         caminhos = t.get('caminhos', {})
         for campo in ('banco', 'saida', 'material'):
             if caminhos.get(campo):

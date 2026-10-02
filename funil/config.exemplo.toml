@@ -30,6 +30,18 @@ termos = [
   "tapiocaria",
 ]
 
+[vigia]
+# O acompanhamento automático das conversas JÁ EM ANDAMENTO: ler quem
+# respondeu, triar, responder, construir e entregar.
+# O primeiro contato com quem nunca falou com você NÃO está aqui: ele sai
+# por "funil.py enviar", com o seu clique. Veja o topo de nucleo/vigia.py.
+responder_sozinho = true      # responde quem escreveu para você
+varredura_a_cada = 10         # de N em N voltas, confere todas as conversas
+horario = [8, 21]             # só age nesta faixa
+intervalo_segundos = [20, 60] # espera sorteada antes de cada resposta
+max_por_dia = 60
+perfil_whatsapp = ""          # vazio = dados/funil.whatsapp (login uma vez)
+
 [caminhos]
 # Relativo a esta pasta, ou absoluto.
 banco = "dados/funil.db"

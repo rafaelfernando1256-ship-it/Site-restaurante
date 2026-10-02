@@ -9,12 +9,17 @@ O FUNIL — quatro agentes, um banco, uma linha de comando.
     python3 funil.py aprovar  12 13 14     (ou: aprovar --todas)
     python3 funil.py enviar
     python3 funil.py enviada  7            (confirma que você mandou)
-    python3 funil.py retorno  7 "pode mandar sim"
-    python3 funil.py triar
-    python3 funil.py construir
-    python3 funil.py publicar
+    python3 funil.py vigiar                 (daqui em diante é sozinho)
     python3 funil.py painel
     python3 funil.py lead 7
+
+A vigia faz o resto: lê quem respondeu, tria, responde, constrói a
+demonstração e entrega o link. O único passo que continua seu é o
+primeiro contato — "enviar" abre o WhatsApp com a mensagem pronta e
+você clica.
+
+    python3 funil.py retorno 7 "pode mandar sim"   (se preferir colar à mão)
+    python3 funil.py triar / construir / publicar  (os passos, um a um)
 
 Cada comando é um agente, ou o seu pedaço no meio deles. Nenhum comando
 depende do anterior ter rodado agora: quem guarda o lugar é o banco.
@@ -222,6 +227,19 @@ def cmd_publicar(a, cfg) -> int:
     return 0
 
 
+def cmd_vigiar(a, cfg) -> int:
+    """
+    O funil rodando sozinho DEPOIS do primeiro contato: lê quem respondeu,
+    tria, responde, constrói a demonstração e entrega o link.
+    """
+    from nucleo.vigia import Vigia
+    cfg.exige_cerebro()
+    with _estado(cfg) as est:
+        print(f'\nVigia — acompanhando as conversas (a cada {a.intervalo}s)\n')
+        v = Vigia(est, cfg, seco=a.seco)
+        return v.roda(intervalo=a.intervalo, voltas_max=a.voltas)
+
+
 def cmd_lead(a, cfg) -> int:
     with _estado(cfg) as est:
         l = est.lead(a.lead_id)
@@ -330,6 +348,13 @@ def principal(argv: list[str] | None = None) -> int:
     s = sub.add_parser('publicar', help='AGENTE 4 — Netlify e o link para o cliente')
     s.add_argument('--limite', type=int, default=10)
 
+    s = sub.add_parser('vigiar', help='acompanha as conversas sozinho (respostas, '
+                                      'triagem, demonstração e entrega)')
+    s.add_argument('--intervalo', type=int, default=90, help='segundos entre as voltas')
+    s.add_argument('--voltas', type=int, default=0, help='0 = sem fim')
+    s.add_argument('--seco', action='store_true',
+                   help='mostra o que faria, sem enviar nada')
+
     s = sub.add_parser('lead', help='tudo sobre um lead')
     s.add_argument('lead_id', type=int)
 
@@ -347,7 +372,7 @@ def principal(argv: list[str] | None = None) -> int:
         'revisar': cmd_revisar, 'aprovar': cmd_aprovar, 'enviar': cmd_enviar,
         'enviada': cmd_enviada, 'retorno': cmd_retorno, 'triar': cmd_triar,
         'construir': cmd_construir, 'publicar': cmd_publicar, 'lead': cmd_lead,
-        'painel': cmd_painel, 'descartar': cmd_descartar,
+        'painel': cmd_painel, 'descartar': cmd_descartar, 'vigiar': cmd_vigiar,
     }[a.cmd](a, cfg)
 
 
