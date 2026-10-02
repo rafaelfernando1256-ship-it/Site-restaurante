@@ -43,7 +43,7 @@ Você escolhe quem é o cérebro — quem decide e usa as 51 ferramentas:
 | | onde pegar | começa com | custo |
 |---|---|---|---|
 | **Claude** | console.anthropic.com → API Keys | `sk-ant-api03-` | pago por uso, **à parte da assinatura do claude.ai** |
-| **Gemini** | aistudio.google.com/apikey | `AIza` | tem camada gratuita |
+| **Gemini** | aistudio.google.com/apikey | `AQ.` ou `AIza` | tem camada gratuita |
 
 Preencha uma das duas no `.env` e pronto: sem dizer mais nada, ele usa a
 que existir. Com as duas preenchidas, escolha em `config.toml`:

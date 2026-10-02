@@ -129,7 +129,7 @@ def principal() -> int:
         print('    Claude   console.anthropic.com → API Keys')
         print('             (sk-ant-api03-... · é paga, à parte do claude.ai)')
         print('    Gemini   aistudio.google.com/apikey')
-        print('             (AIza... · tem camada gratuita)')
+        print('             (AQ.... ou AIza... · tem camada gratuita)')
         print()
         print(f'  Abra {env} e preencha a linha da que você escolher.')
     print('  Depois rode:  jarvis.bat --checar')
