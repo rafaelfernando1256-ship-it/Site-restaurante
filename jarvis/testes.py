@@ -561,6 +561,45 @@ def _():
             verdade(ct >= 4.5, f'tema {nome}, {campo}: {ct:.2f}:1')
 
 
+@teste('ouvido: pacote instalado que quebra não vira "falta instalar"')
+def _():
+    # O caso real: faster-whisper instalado e falhando ao carregar (DLL,
+    # versão de Python). Dizer "falta instalar" manda a pessoa rodar um pip
+    # que responde "already satisfied" — e o problema continua de pé.
+    import importlib
+    import sys as _sys
+    pasta = TMP / 'modulos'
+    pasta.mkdir(exist_ok=True)
+    (pasta / 'faster_whisper.py').write_text(
+        'raise ImportError("DLL load failed while importing _ext")')
+    (pasta / 'sounddevice.py').write_text('')
+    _sys.path.insert(0, str(pasta))
+    for m in ('faster_whisper', 'sounddevice'):
+        _sys.modules.pop(m, None)
+    importlib.invalidate_caches()
+    try:
+        from nucleo.ouvido import Ouvido
+        ok, aviso = Ouvido.checa()
+        igual(ok, False)
+        verdade('não carrega' in aviso, f'mensagem errada: {aviso}')
+        verdade('DLL load failed' in aviso, 'o erro real precisa aparecer')
+        verdade('falta instalar' not in aviso, 'mandou instalar o que já está lá')
+    finally:
+        _sys.path.remove(str(pasta))
+        for m in ('faster_whisper', 'sounddevice'):
+            _sys.modules.pop(m, None)
+        importlib.invalidate_caches()
+
+
+@teste('ouvido: pacote que realmente falta continua pedindo instalação')
+def _():
+    from nucleo.ouvido import Ouvido
+    ok, aviso = Ouvido.checa()
+    if ok:
+        return                       # a máquina tem tudo; nada a verificar
+    verdade('falta instalar' in aviso or 'não carrega' in aviso)
+
+
 # ══ navegador e voz ═════════════════════════════════════════════════
 @teste('navegador: entende site, URL e frase de busca')
 def _():

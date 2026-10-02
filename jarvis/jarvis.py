@@ -205,23 +205,40 @@ def checar(cfg) -> int:
                ('sounddevice', 'microfone', 'sounddevice'),
                ('openwakeword', 'palavra de ativação', 'openwakeword'),
                ('faster_whisper', 'entender o que você fala', 'faster-whisper')]
-    faltam_pip = []
+    faltam_pip, quebrados = [], []
     tela = sys.stdout.isatty()      # só apaga a linha quando há terminal de verdade
     for pacote, para_que, no_pip in pacotes:
         if tela:
             print(f'  \033[90m… carregando {pacote}\033[0m', end='\r', flush=True)
+        motivo = ''
         try:
             __import__(pacote)
             bem = True
-        except Exception:
+        except ImportError as e:
             bem = False
-            faltam_pip.append(no_pip)
+            if 'No module named' in str(e) and pacote in str(e):
+                faltam_pip.append(no_pip)
+                motivo = f'({para_que}) — não instalado'
+            else:
+                # Está instalado e quebra ao carregar: mandar reinstalar aqui
+                # só faz o pip responder "already satisfied".
+                quebrados.append((pacote, f'{type(e).__name__}: {e}'))
+                motivo = f'({para_que}) — INSTALADO, mas não carrega'
+        except Exception as e:
+            bem = False
+            quebrados.append((pacote, f'{type(e).__name__}: {e}'))
+            motivo = f'({para_que}) — INSTALADO, mas não carrega'
         if tela:
             print(' ' * 46, end='\r')
-        _linha(bem, f'{pacote}', f'({para_que})')
+        _linha(bem, f'{pacote}', motivo or f'({para_que})')
 
     funil = Path(cfg.funil_db).expanduser()
-    _linha(funil.exists(), 'banco de clientes (funil)', str(funil))
+    if funil.exists():
+        _linha(True, 'banco de clientes (funil)', str(funil))
+    else:
+        print('  \033[90m·\033[0m banco de clientes (funil)  \033[90m'
+              'ainda não existe — nasce quando você rodar o projeto funil/. '
+              'Só afeta perguntas de cliente.\033[0m', flush=True)
 
     if FALTANDO:
         print('\n  ferramentas que não carregaram:')
@@ -232,6 +249,11 @@ def checar(cfg) -> int:
     if faltam_pip:
         print('\n  Para completar, rode:')
         print(f'    .\\.venv\\Scripts\\python.exe -m pip install {" ".join(faltam_pip)}')
+    for pacote, erro in quebrados:
+        print(f'\n  \033[33m{pacote} está instalado mas quebra ao carregar:\033[0m')
+        print(f'    {erro[:400]}')
+        print(f'    Para ver o erro inteiro:')
+        print(f'    .\\.venv\\Scripts\\python.exe -c "import {pacote}"')
     if not cfg.anthropic:
         print('\n  Sem a chave do Claude ele não liga. É a única coisa obrigatória.')
     print(flush=True)

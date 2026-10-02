@@ -47,16 +47,31 @@ class Ouvido:
     # ── o que está instalado ────────────────────────────────────────
     @staticmethod
     def checa() -> tuple[bool, str]:
-        faltam = []
+        """
+        Separa duas coisas que parecem a mesma: pacote que NÃO ESTÁ ali e
+        pacote que está e QUEBRA ao carregar. Dizer "falta instalar" para
+        um pacote já instalado manda a pessoa rodar um pip que responde
+        "requirement already satisfied" — e o problema continua.
+        """
+        faltam, quebrados = [], []
         for pacote, pip in (('sounddevice', 'sounddevice'),
                             ('numpy', 'numpy'),
                             ('faster_whisper', 'faster-whisper')):
             try:
                 __import__(pacote)
-            except ImportError:
-                faltam.append(pip)
+            except ImportError as e:
+                # ImportError de um submódulo/DLL não é o pacote faltando.
+                if pacote in str(e) and 'No module named' in str(e):
+                    faltam.append(pip)
+                else:
+                    quebrados.append(f'{pacote}: {e}')
+            except Exception as e:
+                quebrados.append(f'{pacote}: {type(e).__name__}: {e}')
         if faltam:
             return False, 'falta instalar: pip install ' + ' '.join(faltam)
+        if quebrados:
+            return False, ('instalado, mas não carrega — '
+                           + ' | '.join(q[:200] for q in quebrados))
         return True, 'ok'
 
     # ── microfone ───────────────────────────────────────────────────
