@@ -185,9 +185,21 @@ def _testa_chave(cfg) -> tuple[bool, str]:
     serve de nada: chave errada passa nesse teste e só falha na primeira
     frase que você fala. Usa contagem de tokens, que autentica e não cobra.
     """
+    # Antes de gastar uma ida à rede: a forma da chave já denuncia o erro
+    # mais comum, que é copiar o token do claude.ai (sk-ant-usr-...) achando
+    # que é a chave da API. Os dois começam com sk-ant- e são coisas
+    # diferentes, de sites diferentes.
+    chave = cfg.anthropic.strip()
+    if chave.startswith('sk-ant-usr-') or chave.startswith('sk-ant-oat'):
+        return False, ('isso é um token do claude.ai, não uma chave de API. '
+                       'A chave da API começa com sk-ant-api03- e sai de '
+                       'console.anthropic.com → API Keys (site diferente do claude.ai)')
+    if not chave.startswith('sk-ant-'):
+        return False, 'uma chave da Anthropic começa com sk-ant- — essa não começa'
+
     try:
         import anthropic
-        cli = anthropic.Anthropic(api_key=cfg.anthropic)
+        cli = anthropic.Anthropic(api_key=chave)
         cli.messages.count_tokens(model=cfg.modelo,
                                   messages=[{'role': 'user', 'content': 'oi'}])
         return True, 'válida'

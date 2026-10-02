@@ -582,6 +582,18 @@ def _():
             os.environ.pop(k, None)
 
 
+@teste('diagnóstico: token do claude.ai é reconhecido antes de ir à rede')
+def _():
+    import jarvis as J
+    bem, detalhe = J._testa_chave(cfg_teste(anthropic='sk-ant-usr-1abcdef'))
+    igual(bem, False)
+    verdade('token do claude.ai' in detalhe, f'não identificou o token: {detalhe}')
+    verdade('sk-ant-api03-' in detalhe, 'precisa dizer com o que a certa começa')
+    bem, detalhe = J._testa_chave(cfg_teste(anthropic='minha-chave'))
+    igual(bem, False)
+    verdade('sk-ant-' in detalhe)
+
+
 @teste('diagnóstico: chave recusada pela API é reportada como recusada')
 def _():
     import types as _t
