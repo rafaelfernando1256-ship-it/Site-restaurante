@@ -42,6 +42,17 @@ if errorlevel 1 (
 )
 
 echo.
+echo   Instalando a palavra de ativacao...
+python -m pip install openwakeword
+if errorlevel 1 (
+  echo.
+  echo   A palavra de ativacao nao instalou - o erro esta acima.
+  echo   O Jarvis funciona assim mesmo, no modo teclado: jarvis.bat --texto
+  echo   Me mostre esse erro que eu resolvo.
+  echo.
+)
+
+echo.
 echo   Instalando o navegador que ele controla...
 python -m playwright install chromium
 

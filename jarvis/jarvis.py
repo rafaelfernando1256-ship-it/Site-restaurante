@@ -173,46 +173,68 @@ def modo_voz(cerebro, voz, cfg, estado) -> int:
 
 
 # ── diagnóstico ─────────────────────────────────────────────────────
-def checar(cfg) -> int:
-    from nucleo.ouvido import Ouvido
-    carrega_tudo()
-    print(f'\n  {cfg.nome} — diagnóstico\n')
-    print(f'  sistema: {config.sistema()}')
-    print(f'  pastas liberadas: {", ".join(cfg.raizes_seguras)}')
-    print(f'  modelo: {cfg.modelo}\n')
+def _linha(bem: bool, nome: str, detalhe: str = '') -> None:
+    marca = '\033[32m✓\033[0m' if bem else '\033[31m✗\033[0m'
+    print(f'  {marca} {nome}' + (f'  \033[90m{detalhe}\033[0m' if detalhe else ''),
+          flush=True)
 
-    linhas = [
-        ('chave do Claude (obrigatória)', bool(cfg.anthropic)),
-        ('chave do ChatGPT (opcional)', bool(cfg.openai)),
-        ('chave do Gemini (opcional)', bool(cfg.gemini)),
-    ]
-    ok, aviso = Ouvido.checa()
-    linhas.append(('microfone e transcrição', ok))
-    for pacote, para_que in (('pyttsx3', 'voz do Windows'),
-                             ('edge_tts', 'voz neural'),
-                             ('playwright', 'navegador e WhatsApp'),
-                             ('pptx', 'slides'),
-                             ('pyautogui', 'teclado e mouse'),
-                             ('psutil', 'estado da máquina'),
-                             ('openwakeword', 'palavra de ativação')):
+
+def checar(cfg) -> int:
+    import platform
+    carrega_tudo()
+    print(f'\n  {cfg.nome} — diagnóstico\n', flush=True)
+    print(f'  sistema: {config.sistema()} · Python {platform.python_version()}', flush=True)
+    print(f'  pastas liberadas: {", ".join(cfg.raizes_seguras)}', flush=True)
+    print(f'  modelo: {cfg.modelo}\n', flush=True)
+
+    _linha(bool(cfg.anthropic), 'chave do Claude (obrigatória)',
+           '' if cfg.anthropic else 'preencha ANTHROPIC_API_KEY no arquivo .env')
+    _linha(bool(cfg.openai), 'chave do ChatGPT (opcional)')
+    _linha(bool(cfg.gemini), 'chave do Gemini (opcional)')
+
+    # Cada import é impresso ANTES de acontecer: o primeiro carregamento do
+    # motor de transcrição leva dezenas de segundos, e uma tela parada sem
+    # explicação parece travamento.
+    pacotes = [('anthropic', 'falar com o Claude', 'anthropic'),
+               ('playwright', 'navegador e WhatsApp', 'playwright'),
+               ('pptx', 'slides', 'python-pptx'),
+               ('pyautogui', 'teclado e mouse', 'pyautogui'),
+               ('pyperclip', 'copiar e colar', 'pyperclip'),
+               ('psutil', 'bateria, memória, disco', 'psutil'),
+               ('pyttsx3', 'voz do Windows', 'pyttsx3'),
+               ('sounddevice', 'microfone', 'sounddevice'),
+               ('openwakeword', 'palavra de ativação', 'openwakeword'),
+               ('faster_whisper', 'entender o que você fala', 'faster-whisper')]
+    faltam_pip = []
+    tela = sys.stdout.isatty()      # só apaga a linha quando há terminal de verdade
+    for pacote, para_que, no_pip in pacotes:
+        if tela:
+            print(f'  \033[90m… carregando {pacote}\033[0m', end='\r', flush=True)
         try:
             __import__(pacote)
-            linhas.append((f'{pacote} ({para_que})', True))
-        except ImportError:
-            linhas.append((f'{pacote} ({para_que})', False))
+            bem = True
+        except Exception:
+            bem = False
+            faltam_pip.append(no_pip)
+        if tela:
+            print(' ' * 46, end='\r')
+        _linha(bem, f'{pacote}', f'({para_que})')
 
     funil = Path(cfg.funil_db).expanduser()
-    linhas.append((f'banco do funil ({funil})', funil.exists()))
+    _linha(funil.exists(), 'banco de clientes (funil)', str(funil))
 
-    for nome, bem in linhas:
-        print(f'  {"✓" if bem else "✗"} {nome}')
-    if not ok:
-        print(f'\n  {aviso}')
     if FALTANDO:
         print('\n  ferramentas que não carregaram:')
         for m, por in FALTANDO.items():
             print(f'    {m}: {por}')
-    print(f'\n  {len(REGISTRO)} ferramentas prontas.\n')
+
+    print(f'\n  {len(REGISTRO)} ferramentas prontas.')
+    if faltam_pip:
+        print('\n  Para completar, rode:')
+        print(f'    .\\.venv\\Scripts\\python.exe -m pip install {" ".join(faltam_pip)}')
+    if not cfg.anthropic:
+        print('\n  Sem a chave do Claude ele não liga. É a única coisa obrigatória.')
+    print(flush=True)
     return 0
 
 
