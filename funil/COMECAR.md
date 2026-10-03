@@ -9,6 +9,9 @@ Tempo: uma hora, sendo quase tudo espera de cadastro.
 
 ## Passo 0 — Pegar o código novo (2 min)
 
+**Não pule este passo.** `conferir` e `colonia` são comandos novos; sem o
+`git pull` eles não existem e o Python responde `invalid choice`.
+
 Abra o **PowerShell** (não o CMD) e rode:
 
 ```powershell
@@ -44,7 +47,16 @@ adiciona lead à mão.
    *Faça esta parte.* Chave aberta é fatura aberta: se ela vazar, qualquer
    um gasta no seu cartão.
 
-Agora cole no arquivo `funil\.env` (crie copiando o `.env.exemplo`):
+Agora cole no arquivo `funil\.env`.
+
+> **Se você já tem um `.env`, NÃO copie o exemplo por cima.** Ele
+> sobrescreve sem avisar e leva junto as chaves que já funcionavam. Esta
+> linha cria o arquivo só quando ele ainda não existe:
+>
+> ```powershell
+> if (-not (Test-Path .env)) { copy .env.exemplo .env }
+> notepad .env
+> ```
 
 ```
 GOOGLE_PLACES_KEY=AIza...sua...chave
@@ -210,6 +222,8 @@ Ele testa as chaves de verdade e diz o que fazer, não só que falhou.
 | `token do claude.ai` | você colou o token do site errado |
 | `a equipe X não está entre as suas` | corrija `equipe_netlify` no config.toml |
 | `erro de formato` no config.toml | chave repetida; apague a linha duplicada |
+| `invalid choice: 'conferir'` | falta o passo 0 — `git pull` |
+| o `.env` ficou em branco | foi sobrescrito pelo exemplo; recole as chaves |
 | `429` ou `sobrecarregado` | cota do dia; espere ou troque de provedor |
 
 **Nunca mexa no `dados\funil.db` à mão.** Tem nome e telefone de gente
