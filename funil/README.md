@@ -44,6 +44,23 @@ de dado errado.
 
 ---
 
+## Antes de tudo
+
+```bash
+python3 funil.py conferir
+```
+
+Testa as chaves **de verdade** — uma busca na Places, a lista de modelos
+do seu provedor, as suas equipes da Netlify — e diz o que fazer em cada
+falha, não só que falhou. Campo preenchido não é chave válida: chave
+colada pela metade passa em qualquer checagem de "está vazio?" e só falha
+no meio do primeiro lote, sem dizer o motivo.
+
+O passo a passo completo, do zero ao primeiro site publicado, está em
+**[COMECAR.md](COMECAR.md)**.
+
+---
+
 ## Instalação
 
 ```bash
@@ -486,7 +503,7 @@ sumido) está verificada; o que não dá para verificar daqui é a rede.
 
 ## O que foi verificado
 
-**107 testes, 107 passando** (`python3 testes.py`). Nenhum toca a rede: o
+**111 testes, 111 passando** (`python3 testes.py`). Nenhum toca a rede: o
 cliente do modelo, a Places API, a API da Netlify e o Claude Code entram
 como dublê, porque o que precisa de teste é a lógica.
 

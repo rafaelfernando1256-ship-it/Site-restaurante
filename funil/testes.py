@@ -1415,6 +1415,140 @@ def _():
         verdade(not achado, f'{f.name} tem chave escrita: {achado}')
 
 
+# ── o diagnóstico ───────────────────────────────────────────────────
+@teste('conferir: chave colada do site errado é pega antes de ir à rede')
+def _():
+    from nucleo.conferir import testa_cerebro
+    # O erro mais comum: o token do claude.ai (sk-ant-usr-) no lugar da
+    # chave da API. Os dois começam com sk-ant- e vêm de sites diferentes.
+    bem, diz = testa_cerebro(cfg_falso(provedor='claude',
+                                       anthropic='sk-ant-usr-xxx'))
+    verdade(not bem)
+    verdade('claude.ai' in diz and 'sk-ant-api03-' in diz, diz)
+
+    bem, diz = testa_cerebro(cfg_falso(provedor='groq', groq='nao-comeca-certo'))
+    verdade(not bem)
+    verdade('gsk_' in diz, diz)
+
+    bem, diz = testa_cerebro(cfg_falso(provedor='openrouter',
+                                       openrouter='nao-comeca-certo'))
+    verdade(not bem)
+    verdade('sk-or-' in diz, diz)
+
+    # chave VAZIA é outra mensagem: diz o nome da variável do .env, que é
+    # o que a pessoa precisa procurar
+    for prov, var, campo in (('claude', 'ANTHROPIC_API_KEY', 'anthropic'),
+                             ('gemini', 'GEMINI_API_KEY', 'gemini')):
+        bem, diz = testa_cerebro(cfg_falso(provedor=prov, **{campo: ''}))
+        verdade(not bem)
+        verdade(var in diz, f'{prov}: {diz}')
+
+
+@teste('conferir: a Places não ativada tem mensagem diferente de chave errada')
+def _():
+    import io
+    import urllib.error
+    import urllib.request
+    from nucleo import conferir
+
+    def responde(codigo, corpo):
+        def falso(*a, **k):
+            raise urllib.error.HTTPError('u', codigo, 'x', {},
+                                         io.BytesIO(corpo.encode()))
+        return falso
+
+    original = urllib.request.urlopen
+    try:
+        # Os dois são 403, e a saída é completamente diferente: um é
+        # apertar "Ativar" no console, o outro é recolar a chave.
+        urllib.request.urlopen = responde(
+            403, '{"error":{"message":"Places API (New) has not been used in '
+                 'project 123 before or it is disabled"}}')
+        bem, diz = conferir.testa_places('chave')
+        verdade(not bem)
+        verdade('ATIVADA' in diz and 'Biblioteca' in diz, diz)
+
+        urllib.request.urlopen = responde(
+            400, '{"error":{"message":"API key not valid. Please pass a valid '
+                 'API key."}}')
+        bem, diz = conferir.testa_places('chave')
+        verdade(not bem)
+        verdade('RECUSOU' in diz, diz)
+
+        urllib.request.urlopen = responde(
+            403, '{"error":{"message":"Requests from this API key are blocked."}}')
+        bem, diz = conferir.testa_places('chave')
+        verdade(not bem)
+        verdade('Restrições de API' in diz, diz)
+    finally:
+        urllib.request.urlopen = original
+
+    bem, diz = conferir.testa_places('')
+    verdade(not bem)
+    verdade('GOOGLE_PLACES_KEY' in diz, diz)
+
+
+@teste('conferir: o diagnóstico não gasta a cota que o caçador usa')
+def _():
+    import io
+    import json as J
+    import urllib.request
+    from nucleo import conferir
+
+    visto = {}
+
+    class Resposta(io.BytesIO):
+        def __enter__(self): return self
+        def __exit__(self, *_): return False
+
+    def falso(req, timeout=None):
+        visto['mascara'] = req.headers.get('X-goog-fieldmask', '')
+        visto['corpo'] = J.loads(req.data.decode())
+        return Resposta(b'{"places":[{"id":"x"}]}')
+
+    original, urllib.request.urlopen = urllib.request.urlopen, falso
+    try:
+        bem, diz = conferir.testa_places('chave')
+        verdade(bem, diz)
+    finally:
+        urllib.request.urlopen = original
+
+    # websiteUri, rating e telefone jogam a chamada no SKU Enterprise, que
+    # tem 1.000 grátis por mês e é o que o agente 1 gasta. O diagnóstico
+    # fica no Essentials (10.000) pedindo só o id.
+    igual(visto['mascara'], 'places.id')
+    for caro in ('websiteUri', 'rating', 'PhoneNumber', 'userRatingCount'):
+        verdade(caro not in visto['mascara'],
+                f'o diagnóstico está comendo a cota do caçador: {caro}')
+    igual(visto['corpo']['pageSize'], 1, 'pediu mais lugares do que precisa')
+
+
+@teste('conferir: equipe errada na Netlify diz quais são as suas')
+def _():
+    from nucleo import conferir
+    import nucleo.a4_entrega as A4
+
+    original = A4.equipes
+    A4.equipes = lambda token: [{'slug': 'conta5197-99'}, {'slug': 'outra'}]
+    try:
+        bem, diz = conferir.testa_netlify(
+            cfg_falso(netlify='nfp_x', equipe_netlify='conta5197-99'))
+        verdade(bem, diz)
+
+        bem, diz = conferir.testa_netlify(
+            cfg_falso(netlify='nfp_x', equipe_netlify='nao-existe'))
+        verdade(not bem)
+        verdade('conta5197-99' in diz and 'outra' in diz,
+                f'não listou as equipes reais: {diz}')
+        verdade('config.toml' in diz, diz)
+    finally:
+        A4.equipes = original
+
+    bem, diz = conferir.testa_netlify(cfg_falso(netlify=''))
+    verdade(not bem)
+    verdade('NETLIFY_TOKEN' in diz, diz)
+
+
 # ── a colônia ───────────────────────────────────────────────────────
 def colonia_falsa(**extra):
     """

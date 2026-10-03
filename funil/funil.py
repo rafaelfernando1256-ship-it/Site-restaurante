@@ -372,6 +372,11 @@ def cmd_descartar(a, cfg) -> int:
 
 
 # ── CLI ─────────────────────────────────────────────────────────────
+def cmd_conferir(a, cfg) -> int:
+    from nucleo.conferir import confere
+    return confere(cfg, com_rede=not a.seco)
+
+
 def _colonia(cfg):
     from nucleo.colonia import Colonia
     return Colonia(Path(cfg.banco).with_suffix('.colonia.json'),
@@ -519,6 +524,11 @@ def principal(argv: list[str] | None = None) -> int:
     p.add_argument('--config', type=Path, help='outro config.toml')
     sub = p.add_subparsers(dest='cmd', required=True)
 
+    s = sub.add_parser('conferir', help='testa as chaves de verdade e diz o '
+                                       'que falta para o funil rodar')
+    s.add_argument('--seco', action='store_true',
+                   help='só olha se está preenchido, sem tocar na rede')
+
     sub.add_parser('resumo', help='quantos leads em cada estado')
 
     s = sub.add_parser('cacar', help='AGENTE 1 — acha restaurante sem site')
@@ -625,7 +635,7 @@ def principal(argv: list[str] | None = None) -> int:
     a = p.parse_args(argv)
     cfg = config.carrega(a.config)
     return {
-        'resumo': cmd_resumo, 'cacar': cmd_cacar, 'escrever': cmd_escrever,
+        'conferir': cmd_conferir, 'resumo': cmd_resumo, 'cacar': cmd_cacar, 'escrever': cmd_escrever,
         'adicionar': cmd_adicionar,
         'revisar': cmd_revisar, 'aprovar': cmd_aprovar, 'enviar': cmd_enviar,
         'enviada': cmd_enviada, 'retorno': cmd_retorno, 'triar': cmd_triar,
