@@ -647,31 +647,37 @@ def chamada_sse(nome, argumentos, ident='c1'):
     ]
 
 
-def monta_rota(respostas, cfg=None, respostas_porteiro=None):
+def monta_rota(respostas, cfg=None, respostas_porteiro=None, provedor='openrouter'):
     """Troca o urlopen por um que devolve os fluxos programados."""
     import urllib.request
 
-    from nucleo.cerebro import CerebroRota
-    cfg = cfg or cfg_teste(provedor='openrouter', openrouter='sk-or-x')
-    cfg.provedor = 'openrouter'
+    from nucleo.cerebro import CerebroGroq, CerebroRota
+    classe = CerebroGroq if provedor == 'groq' else CerebroRota
+    if cfg is None:
+        cfg = (cfg_teste(provedor='groq', groq='gsk_x') if provedor == 'groq'
+               else cfg_teste(provedor='openrouter', openrouter='sk-or-x'))
+    cfg.provedor = provedor
     diario = Diario(TMP / f'r{time.time_ns()}.db')
     respostas_p = list(respostas_porteiro or [])
     porteiro = Porteiro(cfg, diario,
                         perguntar_teclado=lambda _: respostas_p.pop(0) if respostas_p else 'nao')
     ctx = Contexto(cfg=cfg, diario=diario, porteiro=porteiro)
-    c = CerebroRota(cfg, diario, porteiro, ctx=ctx)
+    c = classe(cfg, diario, porteiro, ctx=ctx)
 
     enviados = []
     fila = list(respostas)
     original = urllib.request.urlopen
 
     def falso(req, timeout=None):
-        enviados.append(json.loads(req.data.decode()))
+        # o endereço vai junto: é o que prova que o Groq não está batendo
+        # no OpenRouter com a chave do Groq
+        enviados.append({**json.loads(req.data.decode()), '_url': req.full_url})
         return FalsaResposta(sse(fila.pop(0) if fila else texto_sse('ok')))
 
     urllib.request.urlopen = falso
     import nucleo.modelos as Mo
     Mo._modelo_rota = 'anthropic/claude-sonnet-4.5'
+    Mo._modelo_groq = 'moonshotai/kimi-k2-instruct-0905'
     return c, enviados, (lambda: setattr(urllib.request, 'urlopen', original))
 
 
@@ -776,6 +782,109 @@ def _():
     finally:
         Mo.rota_pede = original
         Mo._modelo_rota = ''
+
+
+@teste('groq: o cérebro bate no Groq, com a chave do Groq, e usa as ferramentas')
+def _():
+    alvo = TMP / 'livre' / 'groq.txt'
+    alvo.write_text('o segredo é 7')
+    c, enviados, solta = monta_rota([
+        chamada_sse('ler_arquivo', json.dumps({'caminho': str(alvo)}), 'gq1'),
+        texto_sse('O arquivo diz 7.'),
+    ], provedor='groq')
+    try:
+        igual(c.responde('o que tem no groq.txt?'), 'O arquivo diz 7.')
+    finally:
+        solta()
+    verdade(enviados[0]['_url'].startswith('https://api.groq.com/openai/v1'),
+            f'bateu no endereço errado: {enviados[0]["_url"]}')
+    igual(c.chave, 'gsk_x', 'o Groq tem que usar a chave do Groq')
+    igual(enviados[0]['model'], 'moonshotai/kimi-k2-instruct-0905')
+    verdade(len(enviados[0]['tools']) >= 45, 'as 51 ferramentas têm que ir')
+    ferramenta = enviados[1]['messages'][-1]
+    igual(ferramenta['tool_call_id'], 'gq1')
+    verdade('7' in ferramenta['content'])
+
+
+@teste('groq: escolhe quem dirige ferramenta e pula whisper, guard e voz')
+def _():
+    import nucleo.modelos as Mo
+    original = Mo.groq_pede
+    Mo.groq_pede = lambda caminho, chave, corpo=None, tempo=180: {'data': [
+        {'id': 'whisper-large-v3-turbo'},
+        {'id': 'meta-llama/llama-guard-4-12b'},
+        {'id': 'playai-tts'},
+        {'id': 'llama-3.1-8b-instant'},
+        {'id': 'moonshotai/kimi-k2-instruct-0905'},
+    ]}
+    Mo._modelo_groq = ''
+    try:
+        igual(Mo.modelo_groq('gsk_x'), 'moonshotai/kimi-k2-instruct-0905')
+        igual(Mo.modelo_groq('gsk_x', 'llama-3.1-8b-instant'), 'llama-3.1-8b-instant')
+        # e o catálogo do Groq não vaza para o cache do OpenRouter: um
+        # cache só para os dois faria a troca de provedor usar o modelo
+        # do outro, e aí é 404 no meio da conversa
+        verdade(Mo._modelo_rota != 'moonshotai/kimi-k2-instruct-0905',
+                'os dois provedores estão compartilhando o mesmo cache')
+    finally:
+        Mo.groq_pede = original
+        Mo._modelo_groq = ''
+
+
+@teste('groq: limite do plano grátis vira frase, não traceback')
+def _():
+    import io
+    import urllib.error
+    import urllib.request
+    import nucleo.modelos as Mo
+
+    original = urllib.request.urlopen
+
+    def erro(*a, **k):
+        raise urllib.error.HTTPError('u', 429, 'x', {'retry-after': '18'},
+                                     io.BytesIO(b'{}'))
+
+    urllib.request.urlopen = erro
+    try:
+        Mo.groq_pede('/models', 'gsk_x')
+    except RuntimeError as e:
+        verdade('Groq' in str(e) and '18s' in str(e), f'mensagem ruim: {e}')
+    else:
+        raise AssertionError('429 não virou erro')
+    finally:
+        urllib.request.urlopen = original
+
+
+@teste('config: o groq entra na escolha automática e cobra a chave certa')
+def _():
+    import os
+    guarda = {k: os.environ.get(k) for k in
+              ('ANTHROPIC_API_KEY', 'GEMINI_API_KEY', 'OPENROUTER_API_KEY',
+               'GROQ_API_KEY')}
+    vazio = TMP / 'nao_existe_jarvis.toml'
+    try:
+        for k in guarda:
+            os.environ.pop(k, None)
+        os.environ['GROQ_API_KEY'] = 'gsk_falsa'
+        c = config.carrega(vazio)
+        igual(c.provedor, 'groq')
+        igual(c.chave_do_cerebro, 'gsk_falsa')
+        os.environ['ANTHROPIC_API_KEY'] = 'sk-ant-falsa'
+        igual(config.carrega(vazio).provedor, 'claude')
+    finally:
+        for k, v in guarda.items():
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = v
+
+    c = config.Config(provedor='groq')
+    try:
+        c.exige_cerebro()
+    except SystemExit as e:
+        verdade('GROQ_API_KEY' in str(e), f'cobrou a chave errada: {e}')
+        return
+    raise AssertionError('passou sem chave do Groq')
 
 
 @teste('gemini: modelo aposentado é trocado pelo mais novo, por número')

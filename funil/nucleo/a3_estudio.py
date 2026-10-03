@@ -463,7 +463,7 @@ def roda(est: Estado, cfg, limite: int = 3, cli: Any = None) -> dict[str, int]:
         try:
             print(f'  lendo o Instagram de {l.nome} ({len(imagens)} imagens)...')
             leitura = le(l, imagens, notas, modelo=cfg.modelo_do_cerebro,
-                         cli=cli or (cfg.openrouter or None) if cfg.provedor == 'openrouter' else cli,
+                         cli=cli or (cfg.chave_do_dialeto or None),
                          provedor=cfg.provedor)
             if tem_claude_code() and cfg.provedor == 'claude':
                 print(f'  construindo o site de {l.nome} com o Claude Code... '

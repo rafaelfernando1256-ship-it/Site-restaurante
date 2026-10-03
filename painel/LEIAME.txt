@@ -11,8 +11,15 @@ COMO COMEÇAR
 ------------
 1. Abra o painel e vá em AJUSTES
 2. Preencha seu nome, cidade e a CHAVE PIX
-3. Cole a chave do Gemini (aistudio.google.com/apikey) — opcional, mas é
-   ela que faz as mensagens e os sites saírem feitos para cada cliente
+3. Cole UMA chave de IA — opcional, mas é ela que faz as mensagens e os
+   sites saírem feitos para cada cliente em vez de modelo pronto.
+   Três servem, e as três têm plano grátis:
+     Gemini .... aistudio.google.com/apikey  (grátis, sem cartão)
+     Groq ...... console.groq.com/keys       (grátis, sem cartão, o mais
+                 rápido; em troca, 30 pedidos por minuto e 1.000 por dia)
+     OpenRouter  openrouter.ai/keys          (uma chave alcança Claude,
+                 GPT e Gemini; tem modelos grátis)
+   Com mais de uma preenchida, escolha quem escreve no próprio AJUSTES.
 4. Vá no agente 1 e cole a sua lista de restaurantes
 
 O QUE FICA ONDE

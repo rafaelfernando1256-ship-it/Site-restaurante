@@ -510,6 +510,141 @@ def _():
     igual(Mod._or_partes('só texto', []), 'só texto')
 
 
+@teste('groq: escolhe modelo de texto do catálogo e pula whisper e guard')
+def _():
+    import nucleo.modelo as Mod
+    original = Mod._groq_pede
+    Mod._groq_pede = lambda caminho, chave, corpo=None, tempo=180: {'data': [
+        {'id': 'whisper-large-v3'},
+        {'id': 'meta-llama/llama-guard-4-12b'},
+        {'id': 'llama-3.1-8b-instant'},
+        {'id': 'llama-3.3-70b-versatile'},
+        {'id': 'moonshotai/kimi-k2-instruct-0905'},
+        {'id': 'playai-tts'},
+    ]}
+    Mod._modelo_groq = ''
+    try:
+        # kimi vem antes na ordem de gosto do Groq
+        igual(Mod.modelo_dialeto('gsk_x', provedor='groq'),
+              'moonshotai/kimi-k2-instruct-0905')
+        # escolhido à mão sempre vence
+        igual(Mod.modelo_dialeto('gsk_x', 'llama-3.1-8b-instant', 'groq'),
+              'llama-3.1-8b-instant')
+    finally:
+        Mod._groq_pede = original
+        Mod._modelo_groq = ''
+
+
+@teste('groq: pede json_object e leva o esquema na instrução')
+def _():
+    from nucleo.a2_abordagem import Abordagem
+    import nucleo.modelo as Mod
+    pedidos = []
+
+    def falso(caminho, chave, corpo=None, tempo=180):
+        if caminho == '/models':
+            return {'data': [{'id': 'llama-3.3-70b-versatile'}]}
+        pedidos.append(corpo)
+        return {'choices': [{'message': {
+            'content': '{"gancho":"g","mensagem":"m","porque":"p"}'}}]}
+
+    original, Mod._groq_pede = Mod._groq_pede, falso
+    Mod._modelo_groq = ''
+    try:
+        r = Mod.pede_json('instrução', 'conteúdo', Abordagem, cli='gsk_x',
+                          provedor='groq', tentativas=1)
+        igual(r.gancho, 'g')
+        # a maioria dos modelos do Groq não aceita json_schema: mandar
+        # esquema ali é 400, e é esse erro que este teste trava.
+        igual(pedidos[0]['response_format']['type'], 'json_object')
+        sistema = pedidos[0]['messages'][0]['content']
+        verdade('"gancho"' in sistema,
+                'sem esquema na API, a forma tem que ir na instrução')
+    finally:
+        Mod._groq_pede = original
+        Mod._modelo_groq = ''
+
+
+@teste('groq: imagem troca para um modelo com olhos e respeita o teto de 5')
+def _():
+    import nucleo.modelo as Mod
+    foto = TMP / 'groq.png'
+    foto.write_bytes(b'\x89PNG\r\n\x1a\n' + b'0' * 30)
+
+    def falso(caminho, chave, corpo=None, tempo=180):
+        return {'data': [
+            {'id': 'llama-3.3-70b-versatile'},
+            {'id': 'meta-llama/llama-4-scout-17b-16e-instruct'},
+        ]}
+
+    original, Mod._groq_pede = Mod._groq_pede, falso
+    try:
+        alvo, imagens = Mod._com_olhos('gsk_x', 'llama-3.3-70b-versatile',
+                                       [foto] * 9, 'groq')
+        verdade('llama-4' in alvo, f'trocou para um modelo sem olhos: {alvo}')
+        igual(len(imagens), 5, 'o Groq aceita 5 imagens por pedido')
+        # quem já vê imagem fica onde está
+        alvo2, _ = Mod._com_olhos('gsk_x', 'meta-llama/llama-4-scout-17b-16e-instruct',
+                                  [foto], 'groq')
+        igual(alvo2, 'meta-llama/llama-4-scout-17b-16e-instruct')
+    finally:
+        Mod._groq_pede = original
+
+
+@teste('groq: sem nenhum modelo com olhos, diz o que fazer em vez de dar 400')
+def _():
+    import nucleo.modelo as Mod
+    foto = TMP / 'groq2.png'
+    foto.write_bytes(b'\x89PNG\r\n\x1a\n' + b'0' * 30)
+    original = Mod._groq_pede
+    Mod._groq_pede = lambda *a, **k: {'data': [{'id': 'llama-3.1-8b-instant'}]}
+    try:
+        Mod._com_olhos('gsk_x', 'llama-3.1-8b-instant', [foto], 'groq')
+    except RuntimeError as e:
+        verdade('gemini' in str(e).lower(), f'tem que dizer a saída: {e}')
+        return
+    finally:
+        Mod._groq_pede = original
+    raise AssertionError('deixou passar um modelo sem olhos')
+
+
+@teste('groq: o 429 do plano grátis é passageiro, e a chave errada não é')
+def _():
+    import io
+    import urllib.error
+    import urllib.request
+    import nucleo.modelo as Mod
+
+    def erro(codigo, cabecalhos=None):
+        def falso(*a, **k):
+            raise urllib.error.HTTPError('u', codigo, 'x', cabecalhos or {},
+                                         io.BytesIO(b'{}'))
+        return falso
+
+    original = urllib.request.urlopen
+    try:
+        urllib.request.urlopen = erro(429, {'retry-after': '12'})
+        try:
+            Mod._groq_pede('/models', 'gsk_x')
+        except RuntimeError as e:
+            verdade('tente em 12s' in str(e), f'tem que repassar o retry-after: {e}')
+            verdade(Mod._passageiro(e),
+                    'o 429 tem que ser tratado como passageiro, não como aborto')
+        else:
+            raise AssertionError('429 não virou erro')
+
+        urllib.request.urlopen = erro(401)
+        try:
+            Mod._groq_pede('/models', 'gsk_x')
+        except RuntimeError as e:
+            verdade('console.groq.com/keys' in str(e), f'diz onde pegar a chave: {e}')
+            verdade(not Mod._passageiro(e), 'chave errada não melhora esperando')
+        else:
+            raise AssertionError('401 não virou erro')
+    finally:
+        urllib.request.urlopen = original
+
+
 @teste('modelo: JSON cortado pela metade não vira resposta vazia silenciosa')
 def _():
     from nucleo.a2_abordagem import Abordagem
@@ -1214,6 +1349,49 @@ def _():
     raise AssertionError('passou sem chave do Gemini')
 
 
+@teste('config: o groq entra na escolha automática e recebe a chave na mão')
+def _():
+    import os
+    pasta = TMP / 'cfg_groq'
+    pasta.mkdir(parents=True, exist_ok=True)
+    vazio = pasta / 'nao_existe.toml'
+
+    guarda = {k: os.environ.get(k) for k in
+              ('ANTHROPIC_API_KEY', 'GEMINI_API_KEY', 'OPENROUTER_API_KEY',
+               'GROQ_API_KEY')}
+    try:
+        for k in guarda:
+            os.environ.pop(k, None)
+        os.environ['GROQ_API_KEY'] = 'gsk_falsa'
+        c = config.carrega(vazio)
+        igual(c.provedor, 'groq', 'só a chave do Groq no ambiente')
+        igual(c.chave_do_dialeto, 'gsk_falsa')
+
+        # com Claude também presente, o Claude manda — o Groq é o último
+        os.environ['ANTHROPIC_API_KEY'] = 'sk-ant-falsa'
+        igual(config.carrega(vazio).provedor, 'claude')
+    finally:
+        for k, v in guarda.items():
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = v
+
+    # Claude e Gemini não recebem chave por argumento: o SDK deles lê o
+    # ambiente, e uma string onde o código espera um cliente quebra feio.
+    igual(config.Config(provedor='claude', anthropic='a').chave_do_dialeto, '')
+    igual(config.Config(provedor='gemini', gemini='g').chave_do_dialeto, '')
+
+    c = config.Config(provedor='groq', modelo_groq='kimi-x')
+    igual(c.modelo_do_cerebro, 'kimi-x')
+    try:
+        c.exige_cerebro()
+    except SystemExit as e:
+        verdade('GROQ_API_KEY' in str(e), f'tem que cobrar a chave certa: {e}')
+        return
+    raise AssertionError('passou sem chave do Groq')
+
+
 @teste('config: cobra a variável que falta pelo nome real')
 def _():
     c = config.Config()
@@ -1230,7 +1408,8 @@ def _():
     import re
     raiz = Path(__file__).parent
     suspeito = re.compile(r'(AIza[0-9A-Za-z_\-]{20,}|sk-ant-[0-9A-Za-z_\-]{20,}|'
-                          r'nfp_[0-9A-Za-z]{20,})')
+                          r'nfp_[0-9A-Za-z]{20,}|sk-or-v1-[0-9a-f]{20,}|'
+                          r'gsk_[0-9A-Za-z]{20,})')
     for f in list(raiz.glob('*.py')) + list((raiz / 'nucleo').glob('*.py')):
         achado = suspeito.search(f.read_text(encoding='utf-8'))
         verdade(not achado, f'{f.name} tem chave escrita: {achado}')

@@ -162,7 +162,7 @@ def monta_site(lead, leitura, imagens: Sequence[Path], pasta: Path, cfg,
                      + '\n'.join(f'- {x}' for x in problemas))
         html = _limpa(pede_texto(
             INSTRUCAO, pedido + extra, modelo=cfg.modelo_do_cerebro,
-            cli=(cfg.openrouter if cfg.provedor == 'openrouter' else None),
+            cli=(cfg.chave_do_dialeto or None),
             max_tokens=32000, provedor=cfg.provedor))
         problemas = valida(html)
         if not problemas:

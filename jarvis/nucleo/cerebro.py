@@ -351,10 +351,10 @@ class CerebroGemini(Motor):
         return list(getattr(conteudo, 'parts', None) or [])
 
 
-# ══ OpenRouter ══════════════════════════════════════════════════════
+# ══ OpenRouter e Groq ═══════════════════════════════════════════════
 class CerebroRota(Motor):
     """
-    Mesmo laço, protocolo da OpenAI — que é o que o OpenRouter fala.
+    Mesmo laço, protocolo da OpenAI — que é o que os dois falam.
 
     A vantagem prática: uma chave alcança Claude, GPT, Gemini e os
     abertos. A desvantagem: nem todo modelo do catálogo sabe chamar
@@ -372,9 +372,20 @@ class CerebroRota(Motor):
       terminar de pensar.
     """
 
+    DIALETO = 'openrouter'
+
+    @property
+    def dialeto(self) -> dict:
+        from nucleo.modelos import DIALETOS
+        return DIALETOS[self.DIALETO]
+
     @property
     def chave(self) -> str:
-        return self.cfg.openrouter
+        return getattr(self.cfg, self.DIALETO)
+
+    @property
+    def modelo_pedido(self) -> str:
+        return getattr(self.cfg, f'modelo_{self.DIALETO}', '')
 
     def _ferramentas(self) -> list[dict]:
         return [{'type': 'function',
@@ -383,7 +394,7 @@ class CerebroRota(Motor):
                 for e in catalogo()]
 
     def responde(self, pedido: str, ao_falar: Callable[[str], None] | None = None) -> str:
-        from nucleo.modelos import modelo_rota
+        from nucleo.modelos import modelo_dialeto
         self._abre_conversa(pedido)
         if not self.historico or self.historico[0].get('role') != 'system':
             self.historico.insert(0, {'role': 'system', 'content': self._sistema()})
@@ -391,7 +402,7 @@ class CerebroRota(Motor):
             self.historico[0] = {'role': 'system', 'content': self._sistema()}
         self.historico.append({'role': 'user', 'content': pedido})
 
-        alvo = modelo_rota(self.chave, self.cfg.modelo_openrouter)
+        alvo = modelo_dialeto(self.chave, self.modelo_pedido, self.DIALETO)
         resposta = ''
         for _ in range(self.cfg.voltas_maximas):
             texto, chamadas = self._chama(alvo, ao_falar)
@@ -434,7 +445,7 @@ class CerebroRota(Motor):
             'stream': True,
         }
         req = urllib.request.Request(
-            'https://openrouter.ai/api/v1/chat/completions',
+            f'{self.dialeto["base"]}/chat/completions',
             data=json.dumps(corpo).encode(),
             headers={'Authorization': f'Bearer {self.chave}',
                      'Content-Type': 'application/json',
@@ -479,11 +490,20 @@ class CerebroRota(Motor):
                             alvo_c['function']['arguments'] += f['arguments']
         except urllib.error.HTTPError as e:
             detalhe = e.read().decode()[:300]
+            nome = self.dialeto['nome']
             if e.code == 401:
-                raise RuntimeError('o OpenRouter recusou a chave') from e
+                raise RuntimeError(f'o {nome} recusou a chave — '
+                                   f'{self.dialeto["chaves"]}') from e
             if e.code == 402:
-                raise RuntimeError('sem crédito no OpenRouter') from e
-            raise RuntimeError(f'OpenRouter {e.code}: {detalhe}') from e
+                raise RuntimeError(f'sem crédito no {nome}') from e
+            if e.code == 429:
+                espera = (getattr(e, 'headers', None) or {}).get('retry-after', '')
+                raise RuntimeError(
+                    f'o {nome} limitou as requisições.'
+                    + (f' Tente em {espera}s.' if espera else '')
+                    + (' No plano grátis são 30 por minuto.'
+                       if self.DIALETO == 'groq' else '')) from e
+            raise RuntimeError(f'{nome} {e.code}: {detalhe}') from e
 
         frases, _ = self._frases(pendente, fecha=True)
         for f in frases:
@@ -507,6 +527,26 @@ class CerebroRota(Motor):
         self.historico = ([sistema] if sistema else []) + corpo[corte:]
 
 
+class CerebroGroq(CerebroRota):
+    """
+    O mesmo laço, no Groq.
+
+    Vale por dois motivos: é o mais rápido dos quatro (hardware próprio,
+    centenas de tokens por segundo) e tem plano grátis sem cartão. O
+    preço disso aparece em dois lugares:
+
+    • 30 requisições por minuto no plano grátis. Uma conversa com muitas
+      voltas de ferramenta gasta uma requisição por volta, então o 429
+      chega — e aqui ele vira frase em português, com o tempo de espera
+      que o próprio servidor mandou, em vez de traceback.
+    • o catálogo é de modelos abertos, e nem todos chamam ferramenta. A
+      ordem de preferência em `modelos.py` existe para isso: pega quem
+      dirige ferramenta, não quem só conversa.
+    """
+
+    DIALETO = 'groq'
+
+
 # ══ a escolha ═══════════════════════════════════════════════════════
 Cerebro = CerebroClaude          # nome antigo, para não quebrar quem importa
 
@@ -514,4 +554,5 @@ Cerebro = CerebroClaude          # nome antigo, para não quebrar quem importa
 def monta(cfg, **kw) -> Motor:
     """Devolve o cérebro do provedor configurado."""
     return {'gemini': CerebroGemini,
-            'openrouter': CerebroRota}.get(cfg.provedor, CerebroClaude)(cfg, **kw)
+            'openrouter': CerebroRota,
+            'groq': CerebroGroq}.get(cfg.provedor, CerebroClaude)(cfg, **kw)

@@ -1,8 +1,10 @@
 """
 OS MODELOS
 
-O Claude é o cérebro: é ele que decide o que fazer e usa as ferramentas.
-O GPT e o Gemini entram como **ferramenta**, não como cérebro paralelo —
+Um modelo é o cérebro: é ele que decide o que fazer e usa as ferramentas.
+Pode ser o Claude, o Gemini, o OpenRouter ou o Groq — quem manda é
+`provedor` no config.toml. Os outros entram como **ferramenta**, não como
+cérebro paralelo —
 você pergunta "o que o Gemini acha disso?" e o Claude vai lá perguntar.
 
 Por que não três cérebros discutindo: três modelos decidindo o que fazer
@@ -21,12 +23,33 @@ E = TypeVar('E', bound=BaseModel)
 _claude: Any = None
 _gemini: Any = None
 _modelo_rota: str = ''
+_modelo_groq: str = ''
 
 ROTA = 'https://openrouter.ai/api/v1'
+GROQ = 'https://api.groq.com/openai/v1'
 
 # Ordem de preferência quando o modelo do OpenRouter não foi escolhido à
 # mão. Quem vai dirigir ferramenta precisa seguir esquema bem.
 GOSTO = ('claude', 'gpt-5', 'gpt-4o', 'gemini', 'llama', 'mistral')
+
+# No Groq o critério é o mesmo, com outro catálogo: aqui o Jarvis tem 51
+# ferramentas na mão, e modelo que não sabe chamar ferramenta responde
+# texto onde devia agir. Kimi e gpt-oss são os que dirigem direito.
+GOSTO_GROQ = ('kimi', 'gpt-oss', 'llama-4', 'llama-3.3', 'qwen', 'llama')
+
+# Transcritor, censor e voz moram no mesmo catálogo e não servem de
+# cérebro. Pedir ferramenta a um deles rende 400, não resposta.
+EVITA = ('embed', 'moderation', 'vision-only', 'whisper', 'tts', 'guard',
+         'safeguard', 'rerank', 'playai')
+
+# Os dois falam o dialeto da OpenAI, então é um código só. O que muda é
+# o endereço, a variável de ambiente e onde se pega a chave.
+DIALETOS: dict[str, dict[str, Any]] = {
+    'openrouter': {'base': ROTA, 'nome': 'OpenRouter', 'env': 'OPENROUTER_API_KEY',
+                   'chaves': 'openrouter.ai/keys', 'gosto': GOSTO},
+    'groq': {'base': GROQ, 'nome': 'Groq', 'env': 'GROQ_API_KEY',
+             'chaves': 'console.groq.com/keys', 'gosto': GOSTO_GROQ},
+}
 
 
 def claude(chave: str = '') -> Any:
@@ -144,15 +167,17 @@ def pergunta_gemini(pergunta: str, chave: str, modelo: str = 'gemini-3.8-flash')
         return f'o Gemini não respondeu: {e}'
 
 
-# ── OpenRouter ──────────────────────────────────────────────────────
-def rota_pede(caminho: str, chave: str, corpo: dict | None = None,
-              tempo: int = 180) -> Any:
-    """HTTPS puro: a API do OpenRouter fala o dialeto da OpenAI."""
+# ── OpenRouter e Groq: o dialeto da OpenAI ──────────────────────────
+def dialeto_pede(caminho: str, chave: str, corpo: dict | None = None,
+                 tempo: int = 180, provedor: str = 'openrouter') -> Any:
+    """HTTPS puro: os dois falam o dialeto da OpenAI."""
     import json
     import urllib.error
     import urllib.request
+    d = DIALETOS[provedor]
+    nome = d['nome']
     req = urllib.request.Request(
-        f'{ROTA}{caminho}',
+        f'{d["base"]}{caminho}',
         data=json.dumps(corpo).encode() if corpo is not None else None,
         headers={'Authorization': f'Bearer {chave}',
                  'Content-Type': 'application/json',
@@ -164,39 +189,88 @@ def rota_pede(caminho: str, chave: str, corpo: dict | None = None,
     except urllib.error.HTTPError as e:
         detalhe = e.read().decode()[:300]
         if e.code == 401:
-            raise RuntimeError('o OpenRouter recusou a chave — openrouter.ai/keys') from e
+            raise RuntimeError(f'o {nome} recusou a chave — {d["chaves"]}') from e
         if e.code == 402:
-            raise RuntimeError('sem crédito no OpenRouter. Há modelos grátis em '
+            raise RuntimeError(f'sem crédito no {nome}. Há modelos grátis em '
                                'openrouter.ai/models?q=free') from e
-        raise RuntimeError(f'OpenRouter {e.code}: {detalhe}') from e
+        if e.code == 429:
+            # No plano grátis do Groq são 30 por minuto. Repassar o
+            # retry-after evita o "tentei de novo e deu o mesmo erro".
+            espera = (getattr(e, 'headers', None) or {}).get('retry-after', '')
+            quanto = f' Tente em {espera}s.' if espera else ''
+            raise RuntimeError(f'{nome}: limite de requisições estourado.'
+                               f'{quanto}') from e
+        raise RuntimeError(f'{nome} {e.code}: {detalhe}') from e
     except urllib.error.URLError as e:
-        raise RuntimeError('não consegui falar com o OpenRouter — '
+        raise RuntimeError(f'não consegui falar com o {nome} — '
                            f'confira a sua internet ({e.reason})') from e
 
 
-def modelos_rota(chave: str) -> list[str]:
-    d = rota_pede('/models', chave)
+def rota_pede(caminho: str, chave: str, corpo: dict | None = None,
+              tempo: int = 180) -> Any:
+    return dialeto_pede(caminho, chave, corpo, tempo, 'openrouter')
+
+
+def groq_pede(caminho: str, chave: str, corpo: dict | None = None,
+              tempo: int = 180) -> Any:
+    return dialeto_pede(caminho, chave, corpo, tempo, 'groq')
+
+
+def _canal(provedor: str):
+    """
+    A função de rede do provedor, resolvida na HORA da chamada — é o que
+    deixa o teste trocar por um falso e rodar o caminho inteiro sem rede.
+    """
+    return groq_pede if provedor == 'groq' else rota_pede
+
+
+def modelos_dialeto(chave: str, provedor: str = 'openrouter') -> list[str]:
+    d = _canal(provedor)('/models', chave)
     return [m['id'] for m in d.get('data', []) if m.get('id')]
 
 
-def modelo_rota(chave: str, preferido: str = '') -> str:
+def modelo_dialeto(chave: str, preferido: str = '',
+                   provedor: str = 'openrouter') -> str:
     """
     O melhor modelo que esta chave alcança. Vai ao catálogo uma vez: id
-    de modelo no OpenRouter muda de nome e desaparece, igual ao da Google.
+    de modelo muda de nome e desaparece nos dois, igual ao da Google.
     """
-    global _modelo_rota
+    global _modelo_rota, _modelo_groq
     if preferido:
         return preferido
-    if _modelo_rota:
-        return _modelo_rota
-    nomes = modelos_rota(chave)
+    guardado = _modelo_groq if provedor == 'groq' else _modelo_rota
+    if guardado:
+        return guardado
+    d = DIALETOS[provedor]
+    nomes = modelos_dialeto(chave, provedor)
     if not nomes:
-        raise RuntimeError('nenhum modelo disponível nesta chave do OpenRouter')
-    for marca in GOSTO:
-        cand = [n for n in nomes if marca in n.lower()
-                and not any(x in n.lower() for x in ('embed', 'moderation', 'vision-only'))]
+        raise RuntimeError(f'nenhum modelo disponível nesta chave do {d["nome"]}')
+    uteis = [n for n in nomes if not any(x in n.lower() for x in EVITA)]
+    escolhido = (uteis or nomes)[0]
+    for marca in d['gosto']:
+        cand = [n for n in uteis if marca in n.lower()]
         if cand:
-            _modelo_rota = max(cand, key=_versao)
-            return _modelo_rota
-    _modelo_rota = nomes[0]
-    return _modelo_rota
+            escolhido = max(cand, key=_versao)
+            break
+    if provedor == 'groq':
+        _modelo_groq = escolhido
+    else:
+        _modelo_rota = escolhido
+    return escolhido
+
+
+# nomes antigos, para não quebrar quem já importa
+def modelos_rota(chave: str) -> list[str]:
+    return modelos_dialeto(chave, 'openrouter')
+
+
+def modelo_rota(chave: str, preferido: str = '') -> str:
+    return modelo_dialeto(chave, preferido, 'openrouter')
+
+
+def modelos_groq(chave: str) -> list[str]:
+    return modelos_dialeto(chave, 'groq')
+
+
+def modelo_groq(chave: str, preferido: str = '') -> str:
+    return modelo_dialeto(chave, preferido, 'groq')

@@ -22,6 +22,9 @@ MATERIAL = RAIZ / 'material'      # capturas do Instagram, uma pasta por lead
 MODELO = 'claude-opus-5-5'
 MODELO_GEMINI = 'gemini-3.8-flash'
 MODELO_OPENROUTER = ''   # vazio = escolhe do catálogo
+MODELO_GROQ = ''         # idem
+
+PROVEDORES = ('claude', 'gemini', 'openrouter', 'groq')
 
 # Termos de busca padrão. Sem "restaurante" sozinho: o Places devolve
 # shopping e praça de alimentação. Termo específico traz casa específica.
@@ -59,6 +62,7 @@ class Config:
     anthropic: str = ''
     gemini: str = ''
     openrouter: str = ''
+    groq: str = ''
     netlify: str = ''
     whatsapp_token: str = ''
     whatsapp_phone_id: str = ''
@@ -77,12 +81,13 @@ class Config:
     max_por_dia: int = 60
 
     # preferências
-    # claude | gemini | openrouter — quem escreve as abordagens, tria as
-    # respostas e lê o Instagram. Sai sozinho da chave que existir no .env.
+    # claude | gemini | openrouter | groq — quem escreve as abordagens,
+    # tria as respostas e lê o Instagram. Sai sozinho da chave do .env.
     provedor: str = ''
     modelo: str = MODELO
     modelo_gemini: str = MODELO_GEMINI
     modelo_openrouter: str = MODELO_OPENROUTER
+    modelo_groq: str = MODELO_GROQ
     cidade: str = ''
     canal_envio: str = 'link'      # link (padrão) | cloud
     equipe_netlify: str = 'conta5197-99'
@@ -96,11 +101,25 @@ class Config:
     @property
     def modelo_do_cerebro(self) -> str:
         return {'gemini': self.modelo_gemini,
-                'openrouter': self.modelo_openrouter}.get(self.provedor, self.modelo)
+                'openrouter': self.modelo_openrouter,
+                'groq': self.modelo_groq}.get(self.provedor, self.modelo)
+
+    @property
+    def chave_do_dialeto(self) -> str:
+        """
+        A chave que o agente precisa passar na mão.
+
+        Claude e Gemini vêm com SDK, e o SDK lê a variável de ambiente
+        sozinho. OpenRouter e Groq são HTTPS puro: ali a chave viaja como
+        argumento, e passar a do provedor errado é um 401 difícil de ler.
+        """
+        return {'openrouter': self.openrouter,
+                'groq': self.groq}.get(self.provedor, '')
 
     def exige_cerebro(self) -> None:
         self.exige({'gemini': 'gemini',
-                    'openrouter': 'openrouter'}.get(self.provedor, 'anthropic'))
+                    'openrouter': 'openrouter',
+                    'groq': 'groq'}.get(self.provedor, 'anthropic'))
 
     def exige(self, *chaves: str) -> None:
         """Falha cedo, com o nome exato da variável que falta."""
@@ -109,6 +128,7 @@ class Config:
             'anthropic': 'ANTHROPIC_API_KEY',
             'gemini': 'GEMINI_API_KEY',
             'openrouter': 'OPENROUTER_API_KEY',
+            'groq': 'GROQ_API_KEY',
             'netlify': 'NETLIFY_TOKEN',
         }
         faltam = [nomes.get(c, c.upper()) for c in chaves if not getattr(self, c, '')]
@@ -148,6 +168,7 @@ def carrega(caminho: Path | None = None) -> Config:
         anthropic=os.environ.get('ANTHROPIC_API_KEY', ''),
         gemini=os.environ.get('GEMINI_API_KEY', ''),
         openrouter=os.environ.get('OPENROUTER_API_KEY', ''),
+        groq=os.environ.get('GROQ_API_KEY', ''),
         netlify=os.environ.get('NETLIFY_TOKEN', ''),
         whatsapp_token=os.environ.get('WHATSAPP_TOKEN', ''),
         whatsapp_phone_id=os.environ.get('WHATSAPP_PHONE_ID', ''),
@@ -160,6 +181,7 @@ def carrega(caminho: Path | None = None) -> Config:
         c.modelo = g.get('modelo', c.modelo)
         c.modelo_gemini = g.get('modelo_gemini', c.modelo_gemini)
         c.modelo_openrouter = g.get('modelo_openrouter', c.modelo_openrouter)
+        c.modelo_groq = g.get('modelo_groq', c.modelo_groq)
         c.cidade = g.get('cidade', c.cidade)
         c.canal_envio = g.get('canal_envio', c.canal_envio)
         c.equipe_netlify = g.get('equipe_netlify', c.equipe_netlify)
@@ -182,13 +204,17 @@ def carrega(caminho: Path | None = None) -> Config:
                 p = Path(caminhos[campo]).expanduser()
                 setattr(c, campo, p if p.is_absolute() else RAIZ / p)
 
-    # Sem escolha explícita, vale a chave que existe. O OpenRouter vem
-    # primeiro porque uma chave dele já dá acesso aos outros dois.
-    if c.provedor not in ('claude', 'gemini', 'openrouter'):
+    # Sem escolha explícita, vale a chave que existe. A ordem não é
+    # gosto: é quem resolve mais com uma chave só. OpenRouter alcança
+    # Claude, GPT e Gemini; o Groq roda os abertos, e é o último porque
+    # 30 requisições por minuto no plano grátis seguram pouco lead.
+    if c.provedor not in PROVEDORES:
         if c.openrouter and not (c.anthropic or c.gemini):
             c.provedor = 'openrouter'
         elif c.gemini and not c.anthropic:
             c.provedor = 'gemini'
+        elif c.groq and not (c.anthropic or c.gemini):
+            c.provedor = 'groq'
         else:
             c.provedor = 'claude'
     return c

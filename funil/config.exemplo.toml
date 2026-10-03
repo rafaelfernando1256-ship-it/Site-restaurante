@@ -1,7 +1,7 @@
 # Copie para config.toml. Aqui não entra segredo — segredo vai no .env.
 
 [geral]
-# Quem escreve e decide: "claude", "gemini" ou "openrouter".
+# Quem escreve e decide: "claude", "gemini", "openrouter" ou "groq".
 # Deixe comentado para sair sozinho da chave que existir no .env.
 # provedor = "gemini"
 
@@ -9,6 +9,7 @@
 modelo = "claude-opus-5-5"          # vale quando provedor = claude
 modelo_gemini = "gemini-3.8-flash"  # vale quando provedor = gemini
 modelo_openrouter = ""              # vazio = ele escolhe do catálogo
+modelo_groq = ""                    # idem — e o catálogo do Groq muda bastante
 
 cidade = "Natal, RN"
 

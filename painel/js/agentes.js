@@ -861,21 +861,33 @@ const ajustes = {
               OpenRouter (uma chave, vários modelos)</option>
             <option value="gemini" ${prov === 'gemini' ? 'selected' : ''}>
               Gemini (Google)</option>
+            <option value="groq" ${prov === 'groq' ? 'selected' : ''}>
+              Groq (grátis, sem cartão, muito rápido)</option>
           </select>
         </div>
         <div class="grade g2">
           ${campo('Chave do OpenRouter', 'openrouter', E.chaves.openrouter || '',
-                  { tipo: 'password', dica: 'sk-or-...' })}
+                  { tipo: 'password', dica: 'sk-or-v1-...' })}
           ${campo('Chave do Gemini', 'gemini', E.chaves.gemini, { tipo: 'password' })}
+          ${campo('Chave do Groq', 'groq', E.chaves.groq || '',
+                  { tipo: 'password', dica: 'gsk_...' })}
         </div>
-        ${campo('Modelo do OpenRouter (vazio = ele escolhe)', 'modeloRota',
-                E.chaves.modeloRota || '', { dica: 'anthropic/claude-sonnet-4.5' })}
+        <div class="grade g2">
+          ${campo('Modelo do OpenRouter (vazio = ele escolhe)', 'modeloRota',
+                  E.chaves.modeloRota || '', { dica: 'anthropic/claude-sonnet-4.5' })}
+          ${campo('Modelo do Groq (vazio = ele escolhe)', 'modeloGroq',
+                  E.chaves.modeloGroq || '',
+                  { dica: 'moonshotai/kimi-k2-instruct-0905' })}
+        </div>
         <p class="ajuda" style="margin-top:10px">
           OpenRouter: <a href="https://openrouter.ai/keys" target="_blank"
           rel="noopener">openrouter.ai/keys</a> — uma chave só alcança Claude,
           Gemini e GPT, e tem modelos grátis.<br>
           Gemini: <a href="https://aistudio.google.com/apikey" target="_blank"
-          rel="noopener">aistudio.google.com/apikey</a>.
+          rel="noopener">aistudio.google.com/apikey</a> — grátis, sem cartão.<br>
+          Groq: <a href="https://console.groq.com/keys" target="_blank"
+          rel="noopener">console.groq.com/keys</a> — grátis, sem cartão, e o
+          mais rápido. Em troca: 30 pedidos por minuto e 1.000 por dia.
         </p>
         <p class="ajuda">As chaves ficam só neste navegador — não estão no
         código do site, e quem abrir o link não vê.</p>
@@ -892,7 +904,8 @@ const ajustes = {
       </div>`;
 
     on(raiz, 'input', 'input', (e, i) => {
-      if (['gemini', 'openrouter', 'modeloRota'].includes(i.name)) {
+      if (['gemini', 'openrouter', 'groq', 'modeloRota', 'modeloGroq']
+          .includes(i.name)) {
         E.chaves[i.name] = i.value.trim(); N.salva(); return;
       }
       if (i.name in n) { n[i.name] = i.value; N.salva(); }
@@ -900,8 +913,9 @@ const ajustes = {
     on(raiz, 'select[name=provedor]', 'change', (e, sel) => {
       E.chaves.provedor = sel.value;
       N.salva();
-      recado(sel.value ? `agora quem escreve é o ${sel.value === 'openrouter'
-        ? 'OpenRouter' : 'Gemini'}` : 'vale a chave que existir');
+      const nomes = { openrouter: 'OpenRouter', gemini: 'Gemini', groq: 'Groq' };
+      recado(sel.value ? `agora quem escreve é o ${nomes[sel.value] || sel.value}`
+                       : 'vale a chave que existir');
     });
     on(raiz, '[data-fazer="exportar"]', 'click', () => { N.exporta(); recado('backup baixado'); });
     on(raiz, '[data-fazer="importar"]', 'click', () => raiz.querySelector('#arquivo').click());

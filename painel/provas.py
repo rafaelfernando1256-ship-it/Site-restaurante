@@ -237,6 +237,44 @@ async def _(pg):
     assert len(valor) > 60, f'não escreveu a mensagem de reserva: {valor!r}'
 
 
+@prova('escolher o Groq nos Ajustes troca quem escreve, e cobra a chave certa')
+async def _(pg):
+    await abre(pg, 'ajustes')
+    await pg.select_option('select[name=provedor]', 'groq')
+    await pg.wait_for_timeout(250)
+    e = await estado(pg)
+    assert e['chaves']['provedor'] == 'groq', f'não guardou o provedor: {e["chaves"]}'
+
+    # Ainda sem chave: a tela de abordagem tem que cobrar a chave DO GROQ.
+    # Pedir a do Gemini aqui manda a pessoa para o site errado.
+    await pg.goto(f'{ENDERECO}/index.html#abordagem')
+    await pg.reload()
+    await pg.wait_for_timeout(400)
+    texto = await pg.inner_text('#tela')
+    assert 'chave do Groq' in texto, f'não cobrou a chave do Groq: {texto[:200]}'
+    assert 'chave do Gemini' not in texto, 'continuou pedindo a chave do Gemini'
+
+    # E o campo da chave guarda de verdade, separado dos outros dois.
+    await pg.goto(f'{ENDERECO}/index.html#ajustes')
+    await pg.reload()
+    await pg.wait_for_timeout(400)
+    await pg.fill('input[name=groq]', 'gsk_de_teste')
+    await pg.fill('input[name=modeloGroq]', 'moonshotai/kimi-k2-instruct-0905')
+    await pg.wait_for_timeout(300)
+    c = (await estado(pg))['chaves']
+    assert c['groq'] == 'gsk_de_teste', f'não guardou a chave: {c}'
+    assert c['modeloGroq'] == 'moonshotai/kimi-k2-instruct-0905', c
+    assert not c.get('openrouter'), 'escreveu na chave do provedor errado'
+    assert not c.get('gemini'), 'escreveu na chave do provedor errado'
+
+    # Com chave, o aviso sai de cena e o botão de escrever volta a valer.
+    await pg.goto(f'{ENDERECO}/index.html#abordagem')
+    await pg.reload()
+    await pg.wait_for_timeout(400)
+    assert 'chave do Groq' not in await pg.inner_text('#tela'), \
+        'continuou avisando que falta a chave depois de preencher'
+
+
 async def principal() -> int:
     from playwright.async_api import async_playwright
     servidor = subprocess.Popen(

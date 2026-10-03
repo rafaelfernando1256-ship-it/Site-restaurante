@@ -151,7 +151,8 @@ const VAZIO = {
     montagem: 900, mensalidade: 90, prazoDias: 5, alteracoesInclusas: 2,
     paginas: 1, custoHora: 60, horasEstimadas: 8, margem: 2.0,
   },
-  chaves: { gemini: '', openrouter: '', provedor: '', modeloRota: '' },
+  chaves: { gemini: '', openrouter: '', groq: '', provedor: '',
+            modeloRota: '', modeloGroq: '' },
   leads: [],
   cobrancas: [],
   indicacoes: [],
@@ -478,7 +479,7 @@ async function carregaScript(url) {
 /* ===== js/ia.js ================================================ */
 M.ia = (function () {
 /* ------------------------------------------------------------------
-   A IA — Gemini, chamado direto do seu navegador.
+   A IA — chamada direto do seu navegador: Gemini, OpenRouter ou Groq.
 
    A chave fica no localStorage DESTE navegador. Ela não está no código
    do site: quem abrir o link não vê a sua chave, e se você abrir o
@@ -491,11 +492,31 @@ M.ia = (function () {
    ------------------------------------------------------------------ */
 
 const BASE = 'https://generativelanguage.googleapis.com/v1beta';
-const ROTA = 'https://openrouter.ai/api/v1';
 
-/* Ordem de preferência quando o modelo do OpenRouter não foi escolhido
-   à mão: primeiro os que escrevem melhor em português e seguem esquema. */
-const GOSTO = ['claude', 'gemini', 'gpt-4o', 'gpt-5', 'llama', 'mistral'];
+/* OpenRouter e Groq falam o mesmo dialeto (o da OpenAI), então é um
+   código só. O que muda é o endereço, a ordem de preferência e onde se
+   pega a chave. */
+const DIALETOS = {
+  openrouter: {
+    base: 'https://openrouter.ai/api/v1',
+    nome: 'OpenRouter',
+    chaves: 'openrouter.ai/keys',
+    /* Primeiro os que escrevem melhor em português e seguem esquema. */
+    gosto: ['claude', 'gemini', 'gpt-4o', 'gpt-5', 'llama', 'mistral'],
+  },
+  groq: {
+    base: 'https://api.groq.com/openai/v1',
+    nome: 'Groq',
+    chaves: 'console.groq.com/keys',
+    /* Catálogo de modelos abertos: Kimi e gpt-oss escrevem o português
+       mais apresentável dos que estão ali. */
+    gosto: ['kimi', 'gpt-oss', 'llama-4', 'llama-3.3', 'qwen', 'llama'],
+  },
+};
+
+/* Transcritor de áudio, censor e voz moram no mesmo catálogo e não
+   servem para escrever. Escolher um deles rende 400. */
+const EVITA = /embed|moderation|vision-only|whisper|tts|guard|safeguard|rerank|playai/i;
 
 /* Modelos de voz, imagem, vídeo e embedding aparecem na mesma lista e
    vários dizem que fazem texto. Escolher um deles rende um 400 que
@@ -512,14 +533,20 @@ let catalogo = null;
    o Claude, o Gemini e o GPT. */
 function provedor(estado) {
   const c = estado?.chaves || {};
-  if (c.provedor === 'openrouter' || c.provedor === 'gemini') return c.provedor;
+  if (c.provedor === 'openrouter' || c.provedor === 'gemini'
+      || c.provedor === 'groq') return c.provedor;
+  /* Sem escolha explícita, vale a chave que existir. O OpenRouter vem
+     primeiro porque uma chave dele já alcança o Claude, o Gemini e o
+     GPT; o Groq, por último, porque tem o limite diário mais apertado. */
   if (c.openrouter?.trim()) return 'openrouter';
+  if (c.gemini?.trim()) return 'gemini';
+  if (c.groq?.trim()) return 'groq';
   return 'gemini';
 }
 
 function chaveDe(estado) {
-  return (provedor(estado) === 'openrouter'
-    ? estado?.chaves?.openrouter : estado?.chaves?.gemini || '').trim();
+  const p = provedor(estado);
+  return (estado?.chaves?.[p] || '').trim();
 }
 
 function temChave(estado) {
@@ -527,7 +554,14 @@ function temChave(estado) {
 }
 
 function nomeDoProvedor(estado) {
-  return provedor(estado) === 'openrouter' ? 'OpenRouter' : 'Gemini';
+  return DIALETOS[provedor(estado)]?.nome || 'Gemini';
+}
+
+/* Onde pegar a chave do provedor que está valendo — a tela de Ajustes
+   mostra isso, e dizer "openrouter.ai/keys" para quem escolheu Groq é
+   mandar a pessoa para o lugar errado. */
+function ondePegarChave(estado) {
+  return DIALETOS[provedor(estado)]?.chaves || 'aistudio.google.com/apikey';
 }
 
 function versao(nome) {
@@ -589,73 +623,103 @@ async function mensagemDeErro(r) {
 
 const DORME = ms => new Promise(r => setTimeout(r, ms));
 
-let modeloRota = '';
-let catalogoRota = null;
+/* Um cache por dialeto. Um só para os dois faria a troca de provedor
+   mandar o id do outro, e aí é 404 no meio do trabalho. */
+const guardados = { openrouter: { modelo: '', catalogo: null },
+                    groq: { modelo: '', catalogo: null } };
 
-async function rotaPede(caminho, chave, corpo) {
-  const r = await fetch(`${ROTA}${caminho}`, {
-    method: corpo ? 'POST' : 'GET',
-    headers: {
-      Authorization: `Bearer ${chave}`,
-      'Content-Type': 'application/json',
-      'X-Title': 'Painel de vendas',
-    },
-    body: corpo ? JSON.stringify(corpo) : undefined,
+function porVersao(nomes) {
+  return nomes.slice().sort((a, b) => {
+    const va = versao(a), vb = versao(b);
+    for (let i = 0; i < Math.max(va.length, vb.length); i++) {
+      const d = (vb[i] || 0) - (va[i] || 0);
+      if (d) return d;
+    }
+    return 0;
   });
+}
+
+async function dialetoPede(nome, caminho, chave, corpo) {
+  const d = DIALETOS[nome];
+  let r;
+  try {
+    r = await fetch(`${d.base}${caminho}`, {
+      method: corpo ? 'POST' : 'GET',
+      headers: {
+        Authorization: `Bearer ${chave}`,
+        'Content-Type': 'application/json',
+        'X-Title': 'Painel de vendas',
+      },
+      body: corpo ? JSON.stringify(corpo) : undefined,
+    });
+  } catch (e) {
+    /* `fetch` que falha sem status é quase sempre o navegador barrando a
+       resposta por CORS, e o erro que ele dá ("Failed to fetch") não
+       explica nada. Dizer o que é poupa uma hora de caça. */
+    throw new Error(
+      `não consegui falar com o ${d.nome} daqui do navegador. ` +
+      'Pode ser a sua internet, ou o provedor não liberar chamada direta ' +
+      'de página (CORS). Nesse caso use o Gemini ou o OpenRouter neste ' +
+      `painel — a chave do ${d.nome} continua valendo nos agentes que ` +
+      'rodam no seu computador.');
+  }
   if (r.ok) return r.json();
   let detalhe = '';
   try { detalhe = (await r.json())?.error?.message || ''; } catch { /* vazio */ }
   if (r.status === 401) {
-    throw new Error('O OpenRouter recusou a chave. Pegue uma em openrouter.ai/keys');
+    throw new Error(`O ${d.nome} recusou a chave. Pegue uma em ${d.chaves}`);
   }
   if (r.status === 402) {
-    throw new Error('Sem crédito no OpenRouter. Há modelos grátis em ' +
+    throw new Error(`Sem crédito no ${d.nome}. Há modelos grátis em ` +
                     'openrouter.ai/models?q=free');
   }
-  if (r.status === 429) throw new Error('Passou do limite do OpenRouter agora.');
-  throw new Error(`OpenRouter ${r.status}${detalhe ? ' — ' + detalhe : ''}`);
-}
-
-async function modelosRota(chave) {
-  if (catalogoRota) return catalogoRota;
-  const d = await rotaPede('/models', chave);
-  catalogoRota = (d.data || []).map(m => m.id).filter(Boolean);
-  return catalogoRota;
-}
-
-async function modeloRotaEscolhido(chave, preferido) {
-  if (preferido) return preferido;
-  if (modeloRota) return modeloRota;
-  const nomes = await modelosRota(chave);
-  if (!nomes.length) throw new Error('nenhum modelo disponível nesta chave');
-  for (const marca of GOSTO) {
-    const cand = nomes.filter(n => n.toLowerCase().includes(marca)
-      && !/embed|moderation|vision-only/i.test(n));
-    if (cand.length) { modeloRota = cand.sort((a, b) => {
-      const va = versao(a), vb = versao(b);
-      for (let i = 0; i < Math.max(va.length, vb.length); i++) {
-        const d = (vb[i] || 0) - (va[i] || 0);
-        if (d) return d;
-      }
-      return 0;
-    })[0]; return modeloRota; }
+  if (r.status === 429) {
+    throw new Error(`Passou do limite do ${d.nome} agora.` +
+      (nome === 'groq' ? ' No plano grátis são 30 por minuto e 1.000 por dia.'
+                       : ''));
   }
-  modeloRota = nomes[0];
-  return modeloRota;
+  throw new Error(`${d.nome} ${r.status}${detalhe ? ' — ' + detalhe : ''}`);
 }
 
-async function pedeTextoRota(chave, instrucao, conteudo, { maxTokens, preferido }) {
-  const alvo = await modeloRotaEscolhido(chave, preferido);
-  const d = await rotaPede('/chat/completions', chave, {
+async function modelosDialeto(chave, nome = 'openrouter') {
+  const g = guardados[nome];
+  if (g.catalogo) return g.catalogo;
+  const d = await dialetoPede(nome, '/models', chave);
+  g.catalogo = (d.data || []).map(m => m.id).filter(Boolean);
+  return g.catalogo;
+}
+
+async function modeloDialeto(chave, preferido, nome = 'openrouter') {
+  if (preferido) return preferido;
+  const g = guardados[nome];
+  if (g.modelo) return g.modelo;
+  const nomes = await modelosDialeto(chave, nome);
+  if (!nomes.length) throw new Error('nenhum modelo disponível nesta chave');
+  const uteis = nomes.filter(n => !EVITA.test(n));
+  for (const marca of DIALETOS[nome].gosto) {
+    const cand = uteis.filter(n => n.toLowerCase().includes(marca));
+    if (cand.length) { g.modelo = porVersao(cand)[0]; return g.modelo; }
+  }
+  g.modelo = (uteis.length ? uteis : nomes)[0];
+  return g.modelo;
+}
+
+async function pedeTextoDialeto(chave, instrucao, conteudo,
+                                { maxTokens, preferido, nome = 'openrouter' }) {
+  const alvo = await modeloDialeto(chave, preferido, nome);
+  const d = await dialetoPede(nome, '/chat/completions', chave, {
     model: alvo,
     messages: [{ role: 'system', content: instrucao },
                { role: 'user', content: conteudo }],
     max_tokens: maxTokens,
   });
   const texto = (d?.choices?.[0]?.message?.content || '').trim();
-  if (!texto) throw new Error('o OpenRouter respondeu vazio');
+  if (!texto) throw new Error(`o ${DIALETOS[nome].nome} respondeu vazio`);
   return texto;
 }
+
+/* nomes antigos, para não quebrar quem já chama */
+const modelosRota = chave => modelosDialeto(chave, 'openrouter');
 
 /* Pede um texto. Tenta de novo quando é sobrecarga, troca de modelo
    quando o nome sumiu, e desiste na hora quando é erro de chave —
@@ -665,10 +729,13 @@ async function pedeTextoRota(chave, instrucao, conteudo, { maxTokens, preferido 
 async function pedeTextoCom(estado, instrucao, conteudo, opcoes = {}) {
   const chave = chaveDe(estado);
   if (!chave) throw new Error(`falta a chave do ${nomeDoProvedor(estado)} em Ajustes.`);
-  if (provedor(estado) === 'openrouter') {
-    return pedeTextoRota(chave, instrucao, conteudo, {
+  const p = provedor(estado);
+  if (DIALETOS[p]) {
+    return pedeTextoDialeto(chave, instrucao, conteudo, {
       maxTokens: opcoes.maxTokens || 8000,
-      preferido: (estado?.chaves?.modeloRota || '').trim(),
+      preferido: (estado?.chaves?.[p === 'groq' ? 'modeloGroq' : 'modeloRota']
+                  || '').trim(),
+      nome: p,
     });
   }
   return pedeTexto(chave, instrucao, conteudo, opcoes);
@@ -732,10 +799,10 @@ async function pedeTexto(chave, instrucao, conteudo, { maxTokens = 8000,
 }
 
 function modeloEmUso() {
-  return modeloRota || escolhido;
+  return guardados.openrouter.modelo || guardados.groq.modelo || escolhido;
 }
 
-  return { provedor, chaveDe, temChave, nomeDoProvedor, listaModelos, modelo, modelosRota, pedeTextoCom, pedeTexto, modeloEmUso };
+  return { provedor, chaveDe, temChave, nomeDoProvedor, ondePegarChave, listaModelos, modelo, modelosDialeto, modelosRota, pedeTextoCom, pedeTexto, modeloEmUso };
 })();
 
 /* ===== js/agentes.js =========================================== */
@@ -1601,21 +1668,33 @@ const ajustes = {
               OpenRouter (uma chave, vários modelos)</option>
             <option value="gemini" ${prov === 'gemini' ? 'selected' : ''}>
               Gemini (Google)</option>
+            <option value="groq" ${prov === 'groq' ? 'selected' : ''}>
+              Groq (grátis, sem cartão, muito rápido)</option>
           </select>
         </div>
         <div class="grade g2">
           ${campo('Chave do OpenRouter', 'openrouter', E.chaves.openrouter || '',
-                  { tipo: 'password', dica: 'sk-or-...' })}
+                  { tipo: 'password', dica: 'sk-or-v1-...' })}
           ${campo('Chave do Gemini', 'gemini', E.chaves.gemini, { tipo: 'password' })}
+          ${campo('Chave do Groq', 'groq', E.chaves.groq || '',
+                  { tipo: 'password', dica: 'gsk_...' })}
         </div>
-        ${campo('Modelo do OpenRouter (vazio = ele escolhe)', 'modeloRota',
-                E.chaves.modeloRota || '', { dica: 'anthropic/claude-sonnet-4.5' })}
+        <div class="grade g2">
+          ${campo('Modelo do OpenRouter (vazio = ele escolhe)', 'modeloRota',
+                  E.chaves.modeloRota || '', { dica: 'anthropic/claude-sonnet-4.5' })}
+          ${campo('Modelo do Groq (vazio = ele escolhe)', 'modeloGroq',
+                  E.chaves.modeloGroq || '',
+                  { dica: 'moonshotai/kimi-k2-instruct-0905' })}
+        </div>
         <p class="ajuda" style="margin-top:10px">
           OpenRouter: <a href="https://openrouter.ai/keys" target="_blank"
           rel="noopener">openrouter.ai/keys</a> — uma chave só alcança Claude,
           Gemini e GPT, e tem modelos grátis.<br>
           Gemini: <a href="https://aistudio.google.com/apikey" target="_blank"
-          rel="noopener">aistudio.google.com/apikey</a>.
+          rel="noopener">aistudio.google.com/apikey</a> — grátis, sem cartão.<br>
+          Groq: <a href="https://console.groq.com/keys" target="_blank"
+          rel="noopener">console.groq.com/keys</a> — grátis, sem cartão, e o
+          mais rápido. Em troca: 30 pedidos por minuto e 1.000 por dia.
         </p>
         <p class="ajuda">As chaves ficam só neste navegador — não estão no
         código do site, e quem abrir o link não vê.</p>
@@ -1632,7 +1711,8 @@ const ajustes = {
       </div>`;
 
     on(raiz, 'input', 'input', (e, i) => {
-      if (['gemini', 'openrouter', 'modeloRota'].includes(i.name)) {
+      if (['gemini', 'openrouter', 'groq', 'modeloRota', 'modeloGroq']
+          .includes(i.name)) {
         E.chaves[i.name] = i.value.trim(); N.salva(); return;
       }
       if (i.name in n) { n[i.name] = i.value; N.salva(); }
@@ -1640,8 +1720,9 @@ const ajustes = {
     on(raiz, 'select[name=provedor]', 'change', (e, sel) => {
       E.chaves.provedor = sel.value;
       N.salva();
-      recado(sel.value ? `agora quem escreve é o ${sel.value === 'openrouter'
-        ? 'OpenRouter' : 'Gemini'}` : 'vale a chave que existir');
+      const nomes = { openrouter: 'OpenRouter', gemini: 'Gemini', groq: 'Groq' };
+      recado(sel.value ? `agora quem escreve é o ${nomes[sel.value] || sel.value}`
+                       : 'vale a chave que existir');
     });
     on(raiz, '[data-fazer="exportar"]', 'click', () => { N.exporta(); recado('backup baixado'); });
     on(raiz, '[data-fazer="importar"]', 'click', () => raiz.querySelector('#arquivo').click());

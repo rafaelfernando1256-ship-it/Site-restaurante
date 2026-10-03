@@ -5,15 +5,17 @@ Um lugar só para falar com o modelo, para os quatro agentes não terem
 cada um a sua gambiarra — e para trocar de modelo não virar quatro
 mudanças.
 
-Dois provedores, a mesma função. O `pede_json` recebe um esquema Pydantic
-e devolve uma instância validada, venha do Claude ou do Gemini. Quem
-chama não sabe de qual.
+Quatro provedores, a mesma função. O `pede_json` recebe um esquema
+Pydantic e devolve uma instância validada, venha do Claude, do Gemini, do
+OpenRouter ou do Groq. Quem chama não sabe de qual.
 
 SAÍDA VALIDADA POR ESQUEMA, sempre. "Peça JSON e dê um json.loads"
 funciona em 90% das vezes — e num pipeline que roda sozinho os 10%
 restantes aparecem às duas da manhã, no lead que mais valia. Os dois
-provedores têm saída estruturada nativa, e é ela que está em uso:
-`messages.parse` no Claude, `response_schema` no Gemini.
+provedores têm saída estruturada, e é ela que está em uso:
+`messages.parse` no Claude, `response_schema` no Gemini, `response_format`
+nos outros dois. No Groq a maioria dos modelos só aceita `json_object`, e
+aí o esquema vai escrito na instrução e o Pydantic cobra a forma.
 """
 from __future__ import annotations
 
@@ -33,18 +35,31 @@ E = TypeVar('E', bound=BaseModel)
 MODELO_CLAUDE = 'claude-opus-5-5'
 MODELO_GEMINI = 'gemini-3.8-flash'
 MODELO_OPENROUTER = ''          # vazio = escolhe do catálogo na primeira vez
+MODELO_GROQ = ''                # idem
 
 OPENROUTER = 'https://openrouter.ai/api/v1'
+GROQ = 'https://api.groq.com/openai/v1'
 
 # Ordem de preferência quando o modelo não foi escolhido à mão. Primeiro
 # os que escrevem melhor em português e seguem esquema; o resto serve.
 GOSTO = ('claude', 'gemini', 'gpt-4o', 'gpt-5', 'llama', 'mistral')
+
+# O catálogo do Groq é outro: não tem Claude nem Gemini, tem os abertos.
+# Kimi e gpt-oss são os que seguem esquema sem reclamar.
+GOSTO_GROQ = ('kimi', 'gpt-oss', 'llama-4', 'llama-3.3', 'qwen', 'llama')
+
+# No mesmo catálogo moram transcritor de áudio (whisper), censor
+# (guard/safeguard) e modelo de voz. Pedir JSON a um desses rende 400, e
+# o 400 parece erro de código quando é só modelo errado.
+EVITA = ('embed', 'moderation', 'vision-only', 'whisper', 'tts', 'guard',
+         'safeguard', 'rerank', 'playai')
 
 ACEITOS = ('image/png', 'image/jpeg', 'image/gif', 'image/webp')
 
 _claude: Any = None
 _gemini: Any = None
 _modelo_or: str = ''            # o que o catálogo do OpenRouter escolheu
+_modelo_groq: str = ''          # idem, no Groq
 
 TEMPORARIOS = ('APIConnectionError', 'APITimeoutError', 'RateLimitError',
                'InternalServerError', 'APIStatusError', 'OverloadedError',
@@ -54,7 +69,11 @@ TEMPORARIOS = ('APIConnectionError', 'APITimeoutError', 'RateLimitError',
 # estável. "Sobrecarga" e "cota" passam; chave errada, não.
 TEXTO_TEMPORARIO = ('UNAVAILABLE', '503', '529', 'RESOURCE_EXHAUSTED',
                     'high demand', 'overloaded', 'try again later',
-                    'DEADLINE_EXCEEDED', 'INTERNAL')
+                    'DEADLINE_EXCEEDED', 'INTERNAL',
+                    # No plano grátis do Groq o 429 não é acidente: são 30
+                    # requisições por minuto, e o funil estoura isso num
+                    # lote de leads. Esperar resolve; desistir, não.
+                    '429', 'rate limit', 'rate_limit', 'Too Many Requests')
 
 
 def cliente_claude(chave: str = '') -> Any:
@@ -254,27 +273,71 @@ def _json_gemini(instrucao, conteudo, esquema, modelo, imagens, cli, max_tokens)
     return saida
 
 
-# ── OpenRouter ──────────────────────────────────────────────────────
+# ── OpenRouter e Groq: o dialeto da OpenAI ──────────────────────────
 #
-# Uma chave, muitos modelos. A API fala o dialeto da OpenAI, então aqui
-# não entra SDK nenhum: é HTTPS puro da biblioteca padrão, e menos uma
-# dependência para quebrar.
+# Os dois falam o mesmo protocolo, então é um código só. Aqui não entra
+# SDK nenhum: é HTTPS puro da biblioteca padrão, e menos uma dependência
+# para quebrar.
+#
+# Onde eles diferem, diferem de verdade:
+#
+#   • OpenRouter revende Claude, GPT e Gemini. Aceita `response_format`
+#     por ESQUEMA, então a forma do JSON é cobrada pela API.
+#   • Groq roda modelo aberto em hardware próprio, muito rápido e com
+#     plano grátis de verdade. Mas a maioria dos modelos dele NÃO aceita
+#     esquema — só `json_object`. Aí o esquema vai escrito na instrução
+#     e quem cobra a forma é o Pydantic, embaixo.
+#
+# Essa diferença é o motivo de `esquema_nativo` existir. Mandar
+# `json_schema` para um modelo do Groq que não suporta dá 400 na cara.
 
-def _or_pede(caminho: str, chave: str, corpo: dict | None = None,
-             tempo: int = 180) -> dict:
-    import urllib.error
-    import urllib.request
-    req = urllib.request.Request(
-        f'{OPENROUTER}{caminho}',
-        data=json.dumps(corpo).encode() if corpo is not None else None,
-        headers={
-            'Authorization': f'Bearer {chave}',
-            'Content-Type': 'application/json',
-            # O OpenRouter pede estes dois para identificar quem chama;
-            # sem eles a conta funciona, mas fica sem rosto no painel dele.
+DIALETOS: dict[str, dict[str, Any]] = {
+    'openrouter': {
+        'base': OPENROUTER,
+        'nome': 'OpenRouter',
+        'env': 'OPENROUTER_API_KEY',
+        'chaves': 'openrouter.ai/keys',
+        'gosto': GOSTO,
+        'esquema_nativo': True,
+        # O catálogo dele é cheio de modelo que lê imagem, e o modelo
+        # escolhido pelo gosto quase sempre é um. Sem checagem.
+        've_imagem': (),
+        'max_imagens': 0,
+        # O OpenRouter pede estes dois para identificar quem chama; sem
+        # eles a conta funciona, mas fica sem rosto no painel dele.
+        'cabecalhos': {
             'HTTP-Referer': 'https://github.com/rafaelfernando1256-ship-it/Site-restaurante',
             'X-Title': 'Funil de prospeccao',
         },
+    },
+    'groq': {
+        'base': GROQ,
+        'nome': 'Groq',
+        'env': 'GROQ_API_KEY',
+        'chaves': 'console.groq.com/keys',
+        'gosto': GOSTO_GROQ,
+        'esquema_nativo': False,
+        # Aqui a checagem é obrigatória: no Groq só a família Llama 4 lê
+        # imagem, e ela aceita 5 por pedido. O agente 3 manda as capturas
+        # do Instagram — mandar 20 para um modelo de texto é 400 na hora.
+        've_imagem': ('llama-4', 'scout', 'maverick'),
+        'max_imagens': 5,
+        'cabecalhos': {},
+    },
+}
+
+
+def _fala(dialeto: dict, caminho: str, chave: str, corpo: dict | None = None,
+          tempo: int = 180) -> dict:
+    import urllib.error
+    import urllib.request
+    nome = dialeto['nome']
+    req = urllib.request.Request(
+        f'{dialeto["base"]}{caminho}',
+        data=json.dumps(corpo).encode() if corpo is not None else None,
+        headers={'Authorization': f'Bearer {chave}',
+                 'Content-Type': 'application/json',
+                 **dialeto['cabecalhos']},
         method='POST' if corpo is not None else 'GET')
     try:
         with urllib.request.urlopen(req, timeout=tempo) as r:
@@ -282,44 +345,96 @@ def _or_pede(caminho: str, chave: str, corpo: dict | None = None,
     except urllib.error.HTTPError as e:
         detalhe = e.read().decode()[:400]
         if e.code == 401:
-            raise RuntimeError('o OpenRouter recusou a chave. Pegue uma em '
-                               'openrouter.ai/keys') from e
+            raise RuntimeError(f'o {nome} recusou a chave. Pegue uma em '
+                               f'{dialeto["chaves"]}') from e
         if e.code == 402:
-            raise RuntimeError('sem crédito no OpenRouter. Pode usar um modelo '
+            raise RuntimeError(f'sem crédito no {nome}. Pode usar um modelo '
                                'grátis: openrouter.ai/models?q=free') from e
-        raise RuntimeError(f'OpenRouter {e.code}: {detalhe}') from e
+        if e.code == 429:
+            # Esperar quanto o servidor pediu, e não um palpite. No plano
+            # grátis do Groq isto chega todo dia: 30 por minuto, 1.000 por
+            # dia. O texto diz "429", e é por isso que o laço de tentativas
+            # trata como passageiro em vez de abortar o lote.
+            espera = (getattr(e, 'headers', None) or {}).get('retry-after', '')
+            quanto = f' (tente em {espera}s)' if espera else ''
+            raise RuntimeError(f'{nome} 429: limite de requisições '
+                               f'estourado{quanto}. {detalhe}') from e
+        raise RuntimeError(f'{nome} {e.code}: {detalhe}') from e
+    except urllib.error.URLError as e:
+        raise RuntimeError(f'não consegui falar com o {nome} — '
+                           f'confira a sua internet ({e.reason})') from e
 
 
-def modelos_openrouter(chave: str) -> list[str]:
-    d = _or_pede('/models', chave)
+def _or_pede(caminho: str, chave: str, corpo: dict | None = None,
+             tempo: int = 180) -> dict:
+    return _fala(DIALETOS['openrouter'], caminho, chave, corpo, tempo)
+
+
+def _groq_pede(caminho: str, chave: str, corpo: dict | None = None,
+               tempo: int = 180) -> dict:
+    return _fala(DIALETOS['groq'], caminho, chave, corpo, tempo)
+
+
+def _canal(provedor: str):
+    """
+    A função de rede do provedor. Resolvida na HORA da chamada, de
+    propósito: é o que deixa o teste trocar `_or_pede` por um falso e
+    rodar o caminho inteiro sem tocar na internet.
+    """
+    return _groq_pede if provedor == 'groq' else _or_pede
+
+
+def _versao_id(nome: str) -> list[float]:
+    nums = re.findall(r'\d+(?:\.\d+)?', nome)
+    return [float(x) for x in nums] or [0.0]
+
+
+def modelos_dialeto(chave: str, provedor: str = 'openrouter') -> list[str]:
+    d = _canal(provedor)('/models', chave)
     return [m['id'] for m in d.get('data', []) if m.get('id')]
 
 
-def _escolhe_openrouter(chave: str) -> str:
+def _escolhe_dialeto(chave: str, provedor: str) -> str:
     """O melhor modelo disponível nesta chave, pela ordem de gosto."""
-    nomes = modelos_openrouter(chave)
+    dialeto = DIALETOS[provedor]
+    nomes = modelos_dialeto(chave, provedor)
     if not nomes:
-        raise RuntimeError('nenhum modelo disponível nesta chave do OpenRouter')
-    for marca_ in GOSTO:
-        candidatos = [n for n in nomes if marca_ in n.lower()
-                      and not any(x in n.lower() for x in
-                                  ('vision-only', 'embed', 'moderation'))]
+        raise RuntimeError(f'nenhum modelo disponível nesta chave do {dialeto["nome"]}')
+    uteis = [n for n in nomes if not any(x in n.lower() for x in EVITA)]
+    for marca_ in dialeto['gosto']:
+        candidatos = [n for n in uteis if marca_ in n.lower()]
         if candidatos:
             # Entre os da mesma marca, o de maior versão.
-            def versao(n):
-                nums = re.findall(r'\d+(?:\.\d+)?', n)
-                return [float(x) for x in nums] or [0.0]
-            return max(candidatos, key=versao)
-    return nomes[0]
+            return max(candidatos, key=_versao_id)
+    return (uteis or nomes)[0]
+
+
+def modelo_dialeto(chave: str, preferido: str = '',
+                   provedor: str = 'openrouter') -> str:
+    """
+    O id do modelo, perguntado ao catálogo uma vez por execução. Id de
+    modelo muda de nome e desaparece nos dois provedores; fixar um na
+    unha é marcar hora para o funil parar sozinho.
+    """
+    global _modelo_or, _modelo_groq
+    if preferido:
+        return preferido
+    if provedor == 'groq':
+        if not _modelo_groq:
+            _modelo_groq = _escolhe_dialeto(chave, 'groq')
+        return _modelo_groq
+    if not _modelo_or:
+        _modelo_or = _escolhe_dialeto(chave, 'openrouter')
+    return _modelo_or
+
+
+# nomes antigos, para não quebrar quem já importa
+def modelos_openrouter(chave: str) -> list[str]:
+    return modelos_dialeto(chave, 'openrouter')
 
 
 def modelo_openrouter(chave: str, preferido: str = '') -> str:
-    global _modelo_or
-    if preferido:
-        return preferido
-    if not _modelo_or:
-        _modelo_or = _escolhe_openrouter(chave)
-    return _modelo_or
+    return modelo_dialeto(chave, preferido, 'openrouter')
 
 
 def _or_partes(conteudo: str, imagens: Sequence[Path]) -> Any:
@@ -335,7 +450,8 @@ def _or_partes(conteudo: str, imagens: Sequence[Path]) -> Any:
     return partes
 
 
-def _or_conversa(chave, modelo, instrucao, conteudo, imagens, max_tokens, extra=None):
+def _or_conversa(chave, modelo, instrucao, conteudo, imagens, max_tokens,
+                 extra=None, provedor='openrouter'):
     corpo = {
         'model': modelo,
         'messages': [{'role': 'system', 'content': instrucao},
@@ -343,30 +459,83 @@ def _or_conversa(chave, modelo, instrucao, conteudo, imagens, max_tokens, extra=
         'max_tokens': max_tokens,
     }
     corpo.update(extra or {})
-    d = _or_pede('/chat/completions', chave, corpo)
+    d = _canal(provedor)('/chat/completions', chave, corpo)
     escolhas = d.get('choices') or []
     if not escolhas:
-        raise RuntimeError(f'o OpenRouter respondeu sem conteúdo: {str(d)[:200]}')
+        raise RuntimeError(f'o {DIALETOS[provedor]["nome"]} respondeu sem '
+                           f'conteúdo: {str(d)[:200]}')
     return (escolhas[0].get('message', {}).get('content') or '').strip()
 
 
-def _json_openrouter(instrucao, conteudo, esquema, modelo, imagens, cli, max_tokens):
-    chave = cli if isinstance(cli, str) else os.environ.get('OPENROUTER_API_KEY', '')
-    alvo = modelo_openrouter(chave, modelo)
-    esquema_json = esquema.model_json_schema()
+def _molde(esquema: type[BaseModel]) -> str:
+    """O esquema escrito na instrução, para quem não aceita esquema na API."""
+    return ('\n\nResponda SÓ com um JSON, sem cerca de código, que obedeça '
+            'exatamente a este esquema:\n'
+            + json.dumps(esquema.model_json_schema(), ensure_ascii=False, indent=2))
 
-    # Pede JSON pelo esquema. `strict` fica desligado de propósito: o modo
-    # estrito exige TODO campo em `required`, e vários campos nossos têm
-    # padrão. O que garante a forma é a validação do Pydantic logo abaixo.
-    extra = {'response_format': {
-        'type': 'json_schema',
-        'json_schema': {'name': esquema.__name__.lower(), 'strict': False,
-                        'schema': esquema_json}}}
+
+def _com_olhos(chave: str, alvo: str, imagens: Sequence[Path],
+               provedor: str) -> tuple[str, list[Path]]:
+    """
+    Troca o modelo quando o pedido leva imagem e o escolhido não vê.
+
+    Vale a pena ser explícito aqui porque o erro contrário é horrível de
+    ler: a API devolve um 400 sobre `image_url` e quem está do outro lado
+    acha que o código está quebrado, quando o que falta é um modelo com
+    olhos. Melhor trocar, avisar, e seguir.
+    """
+    dialeto = DIALETOS[provedor]
+    marcas = dialeto['ve_imagem']
+    imagens = list(imagens)
+    if marcas and not any(m in alvo.lower() for m in marcas):
+        candidatos = [n for n in modelos_dialeto(chave, provedor)
+                      if any(m in n.lower() for m in marcas)
+                      and not any(x in n.lower() for x in EVITA)]
+        if not candidatos:
+            raise RuntimeError(
+                f'nenhum modelo do {dialeto["nome"]} nesta chave lê imagem, e '
+                'este passo manda as capturas do Instagram.\n'
+                'Para construir o site use provedor = "gemini" (ou "claude") '
+                'em config.toml; o Groq continua servindo para escrever as '
+                'abordagens e triar as respostas, que são só texto.')
+        alvo = max(candidatos, key=_versao_id)
+        print(f'    (este passo manda imagem; usando "{alvo}")')
+    teto = dialeto['max_imagens']
+    if teto and len(imagens) > teto:
+        print(f'    (o {dialeto["nome"]} aceita {teto} imagens por pedido; '
+              f'mandando as {teto} primeiras)')
+        imagens = imagens[:teto]
+    return alvo, imagens
+
+
+def _json_dialeto(instrucao, conteudo, esquema, modelo, imagens, cli, max_tokens,
+                  provedor='openrouter'):
+    dialeto = DIALETOS[provedor]
+    chave = cli if isinstance(cli, str) else os.environ.get(dialeto['env'], '')
+    alvo = modelo_dialeto(chave, modelo or '', provedor)
+    if imagens:
+        alvo, imagens = _com_olhos(chave, alvo, imagens, provedor)
+
+    if dialeto['esquema_nativo']:
+        # Pede JSON pelo esquema. `strict` fica desligado de propósito: o
+        # modo estrito exige TODO campo em `required`, e vários campos
+        # nossos têm padrão. O que garante a forma é o Pydantic, abaixo.
+        extra = {'response_format': {
+            'type': 'json_schema',
+            'json_schema': {'name': esquema.__name__.lower(), 'strict': False,
+                            'schema': esquema.model_json_schema()}}}
+        instrucao_base = instrucao
+    else:
+        # O Groq aceita `json_object` em praticamente todo modelo, e
+        # `json_schema` em quase nenhum. Então a API garante que é JSON
+        # válido e a instrução carrega a forma.
+        extra = {'response_format': {'type': 'json_object'}}
+        instrucao_base = instrucao + _molde(esquema)
 
     aviso = ''
     for tentativa in range(2):
-        bruto = _or_conversa(chave, alvo, instrucao + aviso, conteudo, imagens,
-                             max_tokens, extra)
+        bruto = _or_conversa(chave, alvo, instrucao_base + aviso, conteudo,
+                             imagens, max_tokens, extra, provedor)
         texto = re.sub(r'^```[a-zA-Z]*\s*|\s*```$', '', bruto.strip())
         try:
             return esquema.model_validate_json(texto)
@@ -377,7 +546,17 @@ def _json_openrouter(instrucao, conteudo, esquema, modelo, imagens, cli, max_tok
             # Segunda chance com o erro na mão: é o que mais resolve.
             aviso = ('\n\nA sua resposta anterior não passou na validação: '
                      f'{str(e)[:300]}\nResponda SÓ com o JSON, no formato pedido.')
-    raise RuntimeError('o OpenRouter não respondeu')
+    raise RuntimeError(f'o {dialeto["nome"]} não respondeu')
+
+
+def _json_openrouter(instrucao, conteudo, esquema, modelo, imagens, cli, max_tokens):
+    return _json_dialeto(instrucao, conteudo, esquema, modelo, imagens, cli,
+                         max_tokens, 'openrouter')
+
+
+def _json_groq(instrucao, conteudo, esquema, modelo, imagens, cli, max_tokens):
+    return _json_dialeto(instrucao, conteudo, esquema, modelo, imagens, cli,
+                         max_tokens, 'groq')
 
 
 # ── o que os agentes chamam ─────────────────────────────────────────
@@ -391,8 +570,8 @@ def pede_json(instrucao: str, conteudo: str, esquema: type[E],
     `cli` existe para teste: qualquer objeto com a interface do SDK serve,
     e aí nada sai para a rede.
     """
-    faz = {'gemini': _json_gemini, 'openrouter': _json_openrouter}.get(
-        provedor, _json_claude)
+    faz = {'gemini': _json_gemini, 'openrouter': _json_openrouter,
+           'groq': _json_groq}.get(provedor, _json_claude)
     espera = 3.0
     for t in range(tentativas):
         try:
@@ -413,10 +592,12 @@ def pede_json(instrucao: str, conteudo: str, esquema: type[E],
 def pede_texto(instrucao: str, conteudo: str, modelo: str | None = None,
                cli: Any = None, max_tokens: int = 8000,
                provedor: str = 'claude') -> str:
-    if provedor == 'openrouter':
-        chave = cli if isinstance(cli, str) else os.environ.get('OPENROUTER_API_KEY', '')
-        return _or_conversa(chave, modelo_openrouter(chave, modelo or ''),
-                            instrucao, conteudo, (), max_tokens)
+    if provedor in DIALETOS:
+        chave = (cli if isinstance(cli, str)
+                 else os.environ.get(DIALETOS[provedor]['env'], ''))
+        return _or_conversa(chave, modelo_dialeto(chave, modelo or '', provedor),
+                            instrucao, conteudo, (), max_tokens,
+                            provedor=provedor)
     if provedor == 'gemini':
         from google.genai import types
         c = cli or cliente_gemini()
