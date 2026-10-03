@@ -313,17 +313,69 @@ python3 funil.py colonia                # o livro-caixa
 python3 funil.py colonia --recebi g0-01 90000   # R$ 900,00 caíram na sua conta
 ```
 
-Cada **organismo** é um agente com carteira própria. Nasce com R$ 5,00,
-gasta para trabalhar, recebe quando um cliente paga, e some para sempre
-quando a carteira zera. Quem dá lucro se reproduz e paga R$ 5,00 do
-próprio bolso para o filho. É seleção, não metáfora: o dinheiro é o que
-entra e sai da sua conta.
+### A carteira é um ENVELOPE sobre a sua conta
+
+Este é o ponto, e é o que faz o resto fazer sentido. Existe **um**
+dinheiro: o seu. O que a colônia faz é fatiar esse dinheiro em envelopes.
+
+```
+BANCO: R$ 25,00          ← o que VOCÊ declarou que pode ser gasto nisto
+  ├─ g0-01 ....  R$ 5,00   ele só toca nestes R$ 5,00
+  ├─ g0-02 ....  R$ 5,00   e não pega do envelope do outro
+  └─ livre ....  R$ 15,00  o que ainda não foi prometido a ninguém
+```
+
+Um organismo com R$ 5,00 no envelope **não gasta R$ 6,00 nem que o banco
+tenha R$ 900,00** — tem teste travando exatamente isso. E a soma dos
+envelopes dos vivos nunca passa do banco: é invariante checada em código
+(`confere()`), que **levanta** em vez de se corrigir sozinha. Livro-caixa
+que se ajusta em silêncio esconde justamente o bug que você precisa ver.
+
+```bash
+python3 funil.py colonia --banco 2500    # declaro R$ 25,00
+#   banco R$ 25,00 · envelopes R$ 0,00 · livre R$ 25,00
+#   cabem mais 5 organismo(s) de R$ 5,00
+```
+
+Com o livre em zero, o próximo não nasce — e a mensagem diz quanto falta
+declarar, porque "não nasceu" sem motivo manda você mexer no lugar errado.
+
+| o que acontece | banco | envelope | livre |
+|---|---|---|---|
+| nasce um organismo | — | +R$ 5 | −R$ 5 |
+| ele gasta R$ 0,19 numa busca | −R$ 0,19 | −R$ 0,19 | — |
+| **um cliente paga R$ 900** | +R$ 900 | +R$ 900 | — |
+| ele se reproduz | — | move R$ 5 pai→filho | — |
+| ele morre com R$ 3 no envelope | — | zera | +R$ 3 |
+
+A última linha importa: **o dinheiro é seu, não dele.** Enterrar R$ 3,00
+com o organismo seria perder dinheiro de verdade para manter uma metáfora.
+
+### O que o banco é, de verdade
+
+Um número que você declara. **Nenhum agente mexe na sua conta** — o que
+eles fazem é causar cobrança na Places API, no provedor de modelo e na
+Netlify. O banco é o teto de quanto isso pode somar, e a colônia debita
+cada centavo.
+
+Isso significa que o banco pode **descolar da realidade** se a sua fatura
+vier diferente da tabela de preços em `nucleo/colonia.py`. Quando isso
+acontecer, reconcilie: `--banco` com o número verdadeiro. O saldo
+corrente mora no livro-caixa, não no `config.toml` — reabrir não
+ressuscita o que já foi gasto.
+
+### Vida, morte e lucro
+
+Cada organismo nasce com R$ 5,00 de envelope, gasta para trabalhar, recebe
+quando um cliente paga, e some para sempre quando o envelope zera. Quem dá
+lucro se reproduz e passa R$ 5,00 do **próprio envelope** para o filho —
+o banco não muda, é o mesmo dinheiro em outro envelope.
 
 ### As duas reservas, e por que a segunda é a que importa
 
 | reserva | o que é | acaba quando |
 |---|---|---|
-| **carteira** | centavos, debitados no custo real de cada operação | gasta mais do que tem |
+| **envelope** | centavos do SEU banco, debitados no custo real | gasta mais do que foi reservado |
 | **toques** | primeiros contatos que ele pode te pedir | queima os 40 |
 
 A carteira quase não dói: rodando em Gemini, Groq ou modelos `:free` do
@@ -386,9 +438,15 @@ de código, não:
 
 | teto | padrão | máximo de código |
 |---|---|---|
+| **banco** (o que pode ser gasto) | R$ 25,00 | o que você declarar |
 | vivos ao mesmo tempo | 4 | 32 |
 | gasto da colônia na vida | R$ 50,00 | R$ 500,00 |
 | gerações | — | 12 |
+
+O banco e o `teto_gasto` fazem coisas diferentes: o **banco** é quanto há
+disponível agora (sobe quando você recebe, desce quando gastam); o
+**teto_gasto** é o freio de mão para a vida inteira, por mais rica que a
+colônia fique.
 
 Replicação sem teto é a única coisa nesta lista que não tem volta: um erro
 numa geração vira dezenas de agentes repetindo a mesma mensagem errada com
@@ -428,7 +486,7 @@ sumido) está verificada; o que não dá para verificar daqui é a rede.
 
 ## O que foi verificado
 
-**97 testes, 97 passando** (`python3 testes.py`). Nenhum toca a rede: o
+**107 testes, 107 passando** (`python3 testes.py`). Nenhum toca a rede: o
 cliente do modelo, a Places API, a API da Netlify e o Claude Code entram
 como dublê, porque o que precisa de teste é a lógica.
 
@@ -439,6 +497,14 @@ não morre por falta de toque; só reproduz quem recebeu de cliente; a
 mutação nunca gera clone idêntico; o teto de código não é furável pela
 configuração; o livro-caixa sobrevive a fechar e abrir sem perder centavo;
 e **a colônia nunca envia nem aprova nada sozinha**.
+
+Do banco: a soma dos envelopes nunca passa do banco; um envelope de R$ 5
+não gasta R$ 6 nem com R$ 900 no banco; gastar sai dos dois lados no mesmo
+centavo; o envelope de quem morre volta para o livre; reproduzir move
+dinheiro sem criar nem queimar; declarar banco menor que o reservado é
+recusado; a invariante levanta em vez de se ajustar; pagamento que chega
+depois da morte vai para o banco e não para o morto; e o saldo corrente do
+arquivo vence o número do `config.toml`.
 
 O que eles garantem, em grupos:
 

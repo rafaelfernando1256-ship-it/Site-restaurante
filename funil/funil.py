@@ -378,12 +378,37 @@ def _colonia(cfg):
                    teto_vivos=cfg.colonia_teto_vivos,
                    teto_gasto=cfg.colonia_teto_gasto,
                    semente=cfg.colonia_semente,
-                   toques=cfg.colonia_toques)
+                   toques=cfg.colonia_toques,
+                   banco=cfg.colonia_banco)
 
 
 def cmd_colonia(a, cfg) -> int:
-    from nucleo.colonia import ColoniaCheia, dinheiro
+    from nucleo.colonia import (ColoniaCheia, ContaErrada, SemBanco, dinheiro)
     col = _colonia(cfg)
+
+    # A invariante é checada na abertura também: se o arquivo foi editado
+    # à mão (e ele é JSON justamente para poder ser), é aqui que a conta
+    # errada aparece — antes de alguém gastar em cima dela.
+    try:
+        col.confere()
+    except ContaErrada as e:
+        print(f'\n  A CONTA NÃO FECHA\n\n  {e}\n')
+        print(f'  o livro-caixa está em {col.caminho}\n')
+        return 1
+
+    if a.banco is not None:
+        try:
+            col.declara_banco(a.banco)
+        except ContaErrada as e:
+            print(f'\n  {e}\n')
+            return 1
+        col.salva()
+        cabem = col.livre // col.semente
+        print(f'\n  banco: {dinheiro(col.banco)} · '
+              f'envelopes {dinheiro(col.reservado)} · '
+              f'livre {dinheiro(col.livre)}')
+        print(f'  cabem mais {cabem} organismo(s) de {dinheiro(col.semente)}\n')
+        return 0
 
     if a.recebi:
         ident, centavos = a.recebi[0], int(a.recebi[1])
@@ -395,7 +420,11 @@ def cmd_colonia(a, cfg) -> int:
         col.salva()
         o = col.bichos[ident]
         print(f'\n  {ident} recebeu {dinheiro(centavos)}. '
-              f'Carteira: {dinheiro(o.carteira)} · saldo {dinheiro(o.saldo)}')
+              f'Envelope: {dinheiro(o.carteira)} · saldo {dinheiro(o.saldo)}')
+        print(f'  banco {dinheiro(col.banco)} · livre {dinheiro(col.livre)}')
+        if not o.vivo:
+            print('  (ele já estava morto: o dinheiro entrou no banco, '
+                  'não no envelope dele)')
         if o.pode_reproduzir:
             print('  Ele já pode se reproduzir — sai na próxima '
                   '"colonia --viver".')
@@ -406,9 +435,13 @@ def cmd_colonia(a, cfg) -> int:
         if a.matar not in col.bichos:
             print(f'\n  não existe organismo "{a.matar}"\n')
             return 1
+        sobrou = col.bichos[a.matar].carteira
         col.mata(a.matar, 'morto à mão por você')
         col.salva()
-        print(f'\n  † {a.matar} morto. Não há como reviver.\n')
+        print(f'\n  † {a.matar} morto. Não há como reviver.')
+        if sobrou:
+            print(f'  {dinheiro(sobrou)} do envelope dele voltaram para o livre.')
+        print(f'  livre agora: {dinheiro(col.livre)}\n')
         return 0
 
     if a.recarregar:
@@ -439,11 +472,15 @@ def cmd_colonia(a, cfg) -> int:
         try:
             o = col.nascer(cidade=cidade, termos=cfg.termos, tom=a.tom,
                            preco=a.preco)
-        except ColoniaCheia as e:
+        except (ColoniaCheia, SemBanco) as e:
             print(f'\n  {e}\n')
             return 1
         col.salva()
-        print(f'\n  nasceu {o.id} com {dinheiro(o.carteira)} e {o.toques} toques.')
+        print(f'\n  nasceu {o.id} com um envelope de {dinheiro(o.carteira)} '
+              f'e {o.toques} toques.')
+        print(f'  banco {dinheiro(col.banco)} · '
+              f'envelopes {dinheiro(col.reservado)} · '
+              f'livre {dinheiro(col.livre)}')
         print(f'  {o.cidade} · tom {o.tom} · cobra {dinheiro(o.preco)}')
         print('\n  para ele trabalhar: python3 funil.py colonia --viver\n')
         return 0
@@ -568,8 +605,13 @@ def principal(argv: list[str] | None = None) -> int:
     s.add_argument('--recebi', nargs=2, metavar=('ID', 'CENTAVOS'),
                    help='confirma um pagamento que CAIU na sua conta. '
                         'Em centavos: 90000 = R$ 900,00')
+    s.add_argument('--banco', type=int, metavar='CENTAVOS',
+                   help='declara quanto você tem disponível para a colônia '
+                        'gastar. 2500 = R$ 25,00. Os envelopes dos '
+                        'organismos saem daqui e nunca somam mais que isto.')
     s.add_argument('--matar', metavar='ID',
-                   help='mata um organismo à mão. Não tem volta.')
+                   help='mata um organismo à mão. Não tem volta. O envelope '
+                        'dele volta para o livre.')
     s.add_argument('--recarregar', nargs=2, metavar=('ID', 'TOQUES'),
                    help='devolve toques a quem já fechou alguma coisa')
     s.add_argument('--tom', default='direto',

@@ -87,6 +87,7 @@ class Config:
     colonia_teto_gasto: int = 5_000    # centavos que a colônia pode gastar na vida
     colonia_semente: int = 500         # com quanto cada organismo nasce
     colonia_toques: int = 40           # primeiros contatos que cada um pode pedir
+    colonia_banco: int = 2_500         # centavos que a colônia pode gastar. 2500 = R$ 25,00
 
     # preferências
     # claude | gemini | openrouter | groq — quem escreve as abordagens,
@@ -195,7 +196,8 @@ def carrega(caminho: Path | None = None) -> Config:
         for campo, destino in (('teto_vivos', 'colonia_teto_vivos'),
                                ('teto_gasto', 'colonia_teto_gasto'),
                                ('semente', 'colonia_semente'),
-                               ('toques', 'colonia_toques')):
+                               ('toques', 'colonia_toques'),
+                               ('banco', 'colonia_banco')):
             if campo in colonia:
                 setattr(c, destino, int(colonia[campo]))
         c.cidade = g.get('cidade', c.cidade)

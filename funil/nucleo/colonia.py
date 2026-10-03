@@ -1,11 +1,39 @@
 """
 A COLÔNIA — agentes que vivem de dinheiro de verdade e morrem sem ele.
 
-Cada organismo é um agente com carteira própria. Ele nasce com R$ 5,00,
-gasta para trabalhar, recebe quando um cliente paga, e some para sempre
-quando a carteira zera. Quem dá lucro se reproduz e passa R$ 5,00 para o
-filho. Quem não dá, morre. É seleção, não metáfora: o dinheiro é o mesmo
-que entra e sai da sua conta.
+A CARTEIRA É UM ENVELOPE SOBRE A SUA CONTA, NÃO UM COFRE DO AGENTE
+
+Isto é o ponto, e é o que faz o resto fazer sentido. Existe UM dinheiro:
+o seu. O que a colônia faz é fatiar esse dinheiro em envelopes:
+
+    BANCO: R$ 25,00   ← o que VOCÊ declarou que pode ser gasto nisto
+      ├─ g0-01 .... R$ 5,00   reservado. Ele só pode tocar nestes R$ 5,00.
+      ├─ g0-02 .... R$ 5,00   idem — e não pode pegar do envelope do outro.
+      └─ livre .... R$ 15,00  o que ainda não foi prometido a ninguém
+
+Um organismo com R$ 5,00 no envelope não gasta R$ 6,00 nem que o banco
+tenha R$ 25,00. E a soma dos envelopes dos vivos NUNCA passa do banco —
+é invariante checada em código, não intenção. Enquanto houver livre, nasce
+mais um; quando não houver, não nasce, e a mensagem diz exatamente isso.
+
+Quando um organismo morre, o que sobrou no envelope dele volta para o
+livre: o dinheiro é seu, não dele.
+
+Cada organismo nasce com R$ 5,00, gasta para trabalhar, recebe quando um
+cliente paga, e some para sempre quando o envelope zera. Quem dá lucro se
+reproduz e passa R$ 5,00 do próprio envelope para o filho. Quem não dá,
+morre. É seleção, não metáfora: o dinheiro é o mesmo que sai da sua conta.
+
+O QUE O BANCO É, DE VERDADE
+
+Um número que você declara: `funil.py colonia --banco 2500`. Nenhum
+agente mexe na sua conta — o que eles fazem é causar cobrança na Places
+API, no provedor de modelo e na Netlify. O banco é o teto de quanto isso
+pode somar, e a colônia debita cada centavo que gasta.
+
+Isso significa que o banco pode DESCOLAR da realidade, se a sua fatura
+vier diferente do que a tabela de preços aqui diz. Quando isso acontecer,
+reconcilie: `--banco` com o número verdadeiro.
 
 O QUE FAZ UM ORGANISMO ESTAR VIVO
 
@@ -195,7 +223,7 @@ class Organismo:
             estado = 'vivo'
         return (f'{self.id} · g{self.geracao} · {self.cidade} · {self.tom} · '
                 f'cobra {dinheiro(self.preco)} · {estado}\n'
-                f'    carteira {dinheiro(self.carteira)} · '
+                f'    envelope {dinheiro(self.carteira)} · '
                 f'ganhou {dinheiro(self.ganho)} · gastou {dinheiro(self.gasto)} · '
                 f'saldo {dinheiro(self.saldo)}\n'
                 f'    {self.toques} toques · {self.leads} leads · '
@@ -212,6 +240,14 @@ class ColoniaCheia(RuntimeError):
     pass
 
 
+class SemBanco(RuntimeError):
+    """Não há dinheiro livre no banco para abrir mais um envelope."""
+
+
+class ContaErrada(RuntimeError):
+    """A invariante do dinheiro quebrou. Nada mais age até você olhar."""
+
+
 class Colonia:
     """
     A população e o livro-caixa, num JSON ao lado do banco do funil.
@@ -222,17 +258,70 @@ class Colonia:
 
     def __init__(self, caminho: Path, teto_vivos: int = 8,
                  teto_gasto: int = TETO_GASTO, semente: int = SEMENTE,
-                 toques: int = TOQUES_INICIAIS):
+                 toques: int = TOQUES_INICIAIS, banco: int = 0):
         self.caminho = Path(caminho)
         self.teto_vivos = max(1, min(int(teto_vivos), TETO_VIVOS))
         self.teto_gasto = max(0, min(int(teto_gasto), TETO_GASTO))
         self.semente = max(1, int(semente))
         self.toques_iniciais = max(1, int(toques))
+        # O banco: centavos que VOCÊ declarou disponíveis. Dele saem os
+        # envelopes, e nele voltam os envelopes de quem morre.
+        self.banco = max(0, int(banco))
         self.bichos: dict[str, Organismo] = {}
         self.buscas_pagas = 0        # quantas buscas já saíram do grátis
         self.gasto_total = 0
         self.diario: list[dict] = []
         self.carrega()
+
+    # ── o banco e os envelopes ──────────────────────────────────────
+    @property
+    def reservado(self) -> int:
+        """Centavos prometidos aos envelopes dos VIVOS."""
+        return sum(o.carteira for o in self.vivos())
+
+    @property
+    def livre(self) -> int:
+        """O que ainda não foi prometido a ninguém."""
+        return self.banco - self.reservado
+
+    def confere(self) -> None:
+        """
+        A invariante, checada depois de toda mexida em dinheiro: a soma
+        dos envelopes dos vivos não passa do banco.
+
+        Isto levanta em vez de corrigir sozinho, de propósito. Se a soma
+        passou do banco, algum caminho criou dinheiro que não existe — e
+        um livro-caixa que se "ajusta" sozinho esconde exatamente o bug
+        que você mais precisa ver.
+        """
+        if self.reservado > self.banco:
+            raise ContaErrada(
+                f'os envelopes somam {dinheiro(self.reservado)} e o banco tem '
+                f'{dinheiro(self.banco)}. Alguma coisa criou dinheiro que não '
+                'existe — não gaste mais nada até entender.')
+        for o in self.bichos.values():
+            if o.carteira < 0:
+                raise ContaErrada(f'{o.id} está com envelope negativo: '
+                                  f'{dinheiro(o.carteira)}')
+
+    def declara_banco(self, centavos: int) -> None:
+        """
+        Você diz quanto há. Baixar abaixo do que já está reservado é
+        recusado: o dinheiro desses envelopes já foi prometido, e
+        confiscar em silêncio faria organismo gastar o que não existe.
+        """
+        centavos = max(0, int(centavos))
+        if centavos < self.reservado:
+            raise ContaErrada(
+                f'não dá para declarar {dinheiro(centavos)}: os envelopes dos '
+                f'vivos já somam {dinheiro(self.reservado)}.\n'
+                'Mate um organismo primeiro (o envelope dele volta para o '
+                'livre): python3 funil.py colonia --matar <id>')
+        antes = self.banco
+        self.banco = centavos
+        self._anota('banco', 'declarado', centavos - antes,
+                    f'de {dinheiro(antes)} para {dinheiro(centavos)}')
+        self.confere()
 
     # ── disco ───────────────────────────────────────────────────────
     def carrega(self) -> None:
@@ -246,6 +335,11 @@ class Colonia:
         self.buscas_pagas = int(d.get('buscas_pagas', 0))
         self.gasto_total = int(d.get('gasto_total', 0))
         self.diario = list(d.get('diario', []))
+        # O banco do arquivo vence o do argumento: ele é o saldo corrente,
+        # já descontado de tudo que foi gasto. Deixar o argumento vencer
+        # ressuscitaria dinheiro já queimado a cada abertura.
+        if 'banco' in d:
+            self.banco = int(d['banco'])
 
     def salva(self) -> None:
         """
@@ -255,6 +349,7 @@ class Colonia:
         """
         self.caminho.parent.mkdir(parents=True, exist_ok=True)
         d = {
+            'banco': self.banco,
             'organismos': [asdict(o) for o in self.bichos.values()],
             'buscas_pagas': self.buscas_pagas,
             'gasto_total': self.gasto_total,
@@ -289,6 +384,17 @@ class Colonia:
                 f'(máximo de código: {TETO_VIVOS}).')
         if geracao > TETO_GERACOES:
             raise ColoniaCheia(f'geração {geracao} passa do teto de {TETO_GERACOES}')
+        # O envelope sai do LIVRE. Sem banco suficiente, não nasce — e a
+        # mensagem diz quanto falta, porque "não nasceu" sem motivo é o
+        # tipo de silêncio que faz você mexer no lugar errado.
+        if self.livre < self.semente:
+            raise SemBanco(
+                f'o banco tem {dinheiro(self.banco)}, os envelopes dos vivos já '
+                f'somam {dinheiro(self.reservado)}, então sobram '
+                f'{dinheiro(self.livre)} livres — e um organismo nasce com '
+                f'{dinheiro(self.semente)}.\n'
+                f'Declare mais: python3 funil.py colonia --banco '
+                f'{self.banco + (self.semente - self.livre)}')
         o = Organismo(id=self._id(geracao), cidade=cidade, termos=list(termos),
                       tom=tom, preco=int(preco), carteira=self.semente,
                       toques=self.toques_iniciais,
@@ -335,9 +441,13 @@ class Colonia:
             self.buscas_pagas += max(1, int(vezes))
         o.carteira -= custo
         o.gasto += custo
+        # Sai do envelope E do banco: o gasto é cobrança de verdade na sua
+        # conta da Places, do provedor de modelo ou da Netlify.
+        self.banco -= custo
         self.gasto_total += custo
         if custo:
             self._anota(quem, f'gastou:{operacao}', -custo, f'{vezes}x')
+        self.confere()
         return custo
 
     def cobra_medido(self, quem: str, centavos: int, motivo: str) -> int:
@@ -354,9 +464,11 @@ class Colonia:
                               f'{motivo} custou {dinheiro(centavos)}')
         o.carteira -= centavos
         o.gasto += centavos
+        self.banco -= centavos
         self.gasto_total += centavos
         if centavos:
             self._anota(quem, f'gastou:{motivo}', -centavos)
+        self.confere()
         return centavos
 
     def toca(self, quem: str) -> None:
@@ -383,10 +495,24 @@ class Colonia:
         centavos = int(centavos)
         if centavos <= 0:
             raise ValueError('valor recebido tem que ser positivo, em centavos')
-        o.carteira += centavos
+        # Entra no banco (é dinheiro novo na sua conta) e no envelope de
+        # quem trouxe. As duas pontas juntas mantêm a invariante: envelope
+        # que cresce sem banco crescer seria dinheiro inventado.
+        self.banco += centavos
         o.ganho += centavos
         o.fechados += 1
-        self._anota(quem, 'recebeu', centavos, de)
+        if o.vivo:
+            o.carteira += centavos
+            self._anota(quem, 'recebeu', centavos, de)
+        else:
+            # Acontece de verdade: o cliente demora a pagar e o organismo
+            # morre no meio. O dinheiro é seu e entra no banco; o envelope
+            # dele não volta a existir. Creditar o envelope de um morto
+            # deixaria dinheiro parado fora do `reservado` e fora do
+            # `livre` ao mesmo tempo — some do extrato sem sair da conta.
+            self._anota(quem, 'recebeu:depois_de_morto', centavos,
+                        f'{de} · foi para o livre, não para o envelope')
+        self.confere()
 
     # ── morrer ──────────────────────────────────────────────────────
     def mata(self, quem: str, causa: str) -> Organismo:
@@ -399,7 +525,14 @@ class Colonia:
         if o.vivo:
             o.morto = int(time.time())
             o.causa = causa
-            self._anota(quem, 'morreu', 0, causa)
+            # O que sobrou no envelope volta para o livre. O dinheiro é
+            # SEU, não dele: enterrar R$ 3,00 com o organismo seria perder
+            # dinheiro de verdade para manter uma metáfora.
+            devolvido, o.carteira = o.carteira, 0
+            self._anota(quem, 'morreu', devolvido,
+                        causa + (f' · devolveu {dinheiro(devolvido)} ao livre'
+                                 if devolvido else ''))
+            self.confere()
         return o
 
     def ceifa(self) -> list[Organismo]:
@@ -473,6 +606,10 @@ class Colonia:
         if pai.geracao + 1 > TETO_GERACOES:
             return None
         plano = self.muta(pai, list(cidades or [pai.cidade]), sorteio)
+        # O pai transfere do PRÓPRIO envelope para o do filho. O banco não
+        # muda: é o mesmo dinheiro, só mudou de envelope. Por isso o
+        # débito vem antes de nascer — senão `nascer` olharia o livre e
+        # veria dinheiro que já está prometido ao filho.
         pai.carteira -= self.semente
         filho = self.nascer(cidade=plano['cidade'], termos=plano['termos'],
                             tom=plano['tom'], preco=plano['preco'],
@@ -510,15 +647,20 @@ class Colonia:
         vivos, mortos = self.vivos(), self.mortos()
         ganho = sum(o.ganho for o in self.bichos.values())
         gasto = sum(o.gasto for o in self.bichos.values())
-        caixa = sum(o.carteira for o in vivos)
         m = self.medida()
+        cabem = self.livre // self.semente
         linhas = [
+            '',
+            f'  BANCO {dinheiro(self.banco)}'
+            f'  =  envelopes {dinheiro(self.reservado)}'
+            f'  +  livre {dinheiro(self.livre)}',
+            f'  cabem mais {cabem} organismo(s) de {dinheiro(self.semente)}'
+            if cabem else '  não cabe mais nenhum organismo no livre',
             '',
             f'  COLÔNIA · {len(vivos)} vivos de {len(self.bichos)} · '
             f'teto {self.teto_vivos}',
             f'  entrou {dinheiro(ganho)} · saiu {dinheiro(gasto)} · '
             f'saldo {dinheiro(ganho - gasto)}',
-            f'  em carteira agora: {dinheiro(caixa)}',
             f'  buscas pagas da Places: {self.buscas_pagas} '
             f'(grátis até {BUSCAS_GRATIS_MES}/mês)',
             f'  teto de gasto da colônia: {dinheiro(self.teto_gasto)} · '

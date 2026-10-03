@@ -62,6 +62,14 @@ material = "material"
 # Agentes com carteira: nascem com uma semente, gastam para trabalhar,
 # morrem quando zera e se reproduzem quando dão lucro.
 # Leia o topo de nucleo/colonia.py antes de subir qualquer número aqui.
+# O BANCO: centavos que você declara disponíveis para a colônia gastar.
+# Os envelopes dos organismos saem daqui, e a soma dos envelopes dos vivos
+# NUNCA passa deste número. Com banco = 2500 e semente = 500, cabem 5
+# organismos; o sexto não nasce e a mensagem diz quanto falta declarar.
+# Ninguém mexe na sua conta: o que os agentes fazem é causar cobrança na
+# Places, no provedor de modelo e na Netlify. Este é o teto disso.
+banco = 2500          # 2500 = R$ 25,00
+
 teto_vivos = 4        # quantos podem viver ao mesmo tempo (teto de código: 32)
 teto_gasto = 5000     # em CENTAVOS, o que a colônia pode gastar na vida inteira
                       # 5000 = R$ 50,00 (teto de código: R$ 500,00)

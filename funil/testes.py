@@ -1417,8 +1417,14 @@ def _():
 
 # ── a colônia ───────────────────────────────────────────────────────
 def colonia_falsa(**extra):
+    """
+    Colônia de teste. O banco vem folgado por padrão porque a maioria dos
+    testes é sobre vida, morte e reprodução — quem testa o banco declara
+    o número que quer.
+    """
     from nucleo.colonia import Colonia
     caminho = TMP / f'col-{len(list(TMP.glob("col-*.json")))}.json'
+    extra.setdefault('banco', 1_000_000)
     return Colonia(caminho, **extra)
 
 
@@ -1742,6 +1748,202 @@ def _():
           'a colônia enviou algo sozinha')
     igual(est.mensagens(situacao='aprovada'), [],
           'a colônia aprovou algo sozinha')
+
+
+@teste('banco: o envelope é um pedaço do SEU dinheiro, e a soma nunca passa')
+def _():
+    col = colonia_falsa(banco=2_500, semente=500, teto_vivos=8)
+    igual(col.banco, 2_500)
+    igual(col.livre, 2_500)
+
+    # R$ 25,00 de banco e envelope de R$ 5,00: cabem cinco, e só cinco.
+    nascidos = []
+    for _i in range(5):
+        nascidos.append(col.nascer('Natal, RN', ['pizzaria']))
+    igual(col.reservado, 2_500)
+    igual(col.livre, 0)
+    igual(len(nascidos), 5)
+
+    from nucleo.colonia import SemBanco
+    try:
+        col.nascer('Natal, RN', ['pizzaria'])
+    except SemBanco as e:
+        # A mensagem precisa dizer quanto falta declarar, senão "não
+        # nasceu" manda você mexer no lugar errado.
+        verdade('--banco 3000' in str(e), f'não disse quanto falta: {e}')
+    else:
+        raise AssertionError('nasceu um sexto organismo sem banco para ele')
+
+    col.confere()
+
+
+@teste('banco: envelope de R$ 5 não gasta R$ 6, nem com o banco cheio')
+def _():
+    from nucleo.colonia import SemDinheiro
+    col = colonia_falsa(banco=100_000, semente=500)
+    o = col.nascer('Natal, RN', ['pizzaria'])
+    col.buscas_pagas = 10_000                 # fora do grátis: a busca dói
+    custo = col.preco_de('busca')
+
+    while o.pode_pagar(custo):
+        col.cobra(o.id, 'busca')
+    igual(o.gasto, 500 - o.carteira)
+
+    # ESTE é o pedido: o banco tem quase mil reais e ele não encosta.
+    verdade(col.banco > 90_000, f'banco: {col.banco}')
+    try:
+        col.cobra(o.id, 'busca')
+    except SemDinheiro as e:
+        verdade(o.id in str(e), e)
+    else:
+        raise AssertionError('o organismo furou o envelope e comeu o banco')
+    col.confere()
+
+
+@teste('banco: gastar sai do envelope E do banco, no mesmo centavo')
+def _():
+    col = colonia_falsa(banco=10_000, semente=500)
+    o = col.nascer('Natal, RN', ['pizzaria'])
+    col.buscas_pagas = 10_000
+    banco_antes, envelope_antes = col.banco, o.carteira
+    saiu = col.cobra(o.id, 'busca')
+    verdade(saiu > 0)
+    igual(col.banco, banco_antes - saiu, 'o banco não acompanhou o gasto')
+    igual(o.carteira, envelope_antes - saiu, 'o envelope não acompanhou')
+    # e o livre não se mexeu: o que saiu saiu dos dois lados juntos
+    igual(col.livre, banco_antes - envelope_antes)
+    col.confere()
+
+
+@teste('banco: receber aumenta o banco e o envelope de quem trouxe')
+def _():
+    col = colonia_falsa(banco=2_500, semente=500)
+    o = col.nascer('Natal, RN', ['pizzaria'])
+    igual(col.livre, 2_000)
+    col.recebe(o.id, 90_000, de='cliente')
+    igual(col.banco, 92_500, 'o dinheiro do cliente não entrou no banco')
+    igual(o.carteira, 90_500)
+    igual(col.livre, 2_000, 'o livre mudou sem motivo')
+    col.confere()
+
+
+@teste('banco: o envelope de quem morre volta para o livre')
+def _():
+    col = colonia_falsa(banco=2_500, semente=500)
+    a = col.nascer('Natal, RN', ['pizzaria'])
+    col.nascer('Natal, RN', ['açaí'])
+    igual(col.livre, 1_500)
+
+    col.mata(a.id, 'teste')
+    # O dinheiro é SEU, não dele: enterrar R$ 5,00 com o organismo seria
+    # perder dinheiro de verdade para manter uma metáfora.
+    igual(a.carteira, 0, 'o morto continuou segurando o envelope')
+    igual(col.livre, 2_000, 'o envelope do morto não voltou para o livre')
+    igual(col.banco, 2_500, 'morrer não gasta dinheiro')
+    # e agora cabe um novo no lugar dele
+    col.nascer('Natal, RN', ['cafeteria'])
+    igual(col.livre, 1_500)
+    col.confere()
+
+
+@teste('banco: reproduzir move dinheiro de envelope, sem mexer no banco')
+def _():
+    col = colonia_falsa(banco=2_500, semente=500, teto_vivos=4)
+    pai = col.nascer('Natal, RN', ['pizzaria', 'açaí'])
+    col.recebe(pai.id, 90_000, de='cliente')
+    banco_antes, reservado_antes = col.banco, col.reservado
+
+    filho = col.reproduz(pai.id, ['Natal, RN'])
+    verdade(filho is not None)
+    igual(col.banco, banco_antes, 'a reprodução criou ou queimou dinheiro')
+    igual(col.reservado, reservado_antes, 'mudou o total reservado')
+    igual(filho.carteira, 500)
+    igual(pai.carteira, 90_500 - 500)
+    col.confere()
+
+
+@teste('banco: declarar menos do que já está reservado é recusado')
+def _():
+    from nucleo.colonia import ContaErrada
+    col = colonia_falsa(banco=2_500, semente=500)
+    a = col.nascer('Natal, RN', ['pizzaria'])
+    col.nascer('Natal, RN', ['açaí'])
+    igual(col.reservado, 1_000)
+
+    try:
+        col.declara_banco(500)
+    except ContaErrada as e:
+        verdade('--matar' in str(e), f'não disse como resolver: {e}')
+    else:
+        raise AssertionError('confiscou envelope já prometido')
+    igual(col.banco, 2_500, 'mexeu no banco mesmo recusando')
+
+    # mata um, e aí o número menor passa
+    col.mata(a.id, 'para abrir espaço')
+    col.declara_banco(500)
+    igual(col.banco, 500)
+    col.confere()
+
+
+@teste('banco: a invariante levanta em vez de se ajustar em silêncio')
+def _():
+    from nucleo.colonia import ContaErrada
+    col = colonia_falsa(banco=1_000, semente=500)
+    o = col.nascer('Natal, RN', ['pizzaria'])
+    col.confere()
+
+    # Simula arquivo editado à mão (ele é JSON justamente para isso) com
+    # um envelope maior que o banco.
+    o.carteira = 999_999
+    try:
+        col.confere()
+    except ContaErrada as e:
+        verdade('criou dinheiro que não existe' in str(e), e)
+    else:
+        raise AssertionError('a conta não fechava e ninguém reclamou')
+
+    o.carteira = -1
+    try:
+        col.confere()
+    except ContaErrada as e:
+        verdade('negativo' in str(e), e)
+        return
+    raise AssertionError('envelope negativo passou')
+
+
+@teste('banco: pagamento que chega depois da morte vai para o banco, não para o morto')
+def _():
+    col = colonia_falsa(banco=1_000, semente=500)
+    o = col.nascer('Natal, RN', ['pizzaria'])
+    col.mata(o.id, 'morreu esperando o cliente pagar')
+    igual(col.livre, 1_000)
+
+    # Acontece de verdade: o cliente demora e o organismo morre no meio.
+    col.recebe(o.id, 90_000, de='cliente atrasado')
+    igual(col.banco, 91_000, 'o dinheiro não entrou na sua conta')
+    igual(o.carteira, 0, 'ressuscitou o envelope de um morto')
+    igual(o.ganho, 90_000, 'perdeu o registro de qual estratégia vendeu')
+    igual(col.livre, 91_000, 'o dinheiro sumiu do livre')
+    col.confere()
+
+
+@teste('banco: o livro-caixa guarda o saldo corrente, não o declarado')
+def _():
+    from nucleo.colonia import Colonia
+    col = colonia_falsa(banco=10_000, semente=500)
+    o = col.nascer('Natal, RN', ['pizzaria'])
+    col.buscas_pagas = 10_000
+    col.cobra(o.id, 'busca')
+    col.salva()
+    banco_gravado = col.banco
+    verdade(banco_gravado < 10_000, 'o gasto não baixou o banco')
+
+    # Reabrir com o número do config NÃO pode ressuscitar o que foi gasto.
+    outra = Colonia(col.caminho, semente=500, banco=10_000)
+    igual(outra.banco, banco_gravado,
+          'o banco do config venceu o saldo do arquivo e inventou dinheiro')
+    igual(outra.reservado, col.reservado)
+    outra.confere()
 
 
 @teste('colônia: a mutação nunca gera clone idêntico ao pai')
