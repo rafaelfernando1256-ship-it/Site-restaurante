@@ -351,12 +351,167 @@ class CerebroGemini(Motor):
         return list(getattr(conteudo, 'parts', None) or [])
 
 
+# ══ OpenRouter ══════════════════════════════════════════════════════
+class CerebroRota(Motor):
+    """
+    Mesmo laço, protocolo da OpenAI — que é o que o OpenRouter fala.
+
+    A vantagem prática: uma chave alcança Claude, GPT, Gemini e os
+    abertos. A desvantagem: nem todo modelo do catálogo sabe chamar
+    ferramenta, e o que não sabe responde texto onde devia agir. Por isso
+    a escolha automática prefere os que dirigem ferramenta bem, e a
+    primeira resposta sem `tool_calls` numa tarefa que claramente precisa
+    de uma não é escondida: vira a resposta, e você vê que ele só falou.
+
+    Três detalhes que custam caro se passarem batido:
+
+    • os argumentos vêm como STRING de JSON, não como objeto;
+    • o resultado volta numa mensagem de papel `tool`, amarrada pelo
+      `tool_call_id` — errar o id faz a conversa inteira ser recusada;
+    • a resposta é lida em fluxo (SSE) para ele começar a falar antes de
+      terminar de pensar.
+    """
+
+    @property
+    def chave(self) -> str:
+        return self.cfg.openrouter
+
+    def _ferramentas(self) -> list[dict]:
+        return [{'type': 'function',
+                 'function': {'name': e['name'], 'description': e['description'],
+                              'parameters': e['input_schema']}}
+                for e in catalogo()]
+
+    def responde(self, pedido: str, ao_falar: Callable[[str], None] | None = None) -> str:
+        from nucleo.modelos import modelo_rota
+        self._abre_conversa(pedido)
+        if not self.historico or self.historico[0].get('role') != 'system':
+            self.historico.insert(0, {'role': 'system', 'content': self._sistema()})
+        else:
+            self.historico[0] = {'role': 'system', 'content': self._sistema()}
+        self.historico.append({'role': 'user', 'content': pedido})
+
+        alvo = modelo_rota(self.chave, self.cfg.modelo_openrouter)
+        resposta = ''
+        for _ in range(self.cfg.voltas_maximas):
+            texto, chamadas = self._chama(alvo, ao_falar)
+            msg: dict = {'role': 'assistant', 'content': texto or None}
+            if chamadas:
+                msg['tool_calls'] = chamadas
+            self.historico.append(msg)
+            if texto:
+                resposta = texto
+            if not chamadas:
+                break
+
+            for c in chamadas:
+                nome = c['function']['name']
+                bruto = c['function'].get('arguments') or '{}'
+                try:
+                    args = json.loads(bruto) if isinstance(bruto, str) else dict(bruto)
+                except json.JSONDecodeError:
+                    saida, erro = f'argumentos ilegíveis para {nome}: {bruto[:200]}', True
+                else:
+                    saida, erro = self.executa(nome, args)
+                self.historico.append({
+                    'role': 'tool', 'tool_call_id': c.get('id', ''),
+                    'name': nome,
+                    'content': ('ERRO: ' + saida) if erro else saida,
+                })
+        else:
+            resposta = resposta or 'parei: a tarefa deu muitas voltas sem terminar.'
+        return self._fecha_conversa(resposta)
+
+    def _chama(self, alvo: str, ao_falar) -> tuple[str, list[dict]]:
+        import urllib.error
+        import urllib.request
+
+        corpo = {
+            'model': alvo,
+            'messages': self.historico,
+            'tools': self._ferramentas(),
+            'max_tokens': 8000,
+            'stream': True,
+        }
+        req = urllib.request.Request(
+            'https://openrouter.ai/api/v1/chat/completions',
+            data=json.dumps(corpo).encode(),
+            headers={'Authorization': f'Bearer {self.chave}',
+                     'Content-Type': 'application/json',
+                     'X-Title': 'Jarvis'})
+
+        texto, pendente = '', ''
+        chamadas: dict[int, dict] = {}
+        try:
+            with urllib.request.urlopen(req, timeout=300) as fluxo:
+                for linha in fluxo:
+                    linha = linha.decode('utf-8', 'replace').strip()
+                    if not linha.startswith('data:'):
+                        continue
+                    dado = linha[5:].strip()
+                    if dado == '[DONE]':
+                        break
+                    try:
+                        pedaco = json.loads(dado)
+                    except json.JSONDecodeError:
+                        continue
+                    delta = (pedaco.get('choices') or [{}])[0].get('delta') or {}
+                    if delta.get('content'):
+                        texto += delta['content']
+                        pendente += delta['content']
+                        frases, pendente = self._frases(pendente)
+                        for f in frases:
+                            if ao_falar:
+                                ao_falar(f)
+                    for tc in delta.get('tool_calls') or []:
+                        i = tc.get('index', 0)
+                        alvo_c = chamadas.setdefault(
+                            i, {'id': '', 'type': 'function',
+                                'function': {'name': '', 'arguments': ''}})
+                        if tc.get('id'):
+                            alvo_c['id'] = tc['id']
+                        f = tc.get('function') or {}
+                        if f.get('name'):
+                            alvo_c['function']['name'] += f['name']
+                        if f.get('arguments'):
+                            # Os argumentos chegam em pedaços; concatenar é
+                            # obrigatório, e é aqui que quase todo mundo erra.
+                            alvo_c['function']['arguments'] += f['arguments']
+        except urllib.error.HTTPError as e:
+            detalhe = e.read().decode()[:300]
+            if e.code == 401:
+                raise RuntimeError('o OpenRouter recusou a chave') from e
+            if e.code == 402:
+                raise RuntimeError('sem crédito no OpenRouter') from e
+            raise RuntimeError(f'OpenRouter {e.code}: {detalhe}') from e
+
+        frases, _ = self._frases(pendente, fecha=True)
+        for f in frases:
+            if ao_falar:
+                ao_falar(f)
+        return texto.strip(), [chamadas[i] for i in sorted(chamadas)]
+
+    def _encolhe(self, teto: int = 40) -> None:
+        """
+        Corta sem deixar `tool` órfão: mensagem de ferramenta sem a
+        chamada que a gerou faz a API recusar a conversa inteira. E a
+        primeira mensagem, que é o sistema, nunca sai.
+        """
+        if len(self.historico) <= teto:
+            return
+        sistema = self.historico[0] if self.historico[0].get('role') == 'system' else None
+        corpo = self.historico[1:] if sistema else self.historico
+        corte = max(0, len(corpo) - teto)
+        while corte < len(corpo) and corpo[corte].get('role') == 'tool':
+            corte += 1
+        self.historico = ([sistema] if sistema else []) + corpo[corte:]
+
+
 # ══ a escolha ═══════════════════════════════════════════════════════
 Cerebro = CerebroClaude          # nome antigo, para não quebrar quem importa
 
 
 def monta(cfg, **kw) -> Motor:
     """Devolve o cérebro do provedor configurado."""
-    if cfg.provedor == 'gemini':
-        return CerebroGemini(cfg, **kw)
-    return CerebroClaude(cfg, **kw)
+    return {'gemini': CerebroGemini,
+            'openrouter': CerebroRota}.get(cfg.provedor, CerebroClaude)(cfg, **kw)

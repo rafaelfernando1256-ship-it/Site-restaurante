@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import contextlib
 import io
+import json
 import shutil
 import sys
 import tempfile
@@ -608,6 +609,173 @@ def _():
     c.provedor = 'claude'
     igual(c.chave_do_cerebro, 'a')
     igual(c.modelo_do_cerebro, 'claude-y')
+
+
+# ══ o laço do OpenRouter ════════════════════════════════════════════
+def sse(pedacos):
+    """Monta um fluxo SSE como o do OpenRouter, pedaço por pedaço."""
+    import json as _j
+    linhas = [f'data: {_j.dumps(p)}'.encode() for p in pedacos]
+    linhas.append(b'data: [DONE]')
+    return iter(linhas)
+
+
+class FalsaResposta:
+    def __init__(self, linhas):
+        self._linhas = list(linhas)
+
+    def __enter__(self): return self
+    def __exit__(self, *_): return False
+    def __iter__(self): return iter(self._linhas)
+
+
+def texto_sse(texto):
+    return [{'choices': [{'delta': {'content': p}}]}
+            for p in [texto[i:i + 7] for i in range(0, len(texto), 7)]]
+
+
+def chamada_sse(nome, argumentos, ident='c1'):
+    """A chamada chega partida: o nome num pedaço, os argumentos em vários."""
+    metade = len(argumentos) // 2
+    return [
+        {'choices': [{'delta': {'tool_calls': [
+            {'index': 0, 'id': ident, 'function': {'name': nome, 'arguments': ''}}]}}]},
+        {'choices': [{'delta': {'tool_calls': [
+            {'index': 0, 'function': {'arguments': argumentos[:metade]}}]}}]},
+        {'choices': [{'delta': {'tool_calls': [
+            {'index': 0, 'function': {'arguments': argumentos[metade:]}}]}}]},
+    ]
+
+
+def monta_rota(respostas, cfg=None, respostas_porteiro=None):
+    """Troca o urlopen por um que devolve os fluxos programados."""
+    import urllib.request
+
+    from nucleo.cerebro import CerebroRota
+    cfg = cfg or cfg_teste(provedor='openrouter', openrouter='sk-or-x')
+    cfg.provedor = 'openrouter'
+    diario = Diario(TMP / f'r{time.time_ns()}.db')
+    respostas_p = list(respostas_porteiro or [])
+    porteiro = Porteiro(cfg, diario,
+                        perguntar_teclado=lambda _: respostas_p.pop(0) if respostas_p else 'nao')
+    ctx = Contexto(cfg=cfg, diario=diario, porteiro=porteiro)
+    c = CerebroRota(cfg, diario, porteiro, ctx=ctx)
+
+    enviados = []
+    fila = list(respostas)
+    original = urllib.request.urlopen
+
+    def falso(req, timeout=None):
+        enviados.append(json.loads(req.data.decode()))
+        return FalsaResposta(sse(fila.pop(0) if fila else texto_sse('ok')))
+
+    urllib.request.urlopen = falso
+    import nucleo.modelos as Mo
+    Mo._modelo_rota = 'anthropic/claude-sonnet-4.5'
+    return c, enviados, (lambda: setattr(urllib.request, 'urlopen', original))
+
+
+@teste('openrouter: chama a ferramenta e devolve o resultado amarrado pelo id')
+def _():
+    alvo = TMP / 'livre' / 'rota.txt'
+    alvo.write_text('o segredo é 9')
+    c, enviados, solta = monta_rota([
+        chamada_sse('ler_arquivo', json.dumps({'caminho': str(alvo)}), 'abc123'),
+        texto_sse('O arquivo diz 9.'),
+    ])
+    try:
+        igual(c.responde('o que tem no rota.txt?'), 'O arquivo diz 9.')
+    finally:
+        solta()
+    segunda = enviados[1]['messages']
+    ferramenta = segunda[-1]
+    igual(ferramenta['role'], 'tool')
+    igual(ferramenta['tool_call_id'], 'abc123', 'o id errado faz a API recusar tudo')
+    verdade('9' in ferramenta['content'])
+    # os argumentos chegaram partidos e foram remontados
+    assistente = segunda[-2]
+    igual(json.loads(assistente['tool_calls'][0]['function']['arguments'])['caminho'],
+          str(alvo))
+
+
+@teste('openrouter: as ferramentas vão no formato que a API espera')
+def _():
+    c, enviados, solta = monta_rota([texto_sse('oi')])
+    try:
+        c.responde('oi')
+    finally:
+        solta()
+    ferramentas = enviados[0]['tools']
+    verdade(len(ferramentas) >= 45, f'poucas ferramentas: {len(ferramentas)}')
+    uma = ferramentas[0]
+    igual(uma['type'], 'function')
+    verdade(uma['function']['name'] and uma['function']['parameters'])
+    igual(enviados[0]['messages'][0]['role'], 'system')
+    verdade(enviados[0]['stream'], 'sem stream ele só fala no fim')
+
+
+@teste('openrouter: permissão negada volta como erro para o modelo')
+def _():
+    c, enviados, solta = monta_rota([
+        chamada_sse('rodar_comando', json.dumps({'comando': 'rm -rf /'})),
+        texto_sse('Não fiz.'),
+    ], respostas_porteiro=['nao'])
+    try:
+        c.responde('apaga tudo')
+    finally:
+        solta()
+    ferramenta = enviados[1]['messages'][-1]
+    verdade(ferramenta['content'].startswith('ERRO:'))
+    verdade('NÃO AUTORIZOU' in ferramenta['content'])
+
+
+@teste('openrouter: argumento ilegível não derruba o laço')
+def _():
+    c, enviados, solta = monta_rota([
+        chamada_sse('ler_arquivo', '{isso não é json'),
+        texto_sse('deu ruim nos argumentos'),
+    ])
+    try:
+        igual(c.responde('lê aí'), 'deu ruim nos argumentos')
+    finally:
+        solta()
+    verdade('ilegíveis' in enviados[1]['messages'][-1]['content'])
+
+
+@teste('openrouter: cortar a conversa não deixa mensagem de ferramenta órfã')
+def _():
+    c, enviados, solta = monta_rota([texto_sse('ok')])
+    solta()
+    c.historico = [{'role': 'system', 'content': 's'}]
+    for i in range(30):
+        c.historico.append({'role': 'user', 'content': f'p{i}'})
+        c.historico.append({'role': 'assistant', 'content': None,
+                            'tool_calls': [{'id': f'u{i}', 'type': 'function',
+                                            'function': {'name': 'x', 'arguments': '{}'}}]})
+        c.historico.append({'role': 'tool', 'tool_call_id': f'u{i}', 'name': 'x',
+                            'content': 'ok'})
+    c._encolhe(teto=10)
+    igual(c.historico[0]['role'], 'system', 'o sistema não pode sair')
+    igual(c.historico[1]['role'] != 'tool', True,
+          f'começou com uma ferramenta órfã: {c.historico[1]}')
+
+
+@teste('openrouter: escolhe o melhor modelo do catálogo')
+def _():
+    import nucleo.modelos as Mo
+    original = Mo.rota_pede
+    Mo.rota_pede = lambda caminho, chave, corpo=None, tempo=180: {'data': [
+        {'id': 'meta-llama/llama-3.1-8b'},
+        {'id': 'anthropic/claude-sonnet-4.5'},
+        {'id': 'openai/gpt-4o-mini'},
+    ]}
+    Mo._modelo_rota = ''
+    try:
+        igual(Mo.modelo_rota('k'), 'anthropic/claude-sonnet-4.5')
+        igual(Mo.modelo_rota('k', 'openai/gpt-4o'), 'openai/gpt-4o')
+    finally:
+        Mo.rota_pede = original
+        Mo._modelo_rota = ''
 
 
 @teste('gemini: modelo aposentado é trocado pelo mais novo, por número')

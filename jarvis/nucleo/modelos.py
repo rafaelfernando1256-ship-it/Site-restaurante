@@ -20,6 +20,13 @@ E = TypeVar('E', bound=BaseModel)
 
 _claude: Any = None
 _gemini: Any = None
+_modelo_rota: str = ''
+
+ROTA = 'https://openrouter.ai/api/v1'
+
+# Ordem de preferência quando o modelo do OpenRouter não foi escolhido à
+# mão. Quem vai dirigir ferramenta precisa seguir esquema bem.
+GOSTO = ('claude', 'gpt-5', 'gpt-4o', 'gemini', 'llama', 'mistral')
 
 
 def claude(chave: str = '') -> Any:
@@ -135,3 +142,61 @@ def pergunta_gemini(pergunta: str, chave: str, modelo: str = 'gemini-3.8-flash')
         return (r.text or '').strip()
     except Exception as e:
         return f'o Gemini não respondeu: {e}'
+
+
+# ── OpenRouter ──────────────────────────────────────────────────────
+def rota_pede(caminho: str, chave: str, corpo: dict | None = None,
+              tempo: int = 180) -> Any:
+    """HTTPS puro: a API do OpenRouter fala o dialeto da OpenAI."""
+    import json
+    import urllib.error
+    import urllib.request
+    req = urllib.request.Request(
+        f'{ROTA}{caminho}',
+        data=json.dumps(corpo).encode() if corpo is not None else None,
+        headers={'Authorization': f'Bearer {chave}',
+                 'Content-Type': 'application/json',
+                 'X-Title': 'Jarvis'},
+        method='POST' if corpo is not None else 'GET')
+    try:
+        with urllib.request.urlopen(req, timeout=tempo) as r:
+            return json.loads(r.read())
+    except urllib.error.HTTPError as e:
+        detalhe = e.read().decode()[:300]
+        if e.code == 401:
+            raise RuntimeError('o OpenRouter recusou a chave — openrouter.ai/keys') from e
+        if e.code == 402:
+            raise RuntimeError('sem crédito no OpenRouter. Há modelos grátis em '
+                               'openrouter.ai/models?q=free') from e
+        raise RuntimeError(f'OpenRouter {e.code}: {detalhe}') from e
+    except urllib.error.URLError as e:
+        raise RuntimeError('não consegui falar com o OpenRouter — '
+                           f'confira a sua internet ({e.reason})') from e
+
+
+def modelos_rota(chave: str) -> list[str]:
+    d = rota_pede('/models', chave)
+    return [m['id'] for m in d.get('data', []) if m.get('id')]
+
+
+def modelo_rota(chave: str, preferido: str = '') -> str:
+    """
+    O melhor modelo que esta chave alcança. Vai ao catálogo uma vez: id
+    de modelo no OpenRouter muda de nome e desaparece, igual ao da Google.
+    """
+    global _modelo_rota
+    if preferido:
+        return preferido
+    if _modelo_rota:
+        return _modelo_rota
+    nomes = modelos_rota(chave)
+    if not nomes:
+        raise RuntimeError('nenhum modelo disponível nesta chave do OpenRouter')
+    for marca in GOSTO:
+        cand = [n for n in nomes if marca in n.lower()
+                and not any(x in n.lower() for x in ('embed', 'moderation', 'vision-only'))]
+        if cand:
+            _modelo_rota = max(cand, key=_versao)
+            return _modelo_rota
+    _modelo_rota = nomes[0]
+    return _modelo_rota

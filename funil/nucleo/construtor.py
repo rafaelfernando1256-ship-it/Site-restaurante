@@ -160,9 +160,10 @@ def monta_site(lead, leitura, imagens: Sequence[Path], pasta: Path, cfg,
             extra = ('\n\nA sua resposta anterior teve estes problemas. '
                      'Corrija TODOS e mande a página inteira de novo:\n'
                      + '\n'.join(f'- {x}' for x in problemas))
-        html = _limpa(pede_texto(INSTRUCAO, pedido + extra,
-                                 modelo=cfg.modelo_do_cerebro,
-                                 max_tokens=32000, provedor=cfg.provedor))
+        html = _limpa(pede_texto(
+            INSTRUCAO, pedido + extra, modelo=cfg.modelo_do_cerebro,
+            cli=(cfg.openrouter if cfg.provedor == 'openrouter' else None),
+            max_tokens=32000, provedor=cfg.provedor))
         problemas = valida(html)
         if not problemas:
             break

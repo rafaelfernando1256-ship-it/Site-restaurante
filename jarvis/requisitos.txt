@@ -3,6 +3,8 @@
 # Os dois pacotes entram porque o que não é cérebro vira consultor.
 anthropic>=1.11.0          # cérebro Claude
 google-genai>=1.0          # cérebro Gemini
+# O OpenRouter não precisa de pacote: a API dele é HTTPS puro, e o
+# cliente está em nucleo/modelos.py com a biblioteca padrão.
 pydantic>=2.9              # os argumentos das ferramentas, validados
 
 # ── ouvir e falar ───────────────────────────────────────────────────

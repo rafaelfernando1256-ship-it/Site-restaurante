@@ -2,4 +2,5 @@
 # dependência, menos coisa para quebrar na sua máquina daqui a seis meses.
 anthropic>=1.11.0          # cérebro Claude
 google-genai>=1.0          # cérebro Gemini
+# OpenRouter não entra aqui: a API dele é HTTPS puro (nucleo/modelo.py).
 pydantic>=2.9              # as saídas dos agentes, validadas por esquema

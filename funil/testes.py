@@ -421,6 +421,95 @@ def _():
     raise AssertionError('não propagou o erro de chave')
 
 
+@teste('openrouter: escolhe o melhor modelo do catálogo pela ordem de gosto')
+def _():
+    import nucleo.modelo as Mod
+    original = Mod._or_pede
+    Mod._or_pede = lambda caminho, chave, corpo=None, tempo=180: {'data': [
+        {'id': 'meta-llama/llama-3.1-8b'},
+        {'id': 'anthropic/claude-sonnet-4.5'},
+        {'id': 'anthropic/claude-haiku-3'},
+        {'id': 'google/gemini-2.0-flash'},
+    ]}
+    Mod._modelo_or = ''
+    try:
+        igual(Mod.modelo_openrouter('k'), 'anthropic/claude-sonnet-4.5')
+        # escolhido à mão sempre vence
+        igual(Mod.modelo_openrouter('k', 'openai/gpt-4o'), 'openai/gpt-4o')
+    finally:
+        Mod._or_pede = original
+        Mod._modelo_or = ''
+
+
+@teste('openrouter: devolve o esquema validado e insiste quando o JSON vem torto')
+def _():
+    from nucleo.a2_abordagem import Abordagem
+    import nucleo.modelo as Mod
+    pedidos = []
+
+    def falso(caminho, chave, corpo=None, tempo=180):
+        if caminho == '/models':
+            return {'data': [{'id': 'anthropic/claude-sonnet-4.5'}]}
+        pedidos.append(corpo)
+        texto = ('nao e json' if len(pedidos) == 1
+                 else '{"gancho":"g","mensagem":"m","porque":"p"}')
+        return {'choices': [{'message': {'content': texto}}]}
+
+    original, Mod._or_pede = Mod._or_pede, falso
+    Mod._modelo_or = ''
+    try:
+        r = Mod.pede_json('instrução', 'conteúdo', Abordagem, cli='sk-or-x',
+                          provedor='openrouter', tentativas=1)
+        igual(r.gancho, 'g')
+        igual(len(pedidos), 2, 'não tentou de novo depois do JSON torto')
+        verdade('não passou na validação' in pedidos[1]['messages'][0]['content'],
+                'a segunda tentativa precisa dizer o que deu errado')
+        verdade(pedidos[0]['response_format']['type'] == 'json_schema',
+                'tem que pedir JSON pelo esquema')
+    finally:
+        Mod._or_pede = original
+        Mod._modelo_or = ''
+
+
+@teste('openrouter: chave errada e falta de crédito falam português')
+def _():
+    import urllib.error
+    import io
+    import nucleo.modelo as Mod
+
+    def erro(codigo):
+        def falso(*a, **k):
+            raise urllib.error.HTTPError('u', codigo, 'x', {}, io.BytesIO(b'{}'))
+        return falso
+
+    import urllib.request
+    original = urllib.request.urlopen
+    try:
+        for codigo, pedaco in ((401, 'recusou a chave'), (402, 'sem crédito')):
+            urllib.request.urlopen = erro(codigo)
+            try:
+                Mod._or_pede('/models', 'k')
+            except RuntimeError as e:
+                verdade(pedaco in str(e), f'{codigo}: {e}')
+            else:
+                raise AssertionError(f'{codigo} não virou erro')
+    finally:
+        urllib.request.urlopen = original
+
+
+@teste('openrouter: imagem vai como data URL, do jeito que a API espera')
+def _():
+    import nucleo.modelo as Mod
+    foto = TMP / 'or.png'
+    foto.write_bytes(b'\x89PNG\r\n\x1a\n' + b'0' * 30)
+    partes = Mod._or_partes('texto', [foto])
+    igual(len(partes), 2)
+    igual(partes[0]['type'], 'image_url')
+    verdade(partes[0]['image_url']['url'].startswith('data:image/png;base64,'))
+    igual(partes[1]['text'], 'texto')
+    igual(Mod._or_partes('só texto', []), 'só texto')
+
+
 @teste('modelo: JSON cortado pela metade não vira resposta vazia silenciosa')
 def _():
     from nucleo.a2_abordagem import Abordagem

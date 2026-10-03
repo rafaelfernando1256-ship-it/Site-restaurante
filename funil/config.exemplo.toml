@@ -1,13 +1,14 @@
 # Copie para config.toml. Aqui não entra segredo — segredo vai no .env.
 
 [geral]
-# Quem escreve e decide: "claude" ou "gemini".
+# Quem escreve e decide: "claude", "gemini" ou "openrouter".
 # Deixe comentado para sair sozinho da chave que existir no .env.
 # provedor = "gemini"
 
 # Cada chave aparece UMA vez por seção — TOML recusa repetida.
 modelo = "claude-opus-5-5"          # vale quando provedor = claude
 modelo_gemini = "gemini-3.8-flash"  # vale quando provedor = gemini
+modelo_openrouter = ""              # vazio = ele escolhe do catálogo
 
 cidade = "Natal, RN"
 

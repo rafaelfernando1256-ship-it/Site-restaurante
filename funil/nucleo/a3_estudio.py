@@ -115,7 +115,7 @@ def anota_retorno(est: Estado, lead_id: int, texto: str) -> None:
 
 def tria(est: Estado, limite: int = 20, modelo: str | None = None,
          cli: Any = None, certeza_minima: float = 0.7,
-         provedor: str = 'claude') -> dict[str, int]:
+         provedor: str = 'claude', chave: str = '') -> dict[str, int]:
     """Classifica quem respondeu. Dúvida fica parada para você ler."""
     conta = {'quer': 0, 'nao_quer': 0, 'duvida': 0, 'falhas': 0}
     for l in est.leads(RESPONDEU, limite=limite):
@@ -128,7 +128,8 @@ def tria(est: Estado, limite: int = 20, modelo: str | None = None,
                 conteudo=f'Mensagem que você mandou para ele:\n'
                          f'{_ultima(est, l.id, "abordagem")}\n\n'
                          f'Resposta dele:\n{retornos[-1]["texto"]}',
-                esquema=Triagem, modelo=modelo, cli=cli, provedor=provedor,
+                esquema=Triagem, modelo=modelo, cli=cli or (chave or None),
+                provedor=provedor,
             )
         except Exception as e:
             conta['falhas'] += 1
@@ -461,7 +462,8 @@ def roda(est: Estado, cfg, limite: int = 3, cli: Any = None) -> dict[str, int]:
             continue
         try:
             print(f'  lendo o Instagram de {l.nome} ({len(imagens)} imagens)...')
-            leitura = le(l, imagens, notas, modelo=cfg.modelo_do_cerebro, cli=cli,
+            leitura = le(l, imagens, notas, modelo=cfg.modelo_do_cerebro,
+                         cli=cli or (cfg.openrouter or None) if cfg.provedor == 'openrouter' else cli,
                          provedor=cfg.provedor)
             if tem_claude_code() and cfg.provedor == 'claude':
                 print(f'  construindo o site de {l.nome} com o Claude Code... '

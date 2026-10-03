@@ -21,6 +21,7 @@ MATERIAL = RAIZ / 'material'      # capturas do Instagram, uma pasta por lead
 
 MODELO = 'claude-opus-5-5'
 MODELO_GEMINI = 'gemini-3.8-flash'
+MODELO_OPENROUTER = ''   # vazio = escolhe do catálogo
 
 # Termos de busca padrão. Sem "restaurante" sozinho: o Places devolve
 # shopping e praça de alimentação. Termo específico traz casa específica.
@@ -57,6 +58,7 @@ class Config:
     google_places: str = ''
     anthropic: str = ''
     gemini: str = ''
+    openrouter: str = ''
     netlify: str = ''
     whatsapp_token: str = ''
     whatsapp_phone_id: str = ''
@@ -75,11 +77,12 @@ class Config:
     max_por_dia: int = 60
 
     # preferências
-    # claude | gemini — quem escreve as abordagens, tria as respostas e lê
-    # o Instagram. Sai sozinho da chave que existir no .env.
+    # claude | gemini | openrouter — quem escreve as abordagens, tria as
+    # respostas e lê o Instagram. Sai sozinho da chave que existir no .env.
     provedor: str = ''
     modelo: str = MODELO
     modelo_gemini: str = MODELO_GEMINI
+    modelo_openrouter: str = MODELO_OPENROUTER
     cidade: str = ''
     canal_envio: str = 'link'      # link (padrão) | cloud
     equipe_netlify: str = 'conta5197-99'
@@ -92,10 +95,12 @@ class Config:
 
     @property
     def modelo_do_cerebro(self) -> str:
-        return self.modelo_gemini if self.provedor == 'gemini' else self.modelo
+        return {'gemini': self.modelo_gemini,
+                'openrouter': self.modelo_openrouter}.get(self.provedor, self.modelo)
 
     def exige_cerebro(self) -> None:
-        self.exige('gemini' if self.provedor == 'gemini' else 'anthropic')
+        self.exige({'gemini': 'gemini',
+                    'openrouter': 'openrouter'}.get(self.provedor, 'anthropic'))
 
     def exige(self, *chaves: str) -> None:
         """Falha cedo, com o nome exato da variável que falta."""
@@ -103,6 +108,7 @@ class Config:
             'google_places': 'GOOGLE_PLACES_KEY',
             'anthropic': 'ANTHROPIC_API_KEY',
             'gemini': 'GEMINI_API_KEY',
+            'openrouter': 'OPENROUTER_API_KEY',
             'netlify': 'NETLIFY_TOKEN',
         }
         faltam = [nomes.get(c, c.upper()) for c in chaves if not getattr(self, c, '')]
@@ -141,6 +147,7 @@ def carrega(caminho: Path | None = None) -> Config:
         google_places=os.environ.get('GOOGLE_PLACES_KEY', ''),
         anthropic=os.environ.get('ANTHROPIC_API_KEY', ''),
         gemini=os.environ.get('GEMINI_API_KEY', ''),
+        openrouter=os.environ.get('OPENROUTER_API_KEY', ''),
         netlify=os.environ.get('NETLIFY_TOKEN', ''),
         whatsapp_token=os.environ.get('WHATSAPP_TOKEN', ''),
         whatsapp_phone_id=os.environ.get('WHATSAPP_PHONE_ID', ''),
@@ -152,6 +159,7 @@ def carrega(caminho: Path | None = None) -> Config:
         c.provedor = g.get('provedor', c.provedor)
         c.modelo = g.get('modelo', c.modelo)
         c.modelo_gemini = g.get('modelo_gemini', c.modelo_gemini)
+        c.modelo_openrouter = g.get('modelo_openrouter', c.modelo_openrouter)
         c.cidade = g.get('cidade', c.cidade)
         c.canal_envio = g.get('canal_envio', c.canal_envio)
         c.equipe_netlify = g.get('equipe_netlify', c.equipe_netlify)
@@ -174,7 +182,13 @@ def carrega(caminho: Path | None = None) -> Config:
                 p = Path(caminhos[campo]).expanduser()
                 setattr(c, campo, p if p.is_absolute() else RAIZ / p)
 
-    # Sem escolha explícita, vale a chave que existe.
-    if c.provedor not in ('claude', 'gemini'):
-        c.provedor = 'gemini' if (c.gemini and not c.anthropic) else 'claude'
+    # Sem escolha explícita, vale a chave que existe. O OpenRouter vem
+    # primeiro porque uma chave dele já dá acesso aos outros dois.
+    if c.provedor not in ('claude', 'gemini', 'openrouter'):
+        if c.openrouter and not (c.anthropic or c.gemini):
+            c.provedor = 'openrouter'
+        elif c.gemini and not c.anthropic:
+            c.provedor = 'gemini'
+        else:
+            c.provedor = 'claude'
     return c

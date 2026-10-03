@@ -111,7 +111,8 @@ def cmd_escrever(a, cfg) -> int:
     with _estado(cfg) as est:
         print(f'\nAgente 2 — escrevendo as abordagens ({cfg.modelo_do_cerebro})\n')
         c = a2_abordagem.escreve(est, limite=a.limite, modelo=cfg.modelo_do_cerebro,
-                                 cidade=a.cidade or '', provedor=cfg.provedor)
+                                 cidade=a.cidade or '', provedor=cfg.provedor,
+                                 chave=cfg.openrouter)
         print(f'\n  {c["escritos"]} escritas · {c["falhas"]} falhas')
         print('  revise com: python3 funil.py revisar\n')
     return 0
@@ -238,7 +239,7 @@ def cmd_triar(a, cfg) -> int:
     with _estado(cfg) as est:
         print('\nAgente 3 — lendo as respostas\n')
         c = a3_estudio.tria(est, limite=a.limite, modelo=cfg.modelo_do_cerebro,
-                            provedor=cfg.provedor)
+                            provedor=cfg.provedor, chave=cfg.openrouter)
         print(f'\n  {c["quer"]} querem · {c["nao_quer"]} não · '
               f'{c["duvida"]} em dúvida (decida você) · {c["falhas"]} falhas\n')
     return 0

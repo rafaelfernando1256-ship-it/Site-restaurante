@@ -151,7 +151,7 @@ const VAZIO = {
     montagem: 900, mensalidade: 90, prazoDias: 5, alteracoesInclusas: 2,
     paginas: 1, custoHora: 60, horasEstimadas: 8, margem: 2.0,
   },
-  chaves: { gemini: '' },
+  chaves: { gemini: '', openrouter: '', provedor: '', modeloRota: '' },
   leads: [],
   cobrancas: [],
   indicacoes: [],
@@ -491,6 +491,11 @@ M.ia = (function () {
    ------------------------------------------------------------------ */
 
 const BASE = 'https://generativelanguage.googleapis.com/v1beta';
+const ROTA = 'https://openrouter.ai/api/v1';
+
+/* Ordem de preferência quando o modelo do OpenRouter não foi escolhido
+   à mão: primeiro os que escrevem melhor em português e seguem esquema. */
+const GOSTO = ['claude', 'gemini', 'gpt-4o', 'gpt-5', 'llama', 'mistral'];
 
 /* Modelos de voz, imagem, vídeo e embedding aparecem na mesma lista e
    vários dizem que fazem texto. Escolher um deles rende um 400 que
@@ -502,8 +507,27 @@ const ESPECIALIZADOS = ['tts', 'image', 'imagen', 'veo', 'embedding', 'embed',
 let escolhido = '';
 let catalogo = null;
 
+/* Qual provedor está valendo. Sem escolha explícita, vale a chave que
+   existir — e o OpenRouter vem primeiro porque uma chave dele já alcança
+   o Claude, o Gemini e o GPT. */
+function provedor(estado) {
+  const c = estado?.chaves || {};
+  if (c.provedor === 'openrouter' || c.provedor === 'gemini') return c.provedor;
+  if (c.openrouter?.trim()) return 'openrouter';
+  return 'gemini';
+}
+
+function chaveDe(estado) {
+  return (provedor(estado) === 'openrouter'
+    ? estado?.chaves?.openrouter : estado?.chaves?.gemini || '').trim();
+}
+
 function temChave(estado) {
-  return Boolean(estado?.chaves?.gemini?.trim());
+  return Boolean(chaveDe(estado));
+}
+
+function nomeDoProvedor(estado) {
+  return provedor(estado) === 'openrouter' ? 'OpenRouter' : 'Gemini';
 }
 
 function versao(nome) {
@@ -565,9 +589,91 @@ async function mensagemDeErro(r) {
 
 const DORME = ms => new Promise(r => setTimeout(r, ms));
 
+let modeloRota = '';
+let catalogoRota = null;
+
+async function rotaPede(caminho, chave, corpo) {
+  const r = await fetch(`${ROTA}${caminho}`, {
+    method: corpo ? 'POST' : 'GET',
+    headers: {
+      Authorization: `Bearer ${chave}`,
+      'Content-Type': 'application/json',
+      'X-Title': 'Painel de vendas',
+    },
+    body: corpo ? JSON.stringify(corpo) : undefined,
+  });
+  if (r.ok) return r.json();
+  let detalhe = '';
+  try { detalhe = (await r.json())?.error?.message || ''; } catch { /* vazio */ }
+  if (r.status === 401) {
+    throw new Error('O OpenRouter recusou a chave. Pegue uma em openrouter.ai/keys');
+  }
+  if (r.status === 402) {
+    throw new Error('Sem crédito no OpenRouter. Há modelos grátis em ' +
+                    'openrouter.ai/models?q=free');
+  }
+  if (r.status === 429) throw new Error('Passou do limite do OpenRouter agora.');
+  throw new Error(`OpenRouter ${r.status}${detalhe ? ' — ' + detalhe : ''}`);
+}
+
+async function modelosRota(chave) {
+  if (catalogoRota) return catalogoRota;
+  const d = await rotaPede('/models', chave);
+  catalogoRota = (d.data || []).map(m => m.id).filter(Boolean);
+  return catalogoRota;
+}
+
+async function modeloRotaEscolhido(chave, preferido) {
+  if (preferido) return preferido;
+  if (modeloRota) return modeloRota;
+  const nomes = await modelosRota(chave);
+  if (!nomes.length) throw new Error('nenhum modelo disponível nesta chave');
+  for (const marca of GOSTO) {
+    const cand = nomes.filter(n => n.toLowerCase().includes(marca)
+      && !/embed|moderation|vision-only/i.test(n));
+    if (cand.length) { modeloRota = cand.sort((a, b) => {
+      const va = versao(a), vb = versao(b);
+      for (let i = 0; i < Math.max(va.length, vb.length); i++) {
+        const d = (vb[i] || 0) - (va[i] || 0);
+        if (d) return d;
+      }
+      return 0;
+    })[0]; return modeloRota; }
+  }
+  modeloRota = nomes[0];
+  return modeloRota;
+}
+
+async function pedeTextoRota(chave, instrucao, conteudo, { maxTokens, preferido }) {
+  const alvo = await modeloRotaEscolhido(chave, preferido);
+  const d = await rotaPede('/chat/completions', chave, {
+    model: alvo,
+    messages: [{ role: 'system', content: instrucao },
+               { role: 'user', content: conteudo }],
+    max_tokens: maxTokens,
+  });
+  const texto = (d?.choices?.[0]?.message?.content || '').trim();
+  if (!texto) throw new Error('o OpenRouter respondeu vazio');
+  return texto;
+}
+
 /* Pede um texto. Tenta de novo quando é sobrecarga, troca de modelo
    quando o nome sumiu, e desiste na hora quando é erro de chave —
    insistir num 400 só queima tempo. */
+/* `estado` entra para o chamador não precisar saber qual provedor está
+   valendo: ele pede texto, e a ponte resolve. */
+async function pedeTextoCom(estado, instrucao, conteudo, opcoes = {}) {
+  const chave = chaveDe(estado);
+  if (!chave) throw new Error(`falta a chave do ${nomeDoProvedor(estado)} em Ajustes.`);
+  if (provedor(estado) === 'openrouter') {
+    return pedeTextoRota(chave, instrucao, conteudo, {
+      maxTokens: opcoes.maxTokens || 8000,
+      preferido: (estado?.chaves?.modeloRota || '').trim(),
+    });
+  }
+  return pedeTexto(chave, instrucao, conteudo, opcoes);
+}
+
 async function pedeTexto(chave, instrucao, conteudo, { maxTokens = 8000,
                                                               tentativas = 3 } = {}) {
   if (!chave?.trim()) throw new Error('falta a chave do Gemini em Ajustes.');
@@ -626,10 +732,10 @@ async function pedeTexto(chave, instrucao, conteudo, { maxTokens = 8000,
 }
 
 function modeloEmUso() {
-  return escolhido;
+  return modeloRota || escolhido;
 }
 
-  return { temChave, listaModelos, modelo, pedeTexto, modeloEmUso };
+  return { provedor, chaveDe, temChave, nomeDoProvedor, listaModelos, modelo, modelosRota, pedeTextoCom, pedeTexto, modeloEmUso };
 })();
 
 /* ===== js/agentes.js =========================================== */
@@ -730,9 +836,9 @@ const abordagem = {
         dele — avaliações, nota, o link do Google que leva para o Instagram.</p>
       </div>
       ${IA.temChave(E) ? '' : aviso(
-        'Sem a chave do Gemini em <b>Ajustes</b> eu uso um modelo pronto, ' +
-        'igual para todo mundo. Com a chave, cada mensagem sai feita para ' +
-        'aquela casa — e é isso que faz diferença na resposta.', 'ruim')}
+        `Sem a chave do ${IA.nomeDoProvedor(E)} em <b>Ajustes</b> eu uso um ` +
+        'modelo pronto, igual para todo mundo. Com a chave, cada mensagem sai ' +
+        'feita para aquela casa — e é isso que faz diferença na resposta.', 'ruim')}
       <div id="lista">${fila.length ? fila.map(cartaoAbordagem).join('')
         : '<p class="vazio">Ninguém na fila. Volte ao Caçador.</p>'}</div>`;
 
@@ -803,7 +909,7 @@ ${l.avaliacoes ? `Avaliações no Google: ${l.avaliacoes}` : ''}${l.nota ? ` · 
 Situação: ${presenca}
 ${l.instagram ? 'Instagram: @' + l.instagram : ''}`;
 
-  return (await IA.pedeTexto(E.chaves.gemini, instrucao, dados, { maxTokens: 900 }))
+  return (await IA.pedeTextoCom(E, instrucao, dados, { maxTokens: 900 }))
     .replace(/^["'\s]+|["'\s]+$/g, '');
 }
 
@@ -820,7 +926,7 @@ const demonstracao = {
         faz, e é o que transforma "quanto custa?" em "quando fica pronto?".</p>
       </div>
       ${IA.temChave(E) ? '' : aviso('Para gerar o site preciso da chave do ' +
-        'Gemini em <b>Ajustes</b>.', 'ruim')}
+        `${IA.nomeDoProvedor(E)} em <b>Ajustes</b>.`, 'ruim')}
       <div id="lista">${fila.length ? fila.map(cartaoDemo).join('')
         : '<p class="vazio">Ninguém esperando demonstração.</p>'}</div>`;
 
@@ -899,8 +1005,8 @@ O QUE A CASA VENDE (escrito pelo dono do negócio ou tirado do Instagram):
 ${sobre || '(não informado — monte um site genérico de restaurante e deixe tudo marcado como "a combinar")'}
 
 NÃO INVENTE preço, horário nem endereço que não estejam aí em cima.`;
-  const bruto = await IA.pedeTexto(E.chaves.gemini, INSTRUCAO_SITE, dados,
-                                   { maxTokens: 32000 });
+  const bruto = await IA.pedeTextoCom(E, INSTRUCAO_SITE, dados,
+                                      { maxTokens: 32000 });
   return limpaHtml(bruto);
 }
 
@@ -1010,7 +1116,7 @@ const preco = {
     on(raiz, '[data-fazer="melhorar"]', 'click', async (e, b) => {
       const solta = espera(b, 'escrevendo...');
       try {
-        const t = await IA.pedeTexto(E.chaves.gemini,
+        const t = await IA.pedeTextoCom(E,
           'Reescreva esta resposta de preço para WhatsApp: curta, direta, ' +
           'sem jargão de vendas, sem emoji, no máximo 5 linhas, português do ' +
           'Brasil falado. Mantenha TODOS os números exatamente como estão. ' +
@@ -1457,6 +1563,7 @@ const ajustes = {
   conta: () => 0,
   render(raiz) {
     const n = E.negocio;
+    const prov = E.chaves.provedor || '';
     raiz.innerHTML = `
       <div class="cabeca"><h1>Ajustes</h1>
         <p>Tudo fica guardado só neste navegador. Exporte de vez em quando.</p></div>
@@ -1483,14 +1590,35 @@ const ajustes = {
       </div>
 
       <div class="cartao">
-        <h3>Gemini</h3>
-        <p class="ajuda">Sem ela o painel funciona, mas as mensagens e os sites
-        saem de modelo pronto em vez de feitos para cada casa.
-        Pegue em <a href="https://aistudio.google.com/apikey" target="_blank"
-        rel="noopener">aistudio.google.com/apikey</a>.</p>
-        ${campo('Chave', 'gemini', E.chaves.gemini, { tipo: 'password' })}
-        <p class="ajuda" style="margin-top:8px">Ela fica só neste navegador — não
-        está no código do site, e quem abrir o link não vê.</p>
+        <h3>A inteligência</h3>
+        <p class="ajuda">Sem chave o painel funciona, mas as mensagens e os
+        sites saem de modelo pronto em vez de feitos para cada casa.</p>
+        <div style="margin-bottom:12px">
+          <label for="c-provedor">Quem escreve</label>
+          <select id="c-provedor" name="provedor">
+            <option value="">— o que tiver chave —</option>
+            <option value="openrouter" ${prov === 'openrouter' ? 'selected' : ''}>
+              OpenRouter (uma chave, vários modelos)</option>
+            <option value="gemini" ${prov === 'gemini' ? 'selected' : ''}>
+              Gemini (Google)</option>
+          </select>
+        </div>
+        <div class="grade g2">
+          ${campo('Chave do OpenRouter', 'openrouter', E.chaves.openrouter || '',
+                  { tipo: 'password', dica: 'sk-or-...' })}
+          ${campo('Chave do Gemini', 'gemini', E.chaves.gemini, { tipo: 'password' })}
+        </div>
+        ${campo('Modelo do OpenRouter (vazio = ele escolhe)', 'modeloRota',
+                E.chaves.modeloRota || '', { dica: 'anthropic/claude-sonnet-4.5' })}
+        <p class="ajuda" style="margin-top:10px">
+          OpenRouter: <a href="https://openrouter.ai/keys" target="_blank"
+          rel="noopener">openrouter.ai/keys</a> — uma chave só alcança Claude,
+          Gemini e GPT, e tem modelos grátis.<br>
+          Gemini: <a href="https://aistudio.google.com/apikey" target="_blank"
+          rel="noopener">aistudio.google.com/apikey</a>.
+        </p>
+        <p class="ajuda">As chaves ficam só neste navegador — não estão no
+        código do site, e quem abrir o link não vê.</p>
       </div>
 
       <div class="cartao">
@@ -1504,8 +1632,16 @@ const ajustes = {
       </div>`;
 
     on(raiz, 'input', 'input', (e, i) => {
-      if (i.name === 'gemini') { E.chaves.gemini = i.value.trim(); N.salva(); return; }
+      if (['gemini', 'openrouter', 'modeloRota'].includes(i.name)) {
+        E.chaves[i.name] = i.value.trim(); N.salva(); return;
+      }
       if (i.name in n) { n[i.name] = i.value; N.salva(); }
+    });
+    on(raiz, 'select[name=provedor]', 'change', (e, sel) => {
+      E.chaves.provedor = sel.value;
+      N.salva();
+      recado(sel.value ? `agora quem escreve é o ${sel.value === 'openrouter'
+        ? 'OpenRouter' : 'Gemini'}` : 'vale a chave que existir');
     });
     on(raiz, '[data-fazer="exportar"]', 'click', () => { N.exporta(); recado('backup baixado'); });
     on(raiz, '[data-fazer="importar"]', 'click', () => raiz.querySelector('#arquivo').click());
@@ -1640,7 +1776,7 @@ const AGENTES = [cacador, abordagem, demonstracao, preco, receber,
 const AJUSTES = ajustes;
 
 
-  return { AGENTES, AJUSTES, provaPix, limpaHtml, validaHtml };
+  return { limpaHtml, validaHtml, AGENTES, AJUSTES, provaPix };
 })();
 
 /* ===== js/app.js =============================================== */

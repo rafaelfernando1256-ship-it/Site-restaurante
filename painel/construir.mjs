@@ -12,19 +12,34 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 
 const MODULOS = [
-  ['pix', 'js/pix.js', ['crc16', 'semAcento', 'valida', 'montaPix', 'prova']],
-  ['nucleo', 'js/nucleo.js', ['VAZIO', 'ETAPAS', 'estado', 'salva', 'exporta',
-    'importa', 'baixa', 'REDES', 'DELIVERY', 'classifica', 'PRESENCA',
-    'instagramDe', 'e164', 'telefoneBonito', 'pontua', 'novoLead', 'achaLead',
-    'moveLead', 'importaLinhas', 'moeda', 'hoje', 'emDias', 'dataBonita',
-    'linkWhats']],
-  ['ui', 'js/ui.js', ['esc', 'el', 'on', 'campo', 'area', 'numero', 'aviso',
-    'recado', 'copia', 'espera', 'carregaScript']],
-  ['ia', 'js/ia.js', ['temChave', 'listaModelos', 'modelo', 'pedeTexto', 'modeloEmUso']],
-  ['agentes', 'js/agentes.js', ['AGENTES', 'AJUSTES', 'provaPix', 'limpaHtml',
-    'validaHtml']],
-  ['app', 'js/app.js', []],
+  ['pix', 'js/pix.js'],
+  ['nucleo', 'js/nucleo.js'],
+  ['ui', 'js/ui.js'],
+  ['ia', 'js/ia.js'],
+  ['agentes', 'js/agentes.js'],
+  ['app', 'js/app.js'],
 ];
+
+/* Os exports são LIDOS do arquivo, não escritos aqui.
+   A primeira versão tinha a lista à mão e um export novo ficou de fora
+   em silêncio: a tela só quebrava em tempo de execução, com "não é uma
+   função". Lista que precisa ser mantida em dois lugares é lista que vai
+   dessincronizar. */
+function exportados(codigo) {
+  const nomes = new Set();
+  for (const m of codigo.matchAll(
+      /^export\s+(?:async\s+)?(?:function|const|let|var|class)\s+([A-Za-z_$][\w$]*)/gm)) {
+    nomes.add(m[1]);
+  }
+  for (const m of codigo.matchAll(/^export\s*\{([^}]*)\}/gm)) {
+    for (const parte of m[1].split(',')) {
+      const nome = parte.includes(' as ')
+        ? parte.split(' as ')[1].trim() : parte.trim();
+      if (nome) nomes.add(nome);
+    }
+  }
+  return [...nomes];
+}
 
 /* Troca os imports por aliases dos módulos já montados e tira os
    `export`. Nenhum renomeia nada no caminho, então o corpo continua
@@ -52,8 +67,12 @@ let saida = `/* GERADO por construir.mjs — não edite aqui.
   const M = {};
 `;
 
-for (const [nome, caminho, exporta] of MODULOS) {
-  const corpo = limpa(readFileSync(new URL(caminho, import.meta.url), 'utf8'));
+let total = 0;
+for (const [nome, caminho] of MODULOS) {
+  const fonte = readFileSync(new URL(caminho, import.meta.url), 'utf8');
+  const exporta = exportados(fonte);
+  total += exporta.length;
+  const corpo = limpa(fonte);
   saida += `
 /* ===== ${caminho} ${'='.repeat(Math.max(0, 56 - caminho.length))} */
 M.${nome} = (function () {
@@ -67,4 +86,4 @@ saida += '})();\n';
 
 writeFileSync(new URL('js/painel.js', import.meta.url), saida);
 console.log(`js/painel.js: ${(saida.length / 1024).toFixed(1)} KB, ` +
-            `${MODULOS.length} módulos`);
+            `${MODULOS.length} módulos, ${total} exports`);

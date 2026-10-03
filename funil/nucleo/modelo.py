@@ -18,7 +18,10 @@ provedores têm saída estruturada nativa, e é ela que está em uso:
 from __future__ import annotations
 
 import base64
+import json
 import mimetypes
+import os
+import re
 import time
 from pathlib import Path
 from typing import Any, Sequence, TypeVar
@@ -29,11 +32,19 @@ E = TypeVar('E', bound=BaseModel)
 
 MODELO_CLAUDE = 'claude-opus-5-5'
 MODELO_GEMINI = 'gemini-3.8-flash'
+MODELO_OPENROUTER = ''          # vazio = escolhe do catálogo na primeira vez
+
+OPENROUTER = 'https://openrouter.ai/api/v1'
+
+# Ordem de preferência quando o modelo não foi escolhido à mão. Primeiro
+# os que escrevem melhor em português e seguem esquema; o resto serve.
+GOSTO = ('claude', 'gemini', 'gpt-4o', 'gpt-5', 'llama', 'mistral')
 
 ACEITOS = ('image/png', 'image/jpeg', 'image/gif', 'image/webp')
 
 _claude: Any = None
 _gemini: Any = None
+_modelo_or: str = ''            # o que o catálogo do OpenRouter escolheu
 
 TEMPORARIOS = ('APIConnectionError', 'APITimeoutError', 'RateLimitError',
                'InternalServerError', 'APIStatusError', 'OverloadedError',
@@ -243,6 +254,132 @@ def _json_gemini(instrucao, conteudo, esquema, modelo, imagens, cli, max_tokens)
     return saida
 
 
+# ── OpenRouter ──────────────────────────────────────────────────────
+#
+# Uma chave, muitos modelos. A API fala o dialeto da OpenAI, então aqui
+# não entra SDK nenhum: é HTTPS puro da biblioteca padrão, e menos uma
+# dependência para quebrar.
+
+def _or_pede(caminho: str, chave: str, corpo: dict | None = None,
+             tempo: int = 180) -> dict:
+    import urllib.error
+    import urllib.request
+    req = urllib.request.Request(
+        f'{OPENROUTER}{caminho}',
+        data=json.dumps(corpo).encode() if corpo is not None else None,
+        headers={
+            'Authorization': f'Bearer {chave}',
+            'Content-Type': 'application/json',
+            # O OpenRouter pede estes dois para identificar quem chama;
+            # sem eles a conta funciona, mas fica sem rosto no painel dele.
+            'HTTP-Referer': 'https://github.com/rafaelfernando1256-ship-it/Site-restaurante',
+            'X-Title': 'Funil de prospeccao',
+        },
+        method='POST' if corpo is not None else 'GET')
+    try:
+        with urllib.request.urlopen(req, timeout=tempo) as r:
+            return json.loads(r.read())
+    except urllib.error.HTTPError as e:
+        detalhe = e.read().decode()[:400]
+        if e.code == 401:
+            raise RuntimeError('o OpenRouter recusou a chave. Pegue uma em '
+                               'openrouter.ai/keys') from e
+        if e.code == 402:
+            raise RuntimeError('sem crédito no OpenRouter. Pode usar um modelo '
+                               'grátis: openrouter.ai/models?q=free') from e
+        raise RuntimeError(f'OpenRouter {e.code}: {detalhe}') from e
+
+
+def modelos_openrouter(chave: str) -> list[str]:
+    d = _or_pede('/models', chave)
+    return [m['id'] for m in d.get('data', []) if m.get('id')]
+
+
+def _escolhe_openrouter(chave: str) -> str:
+    """O melhor modelo disponível nesta chave, pela ordem de gosto."""
+    nomes = modelos_openrouter(chave)
+    if not nomes:
+        raise RuntimeError('nenhum modelo disponível nesta chave do OpenRouter')
+    for marca_ in GOSTO:
+        candidatos = [n for n in nomes if marca_ in n.lower()
+                      and not any(x in n.lower() for x in
+                                  ('vision-only', 'embed', 'moderation'))]
+        if candidatos:
+            # Entre os da mesma marca, o de maior versão.
+            def versao(n):
+                nums = re.findall(r'\d+(?:\.\d+)?', n)
+                return [float(x) for x in nums] or [0.0]
+            return max(candidatos, key=versao)
+    return nomes[0]
+
+
+def modelo_openrouter(chave: str, preferido: str = '') -> str:
+    global _modelo_or
+    if preferido:
+        return preferido
+    if not _modelo_or:
+        _modelo_or = _escolhe_openrouter(chave)
+    return _modelo_or
+
+
+def _or_partes(conteudo: str, imagens: Sequence[Path]) -> Any:
+    if not imagens:
+        return conteudo
+    partes: list[dict] = []
+    for i in imagens:
+        caminho = Path(i)
+        dados = base64.standard_b64encode(caminho.read_bytes()).decode()
+        partes.append({'type': 'image_url',
+                       'image_url': {'url': f'data:{_tipo(caminho)};base64,{dados}'}})
+    partes.append({'type': 'text', 'text': conteudo})
+    return partes
+
+
+def _or_conversa(chave, modelo, instrucao, conteudo, imagens, max_tokens, extra=None):
+    corpo = {
+        'model': modelo,
+        'messages': [{'role': 'system', 'content': instrucao},
+                     {'role': 'user', 'content': _or_partes(conteudo, imagens)}],
+        'max_tokens': max_tokens,
+    }
+    corpo.update(extra or {})
+    d = _or_pede('/chat/completions', chave, corpo)
+    escolhas = d.get('choices') or []
+    if not escolhas:
+        raise RuntimeError(f'o OpenRouter respondeu sem conteúdo: {str(d)[:200]}')
+    return (escolhas[0].get('message', {}).get('content') or '').strip()
+
+
+def _json_openrouter(instrucao, conteudo, esquema, modelo, imagens, cli, max_tokens):
+    chave = cli if isinstance(cli, str) else os.environ.get('OPENROUTER_API_KEY', '')
+    alvo = modelo_openrouter(chave, modelo)
+    esquema_json = esquema.model_json_schema()
+
+    # Pede JSON pelo esquema. `strict` fica desligado de propósito: o modo
+    # estrito exige TODO campo em `required`, e vários campos nossos têm
+    # padrão. O que garante a forma é a validação do Pydantic logo abaixo.
+    extra = {'response_format': {
+        'type': 'json_schema',
+        'json_schema': {'name': esquema.__name__.lower(), 'strict': False,
+                        'schema': esquema_json}}}
+
+    aviso = ''
+    for tentativa in range(2):
+        bruto = _or_conversa(chave, alvo, instrucao + aviso, conteudo, imagens,
+                             max_tokens, extra)
+        texto = re.sub(r'^```[a-zA-Z]*\s*|\s*```$', '', bruto.strip())
+        try:
+            return esquema.model_validate_json(texto)
+        except Exception as e:
+            if tentativa:
+                raise RuntimeError(
+                    f'o modelo não devolveu o JSON esperado — veio: {texto[:200]}') from e
+            # Segunda chance com o erro na mão: é o que mais resolve.
+            aviso = ('\n\nA sua resposta anterior não passou na validação: '
+                     f'{str(e)[:300]}\nResponda SÓ com o JSON, no formato pedido.')
+    raise RuntimeError('o OpenRouter não respondeu')
+
+
 # ── o que os agentes chamam ─────────────────────────────────────────
 def pede_json(instrucao: str, conteudo: str, esquema: type[E],
               modelo: str | None = None, imagens: Sequence[Path] = (),
@@ -254,7 +391,8 @@ def pede_json(instrucao: str, conteudo: str, esquema: type[E],
     `cli` existe para teste: qualquer objeto com a interface do SDK serve,
     e aí nada sai para a rede.
     """
-    faz = _json_gemini if provedor == 'gemini' else _json_claude
+    faz = {'gemini': _json_gemini, 'openrouter': _json_openrouter}.get(
+        provedor, _json_claude)
     espera = 3.0
     for t in range(tentativas):
         try:
@@ -275,6 +413,10 @@ def pede_json(instrucao: str, conteudo: str, esquema: type[E],
 def pede_texto(instrucao: str, conteudo: str, modelo: str | None = None,
                cli: Any = None, max_tokens: int = 8000,
                provedor: str = 'claude') -> str:
+    if provedor == 'openrouter':
+        chave = cli if isinstance(cli, str) else os.environ.get('OPENROUTER_API_KEY', '')
+        return _or_conversa(chave, modelo_openrouter(chave, modelo or ''),
+                            instrucao, conteudo, (), max_tokens)
     if provedor == 'gemini':
         from google.genai import types
         c = cli or cliente_gemini()

@@ -18,7 +18,7 @@ export const VAZIO = {
     montagem: 900, mensalidade: 90, prazoDias: 5, alteracoesInclusas: 2,
     paginas: 1, custoHora: 60, horasEstimadas: 8, margem: 2.0,
   },
-  chaves: { gemini: '' },
+  chaves: { gemini: '', openrouter: '', provedor: '', modeloRota: '' },
   leads: [],
   cobrancas: [],
   indicacoes: [],

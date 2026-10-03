@@ -90,7 +90,7 @@ def _contexto(l: Lead) -> str:
 
 def escreve(est: Estado, limite: int = 20, modelo: str | None = None,
             cidade: str = '', cli: Any = None,
-            provedor: str = 'claude') -> dict[str, int]:
+            provedor: str = 'claude', chave: str = '') -> dict[str, int]:
     """Pega leads NOVO, escreve a abordagem e deixa em RASCUNHO."""
     conta = {'escritos': 0, 'falhas': 0}
     for l in est.leads(NOVO, limite=limite, cidade=cidade):
@@ -100,7 +100,7 @@ def escreve(est: Estado, limite: int = 20, modelo: str | None = None,
                 conteudo=f'Dados do restaurante:\n\n{_contexto(l)}',
                 esquema=Abordagem,
                 modelo=modelo,
-                cli=cli,
+                cli=cli or (chave or None),
                 provedor=provedor,
             )
             est.guarda_mensagem(l.id, 'abordagem', r.mensagem.strip())

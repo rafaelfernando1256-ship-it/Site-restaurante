@@ -191,7 +191,8 @@ def entrega(est: Estado, cfg, limite: int = 10, cli: Any = None) -> dict[str, An
                           f'Link do exemplo: {url}\n'
                           f'O que ficou em branco por falta de dado:\n'
                           + ('\n'.join(f'- {p}' for p in pendencias) or '- (nada)')),
-                esquema=Entrega, modelo=cfg.modelo_do_cerebro, cli=cli,
+                esquema=Entrega, modelo=cfg.modelo_do_cerebro,
+                cli=cli or (cfg.openrouter if cfg.provedor == 'openrouter' else None),
                 provedor=cfg.provedor,
             )
             msg_id = est.guarda_mensagem(l.id, 'entrega', r.mensagem.strip())

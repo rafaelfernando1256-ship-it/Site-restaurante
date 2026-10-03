@@ -4,12 +4,13 @@
 nome = "Jarvis"
 tratamento = "chefe"          # como ele te chama
 
-# Quem DECIDE e usa as 51 ferramentas: "claude" ou "gemini".
+# Quem DECIDE e usa as 51 ferramentas: "claude", "gemini" ou "openrouter".
 # Deixe comentado para ele escolher sozinho pela chave que existir no .env.
 # provedor = "gemini"
 
 modelo = "claude-opus-5-5"          # vale quando provedor = claude
 modelo_gemini = "gemini-3.8-flash"  # vale quando provedor = gemini
+modelo_openrouter = ""              # vazio = ele escolhe do catálogo
 voltas_maximas = 24           # teto de ferramentas numa tarefa só
 
 [voz]

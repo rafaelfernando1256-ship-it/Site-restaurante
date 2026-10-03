@@ -23,6 +23,7 @@ SAIDA = RAIZ / 'saida'
 MODELO_CLAUDE = 'claude-opus-5-5'
 MODELO_GPT = 'gpt-4o'
 MODELO_GEMINI = 'gemini-3.8-flash'
+MODELO_OPENROUTER = ''   # vazio = escolhe do catálogo
 
 
 def _carrega_env(arquivo: Path | None = None) -> None:
@@ -60,6 +61,7 @@ class Config:
     anthropic: str = ''
     openai: str = ''
     gemini: str = ''
+    openrouter: str = ''
 
     # ── voz ─────────────────────────────────────────────────────────
     palavra_chave: str = 'hey jarvis'
@@ -75,12 +77,13 @@ class Config:
     silencio_para_parar: float = 1.2     # segundos de silêncio que encerram a fala
 
     # ── cérebro ─────────────────────────────────────────────────────
-    # claude | gemini — quem DECIDE e usa as ferramentas. O outro continua
-    # disponível como consultor ("o que o Gemini acha disso?").
+    # claude | gemini | openrouter — quem DECIDE e usa as 51 ferramentas.
+    # Os outros continuam de consultor ("o que o Gemini acha disso?").
     provedor: str = ''
     modelo: str = MODELO_CLAUDE
     modelo_gpt: str = MODELO_GPT
     modelo_gemini: str = MODELO_GEMINI
+    modelo_openrouter: str = MODELO_OPENROUTER
     voltas_maximas: int = 24             # teto de idas e vindas numa só tarefa
     nome: str = 'Jarvis'
     tratamento: str = 'chefe'
@@ -99,18 +102,22 @@ class Config:
 
     @property
     def chave_do_cerebro(self) -> str:
-        return self.gemini if self.provedor == 'gemini' else self.anthropic
+        return {'gemini': self.gemini,
+                'openrouter': self.openrouter}.get(self.provedor, self.anthropic)
 
     @property
     def modelo_do_cerebro(self) -> str:
-        return self.modelo_gemini if self.provedor == 'gemini' else self.modelo
+        return {'gemini': self.modelo_gemini,
+                'openrouter': self.modelo_openrouter or '(escolhe sozinho)'
+                }.get(self.provedor, self.modelo)
 
     def exige_cerebro(self) -> None:
-        self.exige('gemini' if self.provedor == 'gemini' else 'anthropic')
+        self.exige({'gemini': 'gemini',
+                    'openrouter': 'openrouter'}.get(self.provedor, 'anthropic'))
 
     def exige(self, *chaves: str) -> None:
         nomes = {'anthropic': 'ANTHROPIC_API_KEY', 'openai': 'OPENAI_API_KEY',
-                 'gemini': 'GEMINI_API_KEY'}
+                 'gemini': 'GEMINI_API_KEY', 'openrouter': 'OPENROUTER_API_KEY'}
         faltam = [nomes.get(c, c.upper()) for c in chaves if not getattr(self, c, '')]
         if faltam:
             raise SystemExit(
@@ -168,13 +175,14 @@ def carrega(caminho: Path | None = None) -> Config:
         anthropic=os.environ.get('ANTHROPIC_API_KEY', ''),
         openai=os.environ.get('OPENAI_API_KEY', ''),
         gemini=os.environ.get('GEMINI_API_KEY', ''),
+        openrouter=os.environ.get('OPENROUTER_API_KEY', ''),
     )
     arquivo = caminho or (RAIZ / 'config.toml')
     if arquivo.exists():
         t = _le_toml(arquivo)
         for secao, campos in (
             ('geral', ('nome', 'tratamento', 'provedor', 'modelo', 'modelo_gpt',
-                       'modelo_gemini', 'voltas_maximas')),
+                       'modelo_gemini', 'modelo_openrouter', 'voltas_maximas')),
             ('voz', ('palavra_chave', 'escuta_sempre', 'atalho_fala', 'modelo_voz',
                      'velocidade_voz', 'modelo_escuta', 'motor_escuta', 'idioma',
                      'silencio_para_parar')),
@@ -186,10 +194,15 @@ def carrega(caminho: Path | None = None) -> Config:
             for campo in campos:
                 if campo in bloco:
                     setattr(c, campo, bloco[campo])
-    # Sem escolha explícita, vale a chave que existe. Quem só tem a do
-    # Gemini não deveria precisar aprender o que é "provedor" para ligar.
-    if c.provedor not in ('claude', 'gemini'):
-        c.provedor = 'gemini' if (c.gemini and not c.anthropic) else 'claude'
+    # Sem escolha explícita, vale a chave que existe. O OpenRouter vem
+    # primeiro porque uma chave dele já alcança os outros dois.
+    if c.provedor not in ('claude', 'gemini', 'openrouter'):
+        if c.openrouter and not (c.anthropic or c.gemini):
+            c.provedor = 'openrouter'
+        elif c.gemini and not c.anthropic:
+            c.provedor = 'gemini'
+        else:
+            c.provedor = 'claude'
 
     if not c.raizes_seguras:
         c.raizes_seguras = _padrao_raizes()

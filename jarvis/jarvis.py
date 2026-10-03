@@ -193,6 +193,20 @@ def _linha(bem: bool, nome: str, detalhe: str = '') -> None:
           flush=True)
 
 
+def _testa_chave_rota(cfg) -> tuple[bool, str]:
+    try:
+        from nucleo.modelos import modelo_rota, modelos_rota
+        nomes = modelos_rota(cfg.openrouter)
+        if not nomes:
+            return False, 'a chave respondeu, mas nenhum modelo ficou disponível'
+        escolhido = modelo_rota(cfg.openrouter, cfg.modelo_openrouter)
+        return True, f'válida · {len(nomes)} modelos · usando {escolhido}'
+    except RuntimeError as e:
+        return False, str(e)
+    except Exception as e:
+        return False, f'{type(e).__name__}: {str(e)[:160]}'
+
+
 def _testa_chave_gemini(cfg) -> tuple[bool, str]:
     try:
         from nucleo.modelos import gemini, resolve_modelo_gemini
@@ -229,6 +243,8 @@ def _testa_chave(cfg) -> tuple[bool, str]:
     """
     if cfg.provedor == 'gemini':
         return _testa_chave_gemini(cfg)
+    if cfg.provedor == 'openrouter':
+        return _testa_chave_rota(cfg)
     # Antes de gastar uma ida à rede: a forma da chave já denuncia o erro
     # mais comum, que é copiar o token do claude.ai (sk-ant-usr-...) achando
     # que é a chave da API. Os dois começam com sk-ant- e são coisas
@@ -268,14 +284,16 @@ def checar(cfg) -> int:
     print(f'\n  {cfg.nome} — diagnóstico\n', flush=True)
     print(f'  sistema: {config.sistema()} · Python {platform.python_version()}', flush=True)
     print(f'  pastas liberadas: {", ".join(cfg.raizes_seguras)}', flush=True)
-    cerebro = 'Gemini (Google)' if cfg.provedor == 'gemini' else 'Claude (Anthropic)'
+    cerebro = {'gemini': 'Gemini (Google)',
+               'openrouter': 'OpenRouter'}.get(cfg.provedor, 'Claude (Anthropic)')
     print(f'  cérebro: {cerebro} · modelo {cfg.modelo_do_cerebro}\n', flush=True)
 
     faltam_pip, quebrados = [], []
     tela = sys.stdout.isatty()      # só apaga a linha quando há terminal de verdade
 
-    dono = 'Gemini' if cfg.provedor == 'gemini' else 'Claude'
-    variavel = 'GEMINI_API_KEY' if cfg.provedor == 'gemini' else 'ANTHROPIC_API_KEY'
+    dono = {'gemini': 'Gemini', 'openrouter': 'OpenRouter'}.get(cfg.provedor, 'Claude')
+    variavel = {'gemini': 'GEMINI_API_KEY',
+                'openrouter': 'OPENROUTER_API_KEY'}.get(cfg.provedor, 'ANTHROPIC_API_KEY')
     if not cfg.chave_do_cerebro:
         _linha(False, f'chave do {dono} (obrigatória)',
                f'preencha {variavel} no arquivo .env')
@@ -287,7 +305,7 @@ def checar(cfg) -> int:
             print(' ' * 46, end='\r')
         _linha(bem, f'chave do {dono} (obrigatória)', detalhe)
     for outro, chave in (('Claude', cfg.anthropic), ('ChatGPT', cfg.openai),
-                         ('Gemini', cfg.gemini)):
+                         ('Gemini', cfg.gemini), ('OpenRouter', cfg.openrouter)):
         if outro != dono:
             _linha(bool(chave), f'chave do {outro} (opcional, para consultar)')
 

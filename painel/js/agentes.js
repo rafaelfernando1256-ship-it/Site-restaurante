@@ -96,9 +96,9 @@ const abordagem = {
         dele — avaliações, nota, o link do Google que leva para o Instagram.</p>
       </div>
       ${IA.temChave(E) ? '' : aviso(
-        'Sem a chave do Gemini em <b>Ajustes</b> eu uso um modelo pronto, ' +
-        'igual para todo mundo. Com a chave, cada mensagem sai feita para ' +
-        'aquela casa — e é isso que faz diferença na resposta.', 'ruim')}
+        `Sem a chave do ${IA.nomeDoProvedor(E)} em <b>Ajustes</b> eu uso um ` +
+        'modelo pronto, igual para todo mundo. Com a chave, cada mensagem sai ' +
+        'feita para aquela casa — e é isso que faz diferença na resposta.', 'ruim')}
       <div id="lista">${fila.length ? fila.map(cartaoAbordagem).join('')
         : '<p class="vazio">Ninguém na fila. Volte ao Caçador.</p>'}</div>`;
 
@@ -169,7 +169,7 @@ ${l.avaliacoes ? `Avaliações no Google: ${l.avaliacoes}` : ''}${l.nota ? ` · 
 Situação: ${presenca}
 ${l.instagram ? 'Instagram: @' + l.instagram : ''}`;
 
-  return (await IA.pedeTexto(E.chaves.gemini, instrucao, dados, { maxTokens: 900 }))
+  return (await IA.pedeTextoCom(E, instrucao, dados, { maxTokens: 900 }))
     .replace(/^["'\s]+|["'\s]+$/g, '');
 }
 
@@ -186,7 +186,7 @@ const demonstracao = {
         faz, e é o que transforma "quanto custa?" em "quando fica pronto?".</p>
       </div>
       ${IA.temChave(E) ? '' : aviso('Para gerar o site preciso da chave do ' +
-        'Gemini em <b>Ajustes</b>.', 'ruim')}
+        `${IA.nomeDoProvedor(E)} em <b>Ajustes</b>.`, 'ruim')}
       <div id="lista">${fila.length ? fila.map(cartaoDemo).join('')
         : '<p class="vazio">Ninguém esperando demonstração.</p>'}</div>`;
 
@@ -265,8 +265,8 @@ O QUE A CASA VENDE (escrito pelo dono do negócio ou tirado do Instagram):
 ${sobre || '(não informado — monte um site genérico de restaurante e deixe tudo marcado como "a combinar")'}
 
 NÃO INVENTE preço, horário nem endereço que não estejam aí em cima.`;
-  const bruto = await IA.pedeTexto(E.chaves.gemini, INSTRUCAO_SITE, dados,
-                                   { maxTokens: 32000 });
+  const bruto = await IA.pedeTextoCom(E, INSTRUCAO_SITE, dados,
+                                      { maxTokens: 32000 });
   return limpaHtml(bruto);
 }
 
@@ -376,7 +376,7 @@ const preco = {
     on(raiz, '[data-fazer="melhorar"]', 'click', async (e, b) => {
       const solta = espera(b, 'escrevendo...');
       try {
-        const t = await IA.pedeTexto(E.chaves.gemini,
+        const t = await IA.pedeTextoCom(E,
           'Reescreva esta resposta de preço para WhatsApp: curta, direta, ' +
           'sem jargão de vendas, sem emoji, no máximo 5 linhas, português do ' +
           'Brasil falado. Mantenha TODOS os números exatamente como estão. ' +
@@ -823,6 +823,7 @@ const ajustes = {
   conta: () => 0,
   render(raiz) {
     const n = E.negocio;
+    const prov = E.chaves.provedor || '';
     raiz.innerHTML = `
       <div class="cabeca"><h1>Ajustes</h1>
         <p>Tudo fica guardado só neste navegador. Exporte de vez em quando.</p></div>
@@ -849,14 +850,35 @@ const ajustes = {
       </div>
 
       <div class="cartao">
-        <h3>Gemini</h3>
-        <p class="ajuda">Sem ela o painel funciona, mas as mensagens e os sites
-        saem de modelo pronto em vez de feitos para cada casa.
-        Pegue em <a href="https://aistudio.google.com/apikey" target="_blank"
-        rel="noopener">aistudio.google.com/apikey</a>.</p>
-        ${campo('Chave', 'gemini', E.chaves.gemini, { tipo: 'password' })}
-        <p class="ajuda" style="margin-top:8px">Ela fica só neste navegador — não
-        está no código do site, e quem abrir o link não vê.</p>
+        <h3>A inteligência</h3>
+        <p class="ajuda">Sem chave o painel funciona, mas as mensagens e os
+        sites saem de modelo pronto em vez de feitos para cada casa.</p>
+        <div style="margin-bottom:12px">
+          <label for="c-provedor">Quem escreve</label>
+          <select id="c-provedor" name="provedor">
+            <option value="">— o que tiver chave —</option>
+            <option value="openrouter" ${prov === 'openrouter' ? 'selected' : ''}>
+              OpenRouter (uma chave, vários modelos)</option>
+            <option value="gemini" ${prov === 'gemini' ? 'selected' : ''}>
+              Gemini (Google)</option>
+          </select>
+        </div>
+        <div class="grade g2">
+          ${campo('Chave do OpenRouter', 'openrouter', E.chaves.openrouter || '',
+                  { tipo: 'password', dica: 'sk-or-...' })}
+          ${campo('Chave do Gemini', 'gemini', E.chaves.gemini, { tipo: 'password' })}
+        </div>
+        ${campo('Modelo do OpenRouter (vazio = ele escolhe)', 'modeloRota',
+                E.chaves.modeloRota || '', { dica: 'anthropic/claude-sonnet-4.5' })}
+        <p class="ajuda" style="margin-top:10px">
+          OpenRouter: <a href="https://openrouter.ai/keys" target="_blank"
+          rel="noopener">openrouter.ai/keys</a> — uma chave só alcança Claude,
+          Gemini e GPT, e tem modelos grátis.<br>
+          Gemini: <a href="https://aistudio.google.com/apikey" target="_blank"
+          rel="noopener">aistudio.google.com/apikey</a>.
+        </p>
+        <p class="ajuda">As chaves ficam só neste navegador — não estão no
+        código do site, e quem abrir o link não vê.</p>
       </div>
 
       <div class="cartao">
@@ -870,8 +892,16 @@ const ajustes = {
       </div>`;
 
     on(raiz, 'input', 'input', (e, i) => {
-      if (i.name === 'gemini') { E.chaves.gemini = i.value.trim(); N.salva(); return; }
+      if (['gemini', 'openrouter', 'modeloRota'].includes(i.name)) {
+        E.chaves[i.name] = i.value.trim(); N.salva(); return;
+      }
       if (i.name in n) { n[i.name] = i.value; N.salva(); }
+    });
+    on(raiz, 'select[name=provedor]', 'change', (e, sel) => {
+      E.chaves.provedor = sel.value;
+      N.salva();
+      recado(sel.value ? `agora quem escreve é o ${sel.value === 'openrouter'
+        ? 'OpenRouter' : 'Gemini'}` : 'vale a chave que existir');
     });
     on(raiz, '[data-fazer="exportar"]', 'click', () => { N.exporta(); recado('backup baixado'); });
     on(raiz, '[data-fazer="importar"]', 'click', () => raiz.querySelector('#arquivo').click());
