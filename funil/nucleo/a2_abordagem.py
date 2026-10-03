@@ -67,6 +67,29 @@ e sem jargão de programador.
 Responda só com o JSON pedido."""
 
 
+# Os tons que a colônia faz variar entre organismos. Nenhum deles afrouxa
+# as regras acima: mudam o jeito de abrir a conversa, não o que pode ser
+# prometido. É o eixo mais barato de testar — mesma lista de leads, mesma
+# oferta, e você descobre qual abertura faz o dono responder.
+TONS = {
+    'direto': 'TOM: vá ao ponto na primeira linha. Diga o que você viu e o que '
+              'você fez, sem rodeio e sem aquecimento.',
+    'curioso': 'TOM: abra com uma pergunta curta sobre o negócio dele — algo que '
+               'só quem olhou o perfil saberia perguntar.',
+    'prestativo': 'TOM: abra pelo que já está pronto e de graça para ele, antes '
+                  'de falar de você.',
+    'numerico': 'TOM: abra pelo número real que te passaram (quantidade de '
+                'avaliações, nota) e o que ele significa. Nenhum número que '
+                'não esteja nos dados.',
+}
+
+
+def instrucao_com_tom(tom: str = '') -> str:
+    """A instrução base mais a linha do tom, quando a colônia pede um."""
+    extra = TONS.get(tom, '')
+    return f'{INSTRUCAO}\n\n{extra}' if extra else INSTRUCAO
+
+
 def _contexto(l: Lead) -> str:
     notas = [f'Nome: {l.nome}', f'Cidade: {l.cidade}']
     if l.categoria:
@@ -90,13 +113,28 @@ def _contexto(l: Lead) -> str:
 
 def escreve(est: Estado, limite: int = 20, modelo: str | None = None,
             cidade: str = '', cli: Any = None,
-            provedor: str = 'claude', chave: str = '') -> dict[str, int]:
-    """Pega leads NOVO, escreve a abordagem e deixa em RASCUNHO."""
+            provedor: str = 'claude', chave: str = '',
+            tom: str = '', organismo: str = '',
+            antes_de_cada=None) -> dict[str, int]:
+    """
+    Pega leads NOVO, escreve a abordagem e deixa em RASCUNHO.
+
+    `antes_de_cada` existe para a colônia: ela cobra a carteira ANTES de
+    o lead ser trabalhado, e desiste do resto do lote se o organismo não
+    tem com que pagar. Cobrar depois gastaria o que não existe.
+    """
     conta = {'escritos': 0, 'falhas': 0}
-    for l in est.leads(NOVO, limite=limite, cidade=cidade):
+    # A chave só aparece quando a colônia está dirigindo: o funil sozinho
+    # continua devolvendo o mesmo dicionário de sempre.
+    if antes_de_cada is not None:
+        conta['sem_recurso'] = 0
+    for l in est.leads(NOVO, limite=limite, cidade=cidade, organismo=organismo):
+        if antes_de_cada is not None and not antes_de_cada(l):
+            conta['sem_recurso'] += 1
+            break
         try:
             r: Abordagem = pede_json(
-                instrucao=INSTRUCAO,
+                instrucao=instrucao_com_tom(tom),
                 conteudo=f'Dados do restaurante:\n\n{_contexto(l)}',
                 esquema=Abordagem,
                 modelo=modelo,

@@ -57,3 +57,23 @@ perfil_whatsapp = ""          # vazio = dados/funil.whatsapp (login uma vez)
 banco = "dados/funil.db"
 saida = "saida"
 material = "material"
+
+[colonia]
+# Agentes com carteira: nascem com uma semente, gastam para trabalhar,
+# morrem quando zera e se reproduzem quando dão lucro.
+# Leia o topo de nucleo/colonia.py antes de subir qualquer número aqui.
+teto_vivos = 4        # quantos podem viver ao mesmo tempo (teto de código: 32)
+teto_gasto = 5000     # em CENTAVOS, o que a colônia pode gastar na vida inteira
+                      # 5000 = R$ 50,00 (teto de código: R$ 500,00)
+semente = 500         # com quanto cada organismo nasce. 500 = R$ 5,00
+
+# Quantos PRIMEIROS CONTATOS cada organismo pode te pedir na vida. É esta
+# reserva, e não o dinheiro, que decide quem morre: computação tem plano
+# grátis, a paciência de quem recebe mensagem fria não tem.
+# A conta, com 3% de conversão (razoável em contato frio):
+#   25 toques → 53% de chance de UMA venda     60 → 84%
+#   40 toques → 70%                           100 → 95%
+# Abaixo de 40 a primeira geração morre em metade das tentativas, e sem
+# a geração 0 não existe linhagem. O extrato mostra a SUA taxa medida;
+# quando ela aparecer, ajuste por ela e não por este palpite.
+toques = 40

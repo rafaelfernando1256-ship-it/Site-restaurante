@@ -304,6 +304,109 @@ E essa mensagem também espera você aprovar.
 
 ---
 
+## A colônia — agentes que vivem de dinheiro e morrem sem ele
+
+```bash
+python3 funil.py colonia --nascer --cidade "Natal, RN" --tom direto
+python3 funil.py colonia --viver        # uma volta de trabalho
+python3 funil.py colonia                # o livro-caixa
+python3 funil.py colonia --recebi g0-01 90000   # R$ 900,00 caíram na sua conta
+```
+
+Cada **organismo** é um agente com carteira própria. Nasce com R$ 5,00,
+gasta para trabalhar, recebe quando um cliente paga, e some para sempre
+quando a carteira zera. Quem dá lucro se reproduz e paga R$ 5,00 do
+próprio bolso para o filho. É seleção, não metáfora: o dinheiro é o que
+entra e sai da sua conta.
+
+### As duas reservas, e por que a segunda é a que importa
+
+| reserva | o que é | acaba quando |
+|---|---|---|
+| **carteira** | centavos, debitados no custo real de cada operação | gasta mais do que tem |
+| **toques** | primeiros contatos que ele pode te pedir | queima os 40 |
+
+A carteira quase não dói: rodando em Gemini, Groq ou modelos `:free` do
+OpenRouter o custo de modelo é zero, e as primeiras 1.000 buscas da
+Places são de graça por mês. Se o único recurso fosse dinheiro, todo
+organismo sobreviveria para sempre — inclusive o que não funciona.
+
+O recurso escasso no seu negócio é **quantas vezes você pode bater na
+porta de um estranho** antes de o seu número ser bloqueado. Por isso o
+toque existe, e por isso é ele que mata: um organismo que queimou 40
+toques sem fechar nada é uma estratégia ruim, e estratégia ruim precisa
+morrer antes de gastar a sua reputação.
+
+### A conta que decide se a colônia consegue começar
+
+Com 3% de conversão — razoável em contato frio — a chance de **uma** venda:
+
+| toques | chance de 1 venda |
+|---|---|
+| 25 | 53% |
+| **40** (padrão) | **70%** |
+| 60 | 84% |
+| 100 | 95% |
+
+Com 25 a geração 0 morre em metade das tentativas, e sem geração 0 não
+existe linhagem — ela não tem pai de quem herdar. Na primeira simulação a
+colônia inteira morreu na volta 5 exatamente por isso. 40 é o meio
+honesto: dá 70% de chance de o fundador provar algo, sem pedir cem
+mensagens frias do seu número na primeira semana.
+
+O extrato mostra a **sua** conversão medida. Quando ela aparecer, ajuste
+por ela e não por este palpite.
+
+### Reprodução, e o que ela não é
+
+```
+g0-01 (direto, R$ 900)  ──┬── g1-01 (direto, R$ 1120)   mutou: preço
+   ganhou R$ 2.700        ├── g1-02 (prestativo, R$ 900) mutou: tom
+                          └── g1-03 (direto, Parnamirim)  mutou: cidade
+```
+
+Regras, e o motivo de cada uma:
+
+- **só se reproduz quem RECEBEU dinheiro de cliente.** Guardar a semente
+  sem vender não conta. Sem isso a colônia se multiplica sem nunca ter
+  provado nada.
+- **o pai paga a semente do próprio bolso.** A colônia nunca cria
+  dinheiro do nada.
+- **o filho muda UM eixo** — tom, preço, termos ou cidade. Clone idêntico
+  não ensina: se o pai deu lucro, você precisa descobrir se foi a cidade,
+  o tom ou o preço.
+- **a ceifa vem antes da reprodução.** Quem faliu nesta volta não gera
+  filho no mesmo instante, e a vaga de quem morreu é o que deixa o filho
+  nascer dentro do teto.
+
+### Os tetos, e por que eles não são negociáveis
+
+Em `config.toml`, seção `[colonia]`. Você pode **baixar**; furar o teto
+de código, não:
+
+| teto | padrão | máximo de código |
+|---|---|---|
+| vivos ao mesmo tempo | 4 | 32 |
+| gasto da colônia na vida | R$ 50,00 | R$ 500,00 |
+| gerações | — | 12 |
+
+Replicação sem teto é a única coisa nesta lista que não tem volta: um erro
+numa geração vira dezenas de agentes repetindo a mesma mensagem errada com
+o seu número, e aí não há como recolher.
+
+### O que nenhum organismo faz
+
+**Mandar o primeiro contato sozinho.** Ele gasta um toque, escreve, e a
+mensagem fica em **rascunho**. O envio sai pelo caminho que já existe —
+`funil.py enviar --abrir`, com o seu clique. Responder a quem **já te
+escreveu** continua automático, pela vigia.
+
+E **nenhum organismo credita a si mesmo.** Receita entra só por
+`--recebi`, que é você confirmando um Pix que caiu na sua conta. Sem isso
+a colônia inteira viraria um gerador de otimismo.
+
+---
+
 ## O que não roda nesta máquina
 
 Este projeto foi escrito e testado num contêiner na nuvem, onde:
@@ -325,9 +428,17 @@ sumido) está verificada; o que não dá para verificar daqui é a rede.
 
 ## O que foi verificado
 
-**69 testes, 69 passando** (`python3 testes.py`). Nenhum toca a rede: o
-cliente do Claude, a API da Netlify e o Claude Code entram como dublê,
-porque o que precisa de teste é a lógica.
+**97 testes, 97 passando** (`python3 testes.py`). Nenhum toca a rede: o
+cliente do modelo, a Places API, a API da Netlify e o Claude Code entram
+como dublê, porque o que precisa de teste é a lógica.
+
+Da colônia, os que importam: dinheiro é centavo inteiro do começo ao fim;
+zerar a carteira mata e morte não tem volta (nem depois de você creditar
+dinheiro); queimar os toques sem fechar nada também mata; quem já fechou
+não morre por falta de toque; só reproduz quem recebeu de cliente; a
+mutação nunca gera clone idêntico; o teto de código não é furável pela
+configuração; o livro-caixa sobrevive a fechar e abrir sem perder centavo;
+e **a colônia nunca envia nem aprova nada sozinha**.
 
 O que eles garantem, em grupos:
 

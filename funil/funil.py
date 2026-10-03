@@ -372,6 +372,108 @@ def cmd_descartar(a, cfg) -> int:
 
 
 # ── CLI ─────────────────────────────────────────────────────────────
+def _colonia(cfg):
+    from nucleo.colonia import Colonia
+    return Colonia(Path(cfg.banco).with_suffix('.colonia.json'),
+                   teto_vivos=cfg.colonia_teto_vivos,
+                   teto_gasto=cfg.colonia_teto_gasto,
+                   semente=cfg.colonia_semente,
+                   toques=cfg.colonia_toques)
+
+
+def cmd_colonia(a, cfg) -> int:
+    from nucleo.colonia import ColoniaCheia, dinheiro
+    col = _colonia(cfg)
+
+    if a.recebi:
+        ident, centavos = a.recebi[0], int(a.recebi[1])
+        if ident not in col.bichos:
+            print(f'\n  não existe organismo "{ident}". Veja: '
+                  'python3 funil.py colonia --extrato\n')
+            return 1
+        col.recebe(ident, centavos, de='confirmado à mão')
+        col.salva()
+        o = col.bichos[ident]
+        print(f'\n  {ident} recebeu {dinheiro(centavos)}. '
+              f'Carteira: {dinheiro(o.carteira)} · saldo {dinheiro(o.saldo)}')
+        if o.pode_reproduzir:
+            print('  Ele já pode se reproduzir — sai na próxima '
+                  '"colonia --viver".')
+        print()
+        return 0
+
+    if a.matar:
+        if a.matar not in col.bichos:
+            print(f'\n  não existe organismo "{a.matar}"\n')
+            return 1
+        col.mata(a.matar, 'morto à mão por você')
+        col.salva()
+        print(f'\n  † {a.matar} morto. Não há como reviver.\n')
+        return 0
+
+    if a.recarregar:
+        ident, quantos = a.recarregar[0], int(a.recarregar[1])
+        o = col.bichos.get(ident)
+        if not o:
+            print(f'\n  não existe organismo "{ident}"\n')
+            return 1
+        if o.fechados == 0:
+            # Recarregar quem nunca fechou é furar a seleção por dentro: a
+            # reserva de toques só filtra se acabar de verdade.
+            print(f'\n  {ident} nunca fechou nada. Recarregar toques aí é '
+                  'pagar para repetir o que não funcionou.\n')
+            return 1
+        o.toques += max(0, quantos)
+        o.recarregados += max(0, quantos)
+        col._anota(ident, 'recarregou', 0, f'+{quantos} toques')
+        col.salva()
+        print(f'\n  {ident} agora tem {o.toques} toques.\n')
+        return 0
+
+    if a.nascer:
+        cidade = a.cidade or cfg.cidade
+        if not cidade:
+            print('\n  falta a cidade: --cidade "Natal, RN", ou cidade = em '
+                  'config.toml\n')
+            return 1
+        try:
+            o = col.nascer(cidade=cidade, termos=cfg.termos, tom=a.tom,
+                           preco=a.preco)
+        except ColoniaCheia as e:
+            print(f'\n  {e}\n')
+            return 1
+        col.salva()
+        print(f'\n  nasceu {o.id} com {dinheiro(o.carteira)} e {o.toques} toques.')
+        print(f'  {o.cidade} · tom {o.tom} · cobra {dinheiro(o.preco)}')
+        print('\n  para ele trabalhar: python3 funil.py colonia --viver\n')
+        return 0
+
+    if a.viver:
+        from nucleo import vida
+        if not col.vivos():
+            print('\n  nenhum organismo vivo. Comece com: '
+                  'python3 funil.py colonia --nascer\n')
+            return 1
+        cfg.exige_cerebro()
+        cfg.exige('google_places')
+        print(f'\n  COLÔNIA · uma volta com {len(col.vivos())} vivos\n')
+        with _estado(cfg) as est:
+            saida = vida.volta(col, est, cfg, paginas=a.paginas, limite=a.limite)
+        print(col.extrato())
+        if saida['mortos'] or saida['nasceram']:
+            print(f'  nesta volta: {len(saida["mortos"])} morreram, '
+                  f'{len(saida["nasceram"])} nasceram\n')
+        print('  as abordagens ficaram em RASCUNHO. Nenhuma saiu sozinha:')
+        print('    python3 funil.py revisar')
+        print('    python3 funil.py enviar --abrir\n')
+        return 0
+
+    print(col.extrato())
+    if not col.bichos:
+        print('  colônia vazia. Comece com: python3 funil.py colonia --nascer\n')
+    return 0
+
+
 def principal(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(
         prog='funil', description='Quatro agentes: caça, aborda, constrói, entrega.',
@@ -455,6 +557,29 @@ def principal(argv: list[str] | None = None) -> int:
     s.add_argument('ids', nargs='+')
     s.add_argument('--motivo', default='descartado à mão')
 
+    s = sub.add_parser('colonia', help='a colônia: agentes com carteira, que '
+                                       'morrem sem dinheiro e se reproduzem com lucro')
+    s.add_argument('--nascer', action='store_true',
+                   help='cria o primeiro organismo (ou mais um, dentro do teto)')
+    s.add_argument('--viver', action='store_true',
+                   help='uma volta: cada vivo trabalha, os falidos morrem, '
+                        'os lucrativos geram filho')
+    s.add_argument('--extrato', action='store_true', help='o livro-caixa (padrão)')
+    s.add_argument('--recebi', nargs=2, metavar=('ID', 'CENTAVOS'),
+                   help='confirma um pagamento que CAIU na sua conta. '
+                        'Em centavos: 90000 = R$ 900,00')
+    s.add_argument('--matar', metavar='ID',
+                   help='mata um organismo à mão. Não tem volta.')
+    s.add_argument('--recarregar', nargs=2, metavar=('ID', 'TOQUES'),
+                   help='devolve toques a quem já fechou alguma coisa')
+    s.add_argument('--tom', default='direto',
+                   help='direto | curioso | prestativo | numerico')
+    s.add_argument('--cidade', default='')
+    s.add_argument('--preco', type=int, default=90_000,
+                   help='em centavos, o que ele cobra pela montagem')
+    s.add_argument('--paginas', type=int, default=1)
+    s.add_argument('--limite', type=int, default=10)
+
     a = p.parse_args(argv)
     cfg = config.carrega(a.config)
     return {
@@ -464,7 +589,7 @@ def principal(argv: list[str] | None = None) -> int:
         'enviada': cmd_enviada, 'retorno': cmd_retorno, 'triar': cmd_triar,
         'construir': cmd_construir, 'publicar': cmd_publicar, 'lead': cmd_lead,
         'painel': cmd_painel, 'descartar': cmd_descartar, 'vigiar': cmd_vigiar,
-        'capturar': cmd_capturar,
+        'capturar': cmd_capturar, 'colonia': cmd_colonia,
     }[a.cmd](a, cfg)
 
 

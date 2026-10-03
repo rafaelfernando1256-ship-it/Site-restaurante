@@ -247,7 +247,7 @@ class Estado:
         return self._para_lead(r) if r else None
 
     def leads(self, estado: str | list[str] | None = None, limite: int = 500,
-              cidade: str = '') -> list[Lead]:
+              cidade: str = '', organismo: str = '') -> list[Lead]:
         onde, args = [], []
         if estado:
             est = [estado] if isinstance(estado, str) else estado
@@ -256,6 +256,13 @@ class Estado:
         if cidade:
             onde.append('cidade=?')
             args.append(cidade)
+        if organismo:
+            # Quem achou o lead fica dentro de `dados`, não numa coluna: a
+            # colônia é uma camada por cima do funil, e o funil roda sem
+            # ela. Coluna nova obrigaria migração de banco de quem já tem
+            # lead guardado.
+            onde.append("json_extract(dados,'$.organismo')=?")
+            args.append(organismo)
         sql = 'SELECT * FROM leads'
         if onde:
             sql += ' WHERE ' + ' AND '.join(onde)

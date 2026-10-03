@@ -205,7 +205,8 @@ def busca(chave: str, consulta: str, paginas: int = 3, idioma: str = 'pt-BR',
 
 
 def caca(est: Estado, chave: str, cidade: str, termos: list[str],
-         paginas: int = 3, minimo: int = 4) -> dict[str, int]:
+         paginas: int = 3, minimo: int = 4,
+         marca: dict | None = None) -> dict[str, int]:
     """
     Roda as buscas, guarda o que serve e deixa tudo em NOVO para o
     agente 2. Lead repetido é atualizado, não duplicado — o place_id é
@@ -227,7 +228,7 @@ def caca(est: Estado, chave: str, cidade: str, termos: list[str],
                     endereco=a.endereco, cidade=cidade, categoria=a.categoria,
                     nota=a.nota, avaliacoes=a.avaliacoes, presenca=a.presenca,
                     url_achada=a.url_achada, pontuacao=a.pontuacao,
-                    dados={'mapa': a.mapa, 'termo': termo},
+                    dados={'mapa': a.mapa, 'termo': termo, **(marca or {})},
                 )
                 conta['novos' if novo else 'atualizados'] += 1
                 if novo:

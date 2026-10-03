@@ -80,6 +80,14 @@ class Config:
     intervalo_segundos: list = field(default_factory=lambda: [20, 60])
     max_por_dia: int = 60
 
+    # ── a colônia ───────────────────────────────────────────────────
+    # Os tetos. Você pode BAIXAR daqui; furar o teto de código não.
+    # Veja o topo de nucleo/colonia.py para o porquê de cada um.
+    colonia_teto_vivos: int = 4        # quantos organismos podem viver juntos
+    colonia_teto_gasto: int = 5_000    # centavos que a colônia pode gastar na vida
+    colonia_semente: int = 500         # com quanto cada organismo nasce
+    colonia_toques: int = 40           # primeiros contatos que cada um pode pedir
+
     # preferências
     # claude | gemini | openrouter | groq — quem escreve as abordagens,
     # tria as respostas e lê o Instagram. Sai sozinho da chave do .env.
@@ -182,6 +190,14 @@ def carrega(caminho: Path | None = None) -> Config:
         c.modelo_gemini = g.get('modelo_gemini', c.modelo_gemini)
         c.modelo_openrouter = g.get('modelo_openrouter', c.modelo_openrouter)
         c.modelo_groq = g.get('modelo_groq', c.modelo_groq)
+
+        colonia = t.get('colonia', {})
+        for campo, destino in (('teto_vivos', 'colonia_teto_vivos'),
+                               ('teto_gasto', 'colonia_teto_gasto'),
+                               ('semente', 'colonia_semente'),
+                               ('toques', 'colonia_toques')):
+            if campo in colonia:
+                setattr(c, destino, int(colonia[campo]))
         c.cidade = g.get('cidade', c.cidade)
         c.canal_envio = g.get('canal_envio', c.canal_envio)
         c.equipe_netlify = g.get('equipe_netlify', c.equipe_netlify)

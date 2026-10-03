@@ -1415,6 +1415,426 @@ def _():
         verdade(not achado, f'{f.name} tem chave escrita: {achado}')
 
 
+# ── a colônia ───────────────────────────────────────────────────────
+def colonia_falsa(**extra):
+    from nucleo.colonia import Colonia
+    caminho = TMP / f'col-{len(list(TMP.glob("col-*.json")))}.json'
+    return Colonia(caminho, **extra)
+
+
+@teste('colônia: dinheiro é centavo inteiro, do começo ao fim')
+def _():
+    from nucleo.colonia import dinheiro
+    igual(dinheiro(0), 'R$ 0,00')
+    igual(dinheiro(5), 'R$ 0,05')
+    igual(dinheiro(500), 'R$ 5,00')
+    igual(dinheiro(90000), 'R$ 900,00')
+    igual(dinheiro(123456), 'R$ 1234,56')
+    igual(dinheiro(-250), '-R$ 2,50')
+    # Nenhum float em nenhum campo de dinheiro: 0,1 + 0,2 em float não dá
+    # 0,3, e aqui é esse número que decide quem vive.
+    col = colonia_falsa()
+    o = col.nascer('Natal, RN', ['pizzaria'])
+    for campo in ('carteira', 'ganho', 'gasto', 'preco'):
+        verdade(isinstance(getattr(o, campo), int),
+                f'{campo} não é inteiro: {type(getattr(o, campo))}')
+
+
+@teste('colônia: zerar a carteira mata, e morte não tem volta')
+def _():
+    from nucleo.colonia import PRECOS, SemDinheiro
+    col = colonia_falsa(semente=40)
+    o = col.nascer('Natal, RN', ['pizzaria'])
+    # força a busca a custar: as primeiras mil do mês são grátis
+    col.buscas_pagas = 10_000
+    custo = col.preco_de('busca')
+    verdade(custo > 0, 'a busca tinha que custar depois do grátis')
+
+    gastou = 0
+    while o.pode_pagar(custo):
+        gastou += col.cobra(o.id, 'busca')
+    igual(gastou, o.gasto)
+    verdade(o.carteira < custo, f'sobrou dinheiro: {o.carteira}')
+
+    try:
+        col.cobra(o.id, 'busca')
+    except SemDinheiro:
+        pass
+    else:
+        raise AssertionError('deixou gastar o que não tinha')
+
+    mortos = col.ceifa()
+    igual([m.id for m in mortos], [o.id])
+    verdade(not o.vivo, 'não morreu')
+    verdade(o.causa, 'morreu sem causa anotada')
+
+    # E morto não age nunca mais, nem depois de você creditar dinheiro.
+    col.recebe(o.id, 100_000, de='tarde demais')
+    try:
+        col.cobra(o.id, 'busca')
+    except SemDinheiro as e:
+        verdade('morto' in str(e), f'mensagem errada: {e}')
+        return
+    raise AssertionError('um morto voltou a trabalhar')
+
+
+@teste('colônia: queimar os toques sem fechar nada também mata')
+def _():
+    col = colonia_falsa()
+    o = col.nascer('Natal, RN', ['pizzaria'])
+    verdade(o.toques > 0)
+    for _i in range(o.toques):
+        col.toca(o.id)
+    igual(o.toques, 0)
+    # Carteira cheia, e mesmo assim morre: a reserva escassa de verdade é
+    # quantas portas ele pode te pedir para bater.
+    verdade(o.carteira > 0, 'o teste tem que provar morte COM dinheiro')
+    mortos = col.ceifa()
+    igual([m.id for m in mortos], [o.id])
+    verdade('toques' in o.causa, o.causa)
+
+
+@teste('colônia: quem fechou não morre por falta de toque')
+def _():
+    col = colonia_falsa()
+    o = col.nascer('Natal, RN', ['pizzaria'])
+    col.recebe(o.id, 90_000, de='cliente 1')
+    for _i in range(o.toques):
+        col.toca(o.id)
+    igual(col.ceifa(), [], 'matou quem já provou que funciona')
+    verdade(o.vivo)
+
+
+@teste('colônia: só se reproduz quem RECEBEU dinheiro de cliente')
+def _():
+    col = colonia_falsa(teto_vivos=4)
+    o = col.nascer('Natal, RN', ['pizzaria'])
+
+    # Carteira gorda sem nenhuma venda: não reproduz. Sem esta regra a
+    # colônia se multiplicaria sem nunca ter provado nada.
+    o.carteira = 1_000_000
+    verdade(not o.pode_reproduzir, 'reproduziu sem ter vendido')
+    igual(col.reproduz(o.id, ['Natal, RN']), None)
+
+    o.carteira = 500
+    col.recebe(o.id, 90_000, de='cliente')
+    verdade(o.pode_reproduzir, f'carteira {o.carteira}, ganho {o.ganho}')
+    antes = o.carteira
+    filho = col.reproduz(o.id, ['Natal, RN', 'Parnamirim, RN'])
+    verdade(filho is not None, 'não reproduziu com lucro')
+    igual(filho.carteira, col.semente)
+    igual(filho.pai, o.id)
+    igual(filho.geracao, 1)
+    igual(filho.ganho, 0, 'o filho tem que começar devendo o seu sustento')
+    # O pai PAGA a semente do próprio bolso: a colônia não cria dinheiro.
+    igual(o.carteira, antes - col.semente)
+    igual(o.filhos, [filho.id])
+
+
+@teste('colônia: o filho muda UM eixo, e o teto de vivos não é furado')
+def _():
+    import random
+    col = colonia_falsa(teto_vivos=2)
+    pai = col.nascer('Natal, RN', ['pizzaria', 'açaí', 'cafeteria'])
+
+    eixos = set()
+    for semente in range(40):
+        plano = col.muta(pai, ['Natal, RN', 'Parnamirim, RN'],
+                         random.Random(semente))
+        eixos.add(plano['eixo'])
+        mudou = sum([plano['cidade'] != pai.cidade, plano['tom'] != pai.tom,
+                     plano['preco'] != pai.preco,
+                     plano['termos'] != pai.termos])
+        verdade(mudou <= 1, f'mudou {mudou} eixos de uma vez: {plano}')
+    verdade(len(eixos) >= 3, f'a mutação não varia o suficiente: {eixos}')
+
+    # teto: 2 vivos, então o segundo filho não nasce
+    col.recebe(pai.id, 500_000, de='cliente')
+    verdade(col.reproduz(pai.id, ['Natal, RN']) is not None)
+    igual(len(col.vivos()), 2)
+    igual(col.reproduz(pai.id, ['Natal, RN']), None, 'furou o teto de vivos')
+
+
+@teste('colônia: teto de gasto trava a colônia inteira')
+def _():
+    from nucleo.colonia import SemDinheiro
+    col = colonia_falsa(teto_gasto=30, semente=10_000)
+    o = col.nascer('Natal, RN', ['pizzaria'])
+    col.buscas_pagas = 10_000           # tira do grátis
+    custo = col.preco_de('busca')
+    while col.gasto_total < col.teto_gasto:
+        col.cobra(o.id, 'busca')
+    verdade(o.carteira > custo, 'o teste precisa de carteira sobrando')
+    try:
+        col.cobra(o.id, 'busca')
+    except SemDinheiro as e:
+        verdade('teto de gasto' in str(e), f'mensagem errada: {e}')
+        return
+    raise AssertionError('passou do teto de gasto da colônia')
+
+
+@teste('colônia: as primeiras mil buscas do mês são de graça, a 1.001 não')
+def _():
+    from nucleo.colonia import BUSCAS_GRATIS_MES, PRECOS
+    col = colonia_falsa()
+    o = col.nascer('Natal, RN', ['pizzaria'])
+    igual(col.preco_de('busca'), 0, 'cobrou dentro da cota grátis')
+    igual(col.cobra(o.id, 'busca'), 0)
+    igual(o.carteira, col.semente, 'debitou dentro do grátis')
+    col.buscas_pagas = BUSCAS_GRATIS_MES
+    igual(col.preco_de('busca'), PRECOS['busca'])
+    verdade(col.cobra(o.id, 'busca') > 0, 'não cobrou depois do grátis')
+
+
+@teste('colônia: receita só entra por você, e nunca negativa')
+def _():
+    col = colonia_falsa()
+    o = col.nascer('Natal, RN', ['pizzaria'])
+    for ruim in (0, -1, -90_000):
+        try:
+            col.recebe(o.id, ruim)
+        except ValueError:
+            continue
+        raise AssertionError(f'aceitou receita de {ruim}')
+    col.recebe(o.id, 90_000, de='cliente')
+    igual(o.ganho, 90_000)
+    igual(o.fechados, 1)
+    # Nenhum método do organismo credita a si mesmo: a única entrada é
+    # Colonia.recebe, chamada pelo comando que VOCÊ roda.
+    verdade(not any(n for n in dir(o) if 'receb' in n.lower()),
+            'o organismo ganhou um jeito de creditar a si mesmo')
+
+
+@teste('colônia: o livro-caixa sobrevive a fechar e abrir, sem perder centavo')
+def _():
+    from nucleo.colonia import Colonia
+    col = colonia_falsa(teto_vivos=3)
+    pai = col.nascer('Natal, RN', ['pizzaria'], tom='curioso', preco=120_000)
+    col.recebe(pai.id, 90_000, de='cliente')
+    col.buscas_pagas = 10_000
+    col.cobra(pai.id, 'busca')
+    col.toca(pai.id)
+    filho = col.reproduz(pai.id, ['Natal, RN', 'Parnamirim, RN'])
+    col.salva()
+
+    outra = Colonia(col.caminho, teto_vivos=3)
+    igual(len(outra.bichos), 2)
+    a, b = outra.bichos[pai.id], outra.bichos[filho.id]
+    igual(a.carteira, pai.carteira)
+    igual(a.gasto, pai.gasto)
+    igual(a.ganho, pai.ganho)
+    igual(a.toques, pai.toques)
+    igual(a.tom, 'curioso')
+    igual(a.preco, 120_000)
+    igual(b.pai, pai.id)
+    igual(outra.gasto_total, col.gasto_total)
+    igual(outra.buscas_pagas, col.buscas_pagas)
+    # O diário é trilha de auditoria: o que aconteceu continua lá.
+    verdade(any(e['o_que'] == 'nasceu' for e in outra.diario))
+    verdade(any(e['o_que'] == 'recebeu' for e in outra.diario))
+    verdade(any(e['o_que'] == 'reproduziu' for e in outra.diario))
+
+
+@teste('colônia: o turno marca o lead com quem o achou, e o tom vai no texto')
+def _():
+    from nucleo import vida
+    from nucleo.a2_abordagem import TONS, instrucao_com_tom
+    import nucleo.a1_cacador as A1
+
+    est = banco()
+    cfg = cfg_falso(banco=est.caminho, cidade='Natal, RN', termos=['pizzaria'])
+    col = colonia_falsa()
+    o = col.nascer('Natal, RN', ['pizzaria'], tom='curioso')
+
+    # a Places API trocada por um falso: nenhuma chamada sai daqui
+    original = A1._pede
+    A1._pede = lambda chave, corpo, tentativas=3: {'places': [{
+        'id': 'p-colonia', 'displayName': {'text': 'Pizzaria do Teste'},
+        'formattedAddress': 'Rua 1', 'nationalPhoneNumber': '84 98888-7777',
+        'internationalPhoneNumber': '+55 84 98888-7777',
+        'websiteUri': 'https://instagram.com/pizzariadoteste',
+        'rating': 4.5, 'userRatingCount': 120,
+        'primaryTypeDisplayName': {'text': 'Pizzaria'},
+        'businessStatus': 'OPERATIONAL', 'googleMapsUri': 'https://maps/x',
+    }]}
+    try:
+        vida.caca(col, o, est, cfg, paginas=1)
+        achados = est.leads(organismo=o.id)
+        igual(len(achados), 1, 'o lead não ficou marcado com o organismo')
+        igual(achados[0].dados['organismo'], o.id)
+        igual(achados[0].dados['tom'], 'curioso')
+        igual(o.leads, 1)
+        # e um organismo de OUTRO id não vê esse lead
+        igual(est.leads(organismo='g9-99'), [])
+
+        antes_toques, antes_carteira = o.toques, o.carteira
+        conta = vida.aborda(col, o, est, cfg, limite=5,
+                            cli=duble(gancho='g', mensagem='m', porque='p'))
+        igual(conta['escritos'], 1)
+        igual(o.toques, antes_toques - 1, 'não gastou o toque')
+        verdade(o.carteira <= antes_carteira)
+    finally:
+        A1._pede = original
+
+    # o tom entra na instrução, sem afrouxar as regras
+    com = instrucao_com_tom('curioso')
+    verdade(TONS['curioso'] in com)
+    verdade('Nada de promessa que você não pode provar' in com,
+            'o tom não pode comer as regras de honestidade')
+    igual(instrucao_com_tom(''), instrucao_com_tom('tom_que_nao_existe'))
+
+
+@teste('colônia: sem toque, o organismo para de abordar em vez de continuar')
+def _():
+    from nucleo import vida
+    est = banco()
+    cfg = cfg_falso(banco=est.caminho)
+    col = colonia_falsa()
+    o = col.nascer('Natal, RN', ['pizzaria'])
+    for i in range(3):
+        est.guarda_lead(place_id=f'p{i}', nome=f'Casa {i}', cidade='Natal, RN',
+                        telefone_e164='5584988887777', presenca='so_rede',
+                        pontuacao=9, dados={'organismo': o.id})
+    o.toques = 1
+    conta = vida.aborda(col, o, est, cfg, limite=10,
+                        cli=duble(gancho='g', mensagem='m', porque='p'))
+    igual(conta['escritos'], 1, 'escreveu mais do que tinha toque')
+    igual(conta['sem_recurso'], 1)
+    igual(o.toques, 0)
+
+
+@teste('colônia: a volta ceifa ANTES de reproduzir')
+def _():
+    from nucleo import vida
+    import random
+    est = banco()
+    cfg = cfg_falso(banco=est.caminho, cidade='Natal, RN', termos=[])
+    col = colonia_falsa(teto_vivos=2)
+
+    falido = col.nascer('Natal, RN', [])
+    rico = col.nascer('Natal, RN', [])
+    falido.toques = 0                       # morre nesta volta
+    col.recebe(rico.id, 90_000, de='cliente')
+
+    saida = vida.volta(col, est, cfg, sorteio=random.Random(7))
+    igual(saida['mortos'], [falido.id])
+    # A vaga aberta pela morte é o que deixa o filho nascer dentro do teto.
+    igual(len(saida['nasceram']), 1, saida)
+    igual(len(col.vivos()), 2)
+    verdade(not col.bichos[falido.id].vivo)
+
+
+@teste('colônia: nada é enviado sozinho — a abordagem fica em rascunho')
+def _():
+    from nucleo import vida
+    est = banco()
+    cfg = cfg_falso(banco=est.caminho)
+    col = colonia_falsa()
+    o = col.nascer('Natal, RN', ['pizzaria'])
+    est.guarda_lead(place_id='pz', nome='Casa', cidade='Natal, RN',
+                    telefone_e164='5584988887777', presenca='so_rede',
+                    pontuacao=9, dados={'organismo': o.id})
+    vida.aborda(col, o, est, cfg, limite=5,
+                cli=duble(gancho='g', mensagem='m', porque='p'))
+    rascunhos = est.mensagens(situacao='rascunho', tipo='abordagem')
+    igual(len(rascunhos), 1)
+    igual(est.mensagens(situacao='enviada'), [],
+          'a colônia enviou algo sozinha')
+    igual(est.mensagens(situacao='aprovada'), [],
+          'a colônia aprovou algo sozinha')
+
+
+@teste('colônia: a mutação nunca gera clone idêntico ao pai')
+def _():
+    import random
+    col = colonia_falsa()
+    # Organismo de UM termo: antes, o eixo "termos" copiava a lista igual
+    # e o filho nascia clone — contra o que a reprodução promete.
+    magro = col.nascer('Natal, RN', ['pizzaria'], tom='direto')
+    for semente in range(60):
+        plano = col.muta(magro, ['Natal, RN'], random.Random(semente))
+        igual(plano['termos'], magro.termos, 'cortou o único termo que ele tinha')
+        verdade(plano['tom'] != magro.tom or plano['preco'] != magro.preco,
+                f'filho idêntico ao pai: {plano}')
+    gordo = col.nascer('Natal, RN', ['pizzaria', 'açaí'], tom='direto')
+    for semente in range(60):
+        plano = col.muta(gordo, ['Natal, RN'], random.Random(semente))
+        mudou = (plano['tom'] != gordo.tom or plano['preco'] != gordo.preco
+                 or plano['termos'] != gordo.termos
+                 or plano['cidade'] != gordo.cidade)
+        verdade(mudou, f'filho idêntico ao pai: {plano}')
+
+
+@teste('colônia: sem toque sobrando, ele NÃO paga busca para encher fila')
+def _():
+    from nucleo import vida
+    import nucleo.a1_cacador as A1
+    est = banco()
+    cfg = cfg_falso(banco=est.caminho)
+    col = colonia_falsa()
+    col.buscas_pagas = 10_000           # fora do grátis: agora a busca dói
+    o = col.nascer('Natal, RN', ['pizzaria'])
+
+    bateu = []
+    original, A1._pede = A1._pede, lambda *a, **k: bateu.append(1) or {'places': []}
+    try:
+        # 1) sem nenhum toque: nem tenta
+        o.toques = 0
+        antes = o.carteira
+        r = vida.caca(col, o, est, cfg)
+        verdade('sem toques' in r['pulou'], r)
+        igual(bateu, [], 'pagou busca sem ter toque para usar')
+        igual(o.carteira, antes, 'gastou dinheiro sem poder abordar ninguém')
+
+        # 2) com fila maior que a reserva de toques: também não busca
+        o.toques = 2
+        for i in range(3):
+            est.guarda_lead(place_id=f'fila{i}', nome=f'Casa {i}',
+                            cidade='Natal, RN', presenca='so_rede',
+                            pontuacao=9, dados={'organismo': o.id})
+        antes = o.carteira
+        r = vida.caca(col, o, est, cfg)
+        verdade('fila' in r['pulou'], r)
+        igual(bateu, [])
+        igual(o.carteira, antes)
+
+        # 3) com toque sobrando e fila curta: busca normalmente
+        o.toques = 10
+        vida.caca(col, o, est, cfg)
+        igual(len(bateu), 1, 'deixou de buscar quando havia toque de sobra')
+        verdade(o.carteira < antes, 'buscou sem pagar')
+    finally:
+        A1._pede = original
+
+
+@teste('colônia: o extrato não esconde quem está vivo e parado')
+def _():
+    col = colonia_falsa()
+    o = col.nascer('Natal, RN', ['pizzaria'], preco=120_000)
+    col.recebe(o.id, 90_000, de='cliente')       # fechou, então a ceifa poupa
+    o.toques = 0
+    igual(col.ceifa(), [], 'matou quem já tinha fechado')
+    verdade(o.parado, 'não marcou como parado')
+    texto = col.extrato()
+    verdade('PARADO' in texto, f'o extrato diz que está tudo bem: {texto}')
+    # e o preço que ele cobra aparece: é eixo de estratégia, não detalhe
+    verdade('R$ 1200,00' in texto, f'o preço não aparece no extrato: {texto}')
+
+
+@teste('colônia: o teto de código não pode ser furado pela configuração')
+def _():
+    from nucleo import colonia as C
+    folgado = colonia_falsa(teto_vivos=9999, teto_gasto=99_999_999)
+    igual(folgado.teto_vivos, C.TETO_VIVOS)
+    igual(folgado.teto_gasto, C.TETO_GASTO)
+    # e geração tem fim: nenhuma linhagem corre para sempre
+    col = colonia_falsa(teto_vivos=C.TETO_VIVOS)
+    pai = col.nascer('Natal, RN', ['x'], geracao=C.TETO_GERACOES)
+    col.recebe(pai.id, 500_000, de='cliente')
+    igual(col.reproduz(pai.id, ['Natal, RN']), None,
+          'passou do teto de gerações')
+
+
 @teste('painel: mostra o lead, avisa que nada dispara e não indexa')
 def _():
     import painel
