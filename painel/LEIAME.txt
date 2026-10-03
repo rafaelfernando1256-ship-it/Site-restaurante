@@ -1,0 +1,44 @@
+PAINEL DE VENDAS — 8 agentes
+============================
+
+COMO PÔR NO AR
+--------------
+1. Entre em https://app.netlify.com/drop
+2. Arraste este .zip inteiro para a página
+3. Em uns 20 segundos ele te dá um endereço. Salve nos favoritos.
+
+COMO COMEÇAR
+------------
+1. Abra o painel e vá em AJUSTES
+2. Preencha seu nome, cidade e a CHAVE PIX
+3. Cole a chave do Gemini (aistudio.google.com/apikey) — opcional, mas é
+   ela que faz as mensagens e os sites saírem feitos para cada cliente
+4. Vá no agente 1 e cole a sua lista de restaurantes
+
+O QUE FICA ONDE
+---------------
+Tudo que você digita fica NO SEU NAVEGADOR (localStorage). Nada sobe para
+servidor nenhum — este site é só HTML, CSS e JavaScript.
+
+Isso tem duas consequências:
+  - ninguém mais vê os seus dados, nem eu;
+  - se você limpar o navegador sem exportar, perde tudo.
+
+Em AJUSTES tem "Exportar backup". Use de vez em quando.
+
+O QUE ESTE PAINEL NÃO FAZ
+-------------------------
+Buscar restaurante no Google Places. Isso precisa de uma chave secreta, e
+chave em site estático é chave vazada. Quem faz a busca é o funil, na sua
+máquina (pasta funil/), e você cola o resultado no agente 1.
+
+OS OITO AGENTES
+---------------
+1 Caçador       acha quem precisa
+2 Abordagem     escreve e manda a primeira mensagem
+3 Demonstração  gera o site de exemplo e empacota para publicar
+4 Preço         responde "quanto custa?" sem gaguejar
+5 Receber       Pix copia-e-cola e controle de cobranças
+6 Entregar      checklist do que põe o site no ar + contrato
+7 Manter        mensalidades, que é onde mora o lucro
+8 Crescer       indicações e os números do funil
