@@ -348,6 +348,41 @@ def _():
             'a instrução não distingue tornar vívido de tornar crível')
 
 
+@prova('gatilhos: os dois agentes proíbem afirmar fisiologia como fato')
+def _():
+    from motor import gatilhos, roteiro
+    # Isto saiu de um vídeo REAL gerado aqui: o roteiro afirmou que em
+    # jejum o corpo usa glicogênio e não gordura, e que queima proteína
+    # para se mover. É o inverso do que a literatura mostra. A instrução
+    # premiava o contraintuitivo sem exigir que fosse verdade.
+    for nome, i in (('roteiro', roteiro.INSTRUCAO),
+                    ('gatilhos', gatilhos.INSTRUCAO)):
+        baixo = i.lower()
+        verdade('não invente fisiologia' in baixo,
+                f'{nome}: a regra sumiu da instrução')
+        for exemplo in ('cortisol', 'queima músculo', 'seu corpo usa'):
+            verdade(exemplo in baixo,
+                    f'{nome}: faltou o exemplo concreto "{exemplo}"')
+        # e a saída honesta no lugar
+        for saida in ('observa', 'controla', 'fronteira'):
+            verdade(saida in baixo, f'{nome}: não diz o que usar no lugar')
+
+
+@prova('gatilhos: a correção de fisiologia aparece separada da manipulação')
+def _():
+    from motor import gatilhos
+    rev = gatilhos.Revisao(**revisao_exemplo(
+        alegacoes_corrigidas=['"queima proteína" → removido: a degradação '
+                              'de proteína cai no exercício em jejum']))
+    verdade(rev.alegacoes_corrigidas)
+    verdade(rev.manipulacao_encontrada)
+    # São coisas DIFERENTES: uma é mentira sobre o mundo, a outra é
+    # pressão indevida sobre a pessoa. Misturar esconde a primeira.
+    verdade(rev.alegacoes_corrigidas != rev.manipulacao_encontrada)
+    igual(gatilhos.Revisao(**revisao_exemplo()).alegacoes_corrigidas, [],
+          'o campo tem que sair vazio quando não há o que corrigir')
+
+
 @prova('gatilhos: devolve diagnóstico, riscos e plano de corte')
 def _():
     from motor import gatilhos

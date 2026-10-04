@@ -105,6 +105,12 @@ def _mostra_revisao(rev) -> None:
         print(f'    {cor.get(r.risco, "")}{r.risco:<5}{FIM} q{r.quadro}  '
               f'{r.porque}')
         print(f'          {CINZA}mecanismo: {r.mecanismo}{FIM}')
+    if rev.alegacoes_corrigidas:
+        # Primeiro isto, sempre: vídeo convincente e errado é pior que
+        # vídeo fraco, e é o erro que não aparece sozinho.
+        print(f'\n  {VERMELHO}FISIOLOGIA INVENTADA, CORRIGIDA{FIM}')
+        for al in rev.alegacoes_corrigidas:
+            print(f'    • {al}')
     if rev.manipulacao_encontrada:
         print(f'\n  MANIPULAÇÃO TROCADA')
         for m in rev.manipulacao_encontrada:
@@ -182,6 +188,11 @@ def cmd_video(a) -> int:
             print(f'      {altos} quadro(s) de risco alto consertado(s)'
                   + (f' · {len(rev.manipulacao_encontrada)} manipulação(ões) '
                      'trocada(s)' if rev.manipulacao_encontrada else ''))
+            if rev.alegacoes_corrigidas:
+                print(f'      {VERMELHO}{len(rev.alegacoes_corrigidas)} '
+                      f'afirmação(ões) de fisiologia corrigida(s){FIM}')
+                for al in rev.alegacoes_corrigidas:
+                    print(f'        • {al}')
             print(f'      {CINZA}aposta: {rev.aposta}{FIM}')
             cortes = gatilhos.plano_de_corte(rev, len(r.quadros) + 2)
 
