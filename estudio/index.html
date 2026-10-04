@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Estúdio — roteiro e quadros para TikTok</title>
+<meta name="description" content="Do tema aos quadros 9:16, com o agente de gatilhos no meio.">
+<meta name="robots" content="noindex,nofollow">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>%F0%9F%8E%AC</text></svg>">
+<link rel="stylesheet" href="css/estudio.css">
+</head>
+<body>
+<header>
+  <h1>Estúdio</h1>
+  <button class="bt fraco" id="abrir-ajustes">Ajustes</button>
+</header>
+
+<main>
+  <section class="cartao">
+    <label for="tema">Tema do vídeo</label>
+    <input id="tema" placeholder="por que você não progride treinando 4 dias"
+           autocomplete="off">
+    <div class="grade">
+      <div>
+        <label for="biotipo">Público (opcional)</label>
+        <select id="biotipo">
+          <option value="">— qualquer um —</option>
+          <option value="ectomorfo">ectomorfo</option>
+          <option value="mesomorfo">mesomorfo</option>
+          <option value="endomorfo">endomorfo</option>
+        </select>
+      </div>
+      <button class="bt" id="escrever">Escrever roteiro</button>
+    </div>
+    <p class="recado" id="recado" hidden></p>
+  </section>
+
+  <div id="roteiro"></div>
+</main>
+
+<footer>
+  <p>Os quadros saem em 1080&times;1920. Monte no CapCut na ordem do nome.</p>
+  <p><b>Nada aqui posta sozinho.</b> Postagem automatizada viola os Termos do
+  TikTok, e a conta é o ativo.</p>
+</footer>
+
+<dialog id="ajustes">
+  <form method="dialog">
+    <h2>Ajustes</h2>
+
+    <h3>Quem escreve</h3>
+    <select name="provedor">
+      <option value="">— o que tiver chave —</option>
+      <option value="groq">Groq (grátis, sem cartão)</option>
+      <option value="gemini">Gemini</option>
+      <option value="openrouter">OpenRouter</option>
+    </select>
+    <label>Chave do Groq <input name="groq" type="password" placeholder="gsk_…"></label>
+    <label>Chave do Gemini <input name="gemini" type="password"></label>
+    <label>Chave do OpenRouter <input name="openrouter" type="password" placeholder="sk-or-v1-…"></label>
+    <label>Modelo (vazio = ele escolhe) <input name="modelo" placeholder="openai/gpt-oss-120b"></label>
+
+    <h3>Imagem</h3>
+    <p class="ajuda">Opcional. Sem chave, os quadros saem em preto puro — que
+    funciona — ou você usa a foto do celular, que é melhor: não tem pergunta
+    de licença e é mais autêntica que banco de imagem.</p>
+    <label>Chave do Pixabay <input name="pixabay" type="password"></label>
+    <label>Access Key do Unsplash <input name="unsplash" type="password"></label>
+
+    <p class="ajuda">As chaves ficam só neste navegador. Não estão no código
+    do site, e quem abrir o link não vê.</p>
+    <button class="bt" value="fechar">Fechar</button>
+  </form>
+</dialog>
+
+<script src="js/estudio.js"></script>
+</body>
+</html>

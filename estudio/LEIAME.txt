@@ -1,0 +1,41 @@
+ESTÚDIO — roteiro e quadros para TikTok, no navegador
+
+COMO PÔR NO AR
+--------------
+1. Arraste este .zip inteiro para https://app.netlify.com/drop
+2. Em uns 20 segundos ele te dá um endereço. Salve nos favoritos.
+3. Abre no celular também — foi desenhado primeiro para ele.
+
+COMO COMEÇAR
+------------
+1. Abra e vá em AJUSTES
+2. Cole a chave do Groq (console.groq.com/keys — grátis, sem cartão)
+3. Escreva o tema e clique em Escrever roteiro
+
+A chave de imagem é opcional:
+  Pixabay   pixabay.com/api/docs  (a chave aparece na própria página)
+  Unsplash  unsplash.com/developers → Access Key
+
+Sem chave de imagem os quadros saem em PRETO PURO — que funciona, e é o
+fundo mais dark que existe. Ou use FOTO DO CELULAR, que é melhor: não tem
+pergunta de licença e é mais autêntica que banco de imagem.
+
+O QUE FICA ONDE
+---------------
+As chaves ficam SÓ NESTE NAVEGADOR (localStorage). Não estão no código do
+site: quem abrir o link não vê. Trocar de aparelho pede colar de novo.
+
+O QUE ELE FAZ
+-------------
+  tema → roteiro → agente de gatilhos → quadros 9:16 → baixar PNG
+
+Os quadros saem 1080x1920, numerados. Monte no CapCut na ordem do nome.
+
+O QUE ELE NÃO FAZ
+-----------------
+Não monta o MP4 e não narra. Isso continua no terminal (pasta conteudo/),
+onde há ffmpeg e o motor de voz. No celular o CapCut faz melhor, e você
+escolhe a música.
+
+E NÃO POSTA. Postagem automatizada viola os Termos do TikTok e é motivo
+de banimento — a conta é o ativo, não o vídeo.

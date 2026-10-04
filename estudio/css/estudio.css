@@ -1,0 +1,111 @@
+/* ------------------------------------------------------------------
+   Estúdio — escuro por natureza, porque o produto é escuro.
+   Tudo em rem, uma coluna, pensado primeiro para o celular: é de lá que
+   ele posta.
+   ------------------------------------------------------------------ */
+:root {
+  --fundo: #0a0a0a;
+  --cartao: #141414;
+  --cartao-2: #1c1c1c;
+  --texto: #f5f5f5;
+  --fraco: #a3a3a3;
+  --borda: #2a2a2a;
+  --acento: #dc2626;
+  --aviso: #d97706;
+  --raio: 10px;
+}
+/* Escuro SEMPRE, e não só quando o sistema está escuro. O produto é
+   dark e a ferramenta tem de parecer com ele — além de que julgar
+   contraste de legenda branca sobre foto escura numa tela clara engana o
+   olho. O claro fica disponível para quem quiser, pelo atributo. */
+:root[data-tema="claro"] {
+  --fundo: #fafafa; --cartao: #fff; --cartao-2: #f5f5f5;
+  --texto: #171717; --fraco: #525252; --borda: #e5e5e5;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--fundo); color: var(--texto);
+  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  padding-bottom: 3rem;
+}
+header {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 1rem; padding: 1rem; border-bottom: 1px solid var(--borda);
+  position: sticky; top: 0; background: var(--fundo); z-index: 5;
+}
+h1 { font-size: 1.25rem; margin: 0; letter-spacing: -.01em; }
+h2 { font-size: 1.1rem; margin: 0 0 1rem; }
+h3 { font-size: .85rem; text-transform: uppercase; letter-spacing: .06em;
+     color: var(--fraco); margin: 1.5rem 0 .5rem; }
+main { max-width: 42rem; margin: 0 auto; padding: 1rem; }
+
+.cartao {
+  background: var(--cartao); border: 1px solid var(--borda);
+  border-radius: var(--raio); padding: 1rem; margin-bottom: 1rem;
+}
+label { display: block; font-size: .85rem; color: var(--fraco);
+        margin-bottom: .35rem; }
+input, select, textarea {
+  width: 100%; padding: .7rem .8rem; font: inherit;
+  background: var(--cartao-2); color: var(--texto);
+  border: 1px solid var(--borda); border-radius: 8px;
+}
+textarea { resize: vertical; }
+input:focus, select:focus, textarea:focus {
+  outline: 2px solid var(--acento); outline-offset: 1px;
+}
+.grade { display: grid; gap: .75rem; margin-top: .75rem;
+         grid-template-columns: 1fr; align-items: end; }
+@media (min-width: 30rem) { .grade { grid-template-columns: 1fr auto; } }
+
+.bt {
+  padding: .7rem 1.1rem; font: inherit; font-weight: 600; cursor: pointer;
+  background: var(--acento); color: #fff; border: 0; border-radius: 8px;
+}
+.bt:disabled { opacity: .55; cursor: default; }
+.bt.fraco { background: var(--cartao-2); color: var(--texto);
+            border: 1px solid var(--borda); font-weight: 400; }
+.linha-bt { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .5rem; }
+.linha-bt .bt { font-size: .85rem; padding: .5rem .8rem; }
+.rodape { margin-top: 1.5rem; }
+
+.recado { margin: .75rem 0 0; padding: .6rem .8rem; border-radius: 8px;
+          font-size: .9rem; background: var(--cartao-2); }
+.recado.ruim { background: #2a0f0f; color: #fca5a5; }
+.recado.aviso { background: #2a200f; color: #fcd34d; }
+
+.diagnostico { background: var(--cartao); border: 1px solid var(--borda);
+               border-left: 3px solid var(--acento);
+               border-radius: var(--raio); padding: 1rem; margin: 0 0 1rem; }
+.achados { background: #2a200f; color: #fcd34d; border-radius: var(--raio);
+           padding: 1rem; margin-bottom: 1rem; }
+.achados ul { margin: .5rem 0 0; padding-left: 1.2rem; font-size: .9rem; }
+.aposta { background: var(--cartao); border: 1px solid var(--borda);
+          border-radius: var(--raio); padding: .8rem 1rem; margin: 0 0 1rem;
+          font-size: .95rem; }
+
+.quadros { display: grid; gap: 1rem; grid-template-columns: 1fr; }
+@media (min-width: 46rem) {
+  .quadros { grid-template-columns: repeat(2, 1fr); }
+}
+.quadro { background: var(--cartao); border: 1px solid var(--borda);
+          border-radius: var(--raio); padding: .75rem; }
+.tela { background: #000; border-radius: 6px; overflow: hidden;
+        margin-bottom: .6rem; }
+.tela canvas { display: block; width: 100%; height: auto; }
+.busca { font-size: .8rem; color: var(--fraco); margin: .5rem 0 0; }
+.ajuda { font-size: .85rem; color: var(--fraco); }
+
+dialog {
+  width: min(32rem, 92vw); border: 1px solid var(--borda);
+  border-radius: var(--raio); background: var(--cartao); color: var(--texto);
+  padding: 1.25rem;
+}
+dialog::backdrop { background: rgb(0 0 0 / .7); }
+dialog label { margin-top: .75rem; }
+dialog .bt { margin-top: 1.25rem; }
+
+footer { max-width: 42rem; margin: 2rem auto 0; padding: 1rem;
+         color: var(--fraco); font-size: .85rem;
+         border-top: 1px solid var(--borda); }
