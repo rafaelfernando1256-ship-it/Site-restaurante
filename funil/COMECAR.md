@@ -78,34 +78,69 @@ A linha `Places API` tem de ficar **✓ válida**. Se vier
 
 ---
 
-## Passo 2 — O cérebro (você já tem) (2 min)
+## Passo 2 — O cérebro: Groq (5 min, grátis, sem cartão)
 
-A sua chave do Gemini já funciona. Confira que está no `.env`:
+É quem escreve as abordagens, tria as respostas e lê o Instagram.
+
+1. **https://console.groq.com/keys** → entre com o Google
+2. **Create API Key** → dê um nome → **copie na hora** (não reaparece)
+3. No `.env`:
 
 ```
-GEMINI_API_KEY=AQ....sua...chave
+GROQ_API_KEY=gsk_...sua...chave
 ```
 
-E em `funil\config.toml` (copie do `config.exemplo.toml`):
+4. No `config.toml`, seção `[geral]`:
 
 ```toml
 [geral]
-provedor = "gemini"
+provedor = "groq"
 cidade = "Natal, RN"
 ```
 
-**Confirme:** na saída do `conferir`, a linha do cérebro diz
-**✓ válida · N modelos disponíveis**.
+> Se já existir uma linha `provedor = ...`, **mude ela**. Não acrescente
+> outra: chave repetida quebra o TOML inteiro, e a mensagem de erro não
+> diz que é disso que se trata.
 
-Se a sua cota do Gemini apertar, pegue uma do **Groq**
-(console.groq.com/keys, grátis sem cartão), ponha `GROQ_API_KEY=gsk_...`
-no `.env` e troque para `provedor = "groq"`. Funciona sem mexer em código.
+**Confirme:** no `conferir`, o cérebro diz `groq` e **✓ válida · N
+modelos · usando ...**
 
----
+### O que esperar do plano grátis
+
+**30 pedidos por minuto, 1.000 por dia.** O funil trata o 429 como
+passageiro e espera o tempo que o próprio Groq pede, mas um lote grande
+demora mais do que num provedor pago.
+
+**Quase nenhum modelo do Groq lê imagem** — só a família Llama 4. O
+agente 3 manda as capturas do Instagram para construir o site, e o código
+troca de modelo sozinho quando o escolhido não tem olhos (e corta para 5
+imagens, que é o limite de lá). Se a sua chave não tiver nenhum modelo
+com visão, ele para e diz para usar o Gemini **só nesse passo**:
+
+```
+GEMINI_API_KEY=AQ...          # aistudio.google.com/apikey, grátis
+```
+e `provedor = "gemini"` enquanto roda o `construir`. Provavelmente você
+não vai precisar.
+
+### Outros cérebros que servem
+
+| provedor | onde | custa |
+|---|---|---|
+| **Groq** | console.groq.com/keys | grátis, sem cartão |
+| Gemini | aistudio.google.com/apikey | grátis, sem cartão |
+| OpenRouter | openrouter.ai/keys | tem modelos grátis |
+| Claude | console.anthropic.com | pago |
+
+Trocar é a linha `provedor` no `config.toml`. Nada de código muda.
 
 ## Passo 3 — O token da Netlify (5 min)
 
 É o agente 4, o que publica o site e gera o link que você manda.
+
+**Dá para adiar.** Sem ele os agentes 1, 2 e 3 rodam; você só não publica.
+O `conferir` avisa: *"Dá para trabalhar até construir o site; publicar
+ainda não."*
 
 1. **https://app.netlify.com/user/applications**
 2. Em **Personal access tokens** → **New access token**
