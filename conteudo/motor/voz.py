@@ -46,7 +46,7 @@ def disponivel() -> tuple[bool, str]:
     try:
         import edge_tts     # noqa: F401
     except ImportError:
-        return False, 'falta instalar: pip install edge-tts'
+        return False, 'falta instalar: python -m pip install edge-tts'
     return True, ''
 
 

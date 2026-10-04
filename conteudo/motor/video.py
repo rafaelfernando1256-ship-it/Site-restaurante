@@ -33,7 +33,7 @@ def ffmpeg() -> str:
     except ImportError:
         raise RuntimeError(
             'sem ffmpeg. Instale o que já traz o binário junto:\n'
-            '  pip install imageio-ffmpeg')
+            '  python -m pip install imageio-ffmpeg')
 
 
 def monta(quadros: list[tuple[Path, Path | None, float]], destino: Path,

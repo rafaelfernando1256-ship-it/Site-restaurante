@@ -127,7 +127,7 @@ def testa_cerebro(cfg) -> tuple[bool, str]:
         try:
             from google import genai      # noqa: F401
         except ImportError:
-            return False, 'falta instalar: pip install google-genai'
+            return False, 'falta instalar: python -m pip install google-genai'
         try:
             # modelos_gemini direto, e NÃO o resolvedor: o resolvedor
             # engole a exceção de propósito, e engolir aqui faria uma
@@ -200,7 +200,7 @@ def testa_navegador() -> tuple[str, str]:
         from playwright.sync_api import sync_playwright
     except ImportError:
         return 'talvez', ('não instalado — o agente tira print do Instagram e '
-                          'lê o WhatsApp com ele. Sem isso: pip install '
+                          'lê o WhatsApp com ele. Sem isso: python -m pip install '
                           'playwright && python -m playwright install chromium')
     try:
         with sync_playwright() as p:

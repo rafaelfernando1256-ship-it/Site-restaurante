@@ -18,7 +18,7 @@ Abra o **PowerShell** (não o CMD) e rode:
 cd "$env:USERPROFILE\Documents\Site-restaurante"
 git pull origin claude/tempero-familia-website-nzqgb4
 cd funil
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 ```
 
 **Confirme:** `python funil.py conferir --seco` tem de imprimir o
@@ -258,6 +258,7 @@ Ele testa as chaves de verdade e diz o que fazer, não só que falhou.
 | `a equipe X não está entre as suas` | corrija `equipe_netlify` no config.toml |
 | `erro de formato` no config.toml | chave repetida; apague a linha duplicada |
 | `invalid choice: 'conferir'` | falta o passo 0 — `git pull` |
+| `'pip' não é reconhecido` | use `python -m pip`, que não depende do PATH |
 | o `.env` ficou em branco | foi sobrescrito pelo exemplo; recole as chaves |
 | `429` ou `sobrecarregado` | cota do dia; espere ou troque de provedor |
 

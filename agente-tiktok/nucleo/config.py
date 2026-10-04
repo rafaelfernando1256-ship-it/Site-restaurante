@@ -149,7 +149,7 @@ def ffmpeg() -> str:
         return imageio_ffmpeg.get_ffmpeg_exe()
     except ImportError as e:  # pragma: no cover
         raise RuntimeError(
-            "ffmpeg não encontrado. Instale com `pip install imageio-ffmpeg` "
+            "ffmpeg não encontrado. Instale com `python -m pip install imageio-ffmpeg` "
             "ou pelo gerenciador de pacotes do seu sistema."
         ) from e
 

@@ -228,7 +228,7 @@ def _testa_chave_gemini(cfg) -> tuple[bool, str]:
     try:
         from nucleo.modelos import gemini, resolve_modelo_gemini
     except ImportError:
-        return False, 'falta instalar: pip install google-genai'
+        return False, 'falta instalar: python -m pip install google-genai'
     try:
         # modelos_gemini e NÃO resolve_modelo_gemini: o resolvedor engole a
         # exceção de propósito (para não derrubar o Jarvis por causa do

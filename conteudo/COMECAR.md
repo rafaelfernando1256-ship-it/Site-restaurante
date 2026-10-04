@@ -15,7 +15,7 @@ No **PowerShell**:
 cd "$env:USERPROFILE\Documents\Site-restaurante"
 git pull origin claude/tempero-familia-website-nzqgb4
 cd conteudo
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 ```
 
 São cinco pacotes, nenhum precisa de compilador. O `imageio-ffmpeg` traz
@@ -28,7 +28,7 @@ descompactar e mexer no PATH, que é onde a maioria desiste.
 python conteudo.py conferir
 ```
 
-Tem de imprimir o diagnóstico. Se der erro de módulo, o `pip install`
+Tem de imprimir o diagnóstico. Se der erro de módulo, o `python -m pip install`
 não terminou.
 
 ---
@@ -159,8 +159,9 @@ python conteudo.py conferir
 |---|---|
 | `nenhuma chave de modelo` | passo 2 |
 | `nenhum — os quadros saem em preto puro` | passo 3; o vídeo sai mesmo assim |
-| `falta instalar: pip install edge-tts` | passo 1 não terminou |
-| `sem ffmpeg` | `pip install imageio-ffmpeg` |
+| `falta instalar: ... edge-tts` | passo 1 não terminou |
+| `'pip' não é reconhecido` | use `python -m pip`, que não depende do PATH |
+| `sem ffmpeg` | `python -m pip install imageio-ffmpeg` |
 | voz falha e o vídeo sai mudo | normal; a voz é a etapa mais frágil e não derruba o resto |
 | 429 ou "limite" | cota do Groq (30/min); espere um minuto |
 

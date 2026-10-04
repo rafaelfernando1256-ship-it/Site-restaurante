@@ -70,7 +70,7 @@ class Ouvido:
             except Exception as e:
                 quebrados.append(f'{pacote}: {type(e).__name__}: {e}')
         if faltam:
-            return False, 'falta instalar: pip install ' + ' '.join(faltam)
+            return False, 'falta instalar: python -m pip install ' + ' '.join(faltam)
         if quebrados:
             return False, ('instalado, mas não carrega — '
                            + ' | '.join(q[:200] for q in quebrados))
@@ -144,7 +144,7 @@ class Ouvido:
         try:
             from openwakeword.model import Model
         except ImportError as e:
-            raise SemAudio('falta instalar: pip install openwakeword') from e
+            raise SemAudio('falta instalar: python -m pip install openwakeword') from e
         alvo = self.cfg.palavra_chave.lower().replace(' ', '_')
         try:
             self._detector = Model(wakeword_models=[alvo], inference_framework='onnx')

@@ -177,7 +177,7 @@ def digitar(a: DigitarArgs, ctx: Contexto) -> str:
     try:
         pg = _pyautogui()
     except ImportError:
-        return 'falta instalar: pip install pyautogui'
+        return 'falta instalar: python -m pip install pyautogui'
     # Colar pelo clipboard é muito mais rápido e não erra acento — digitar
     # letra a letra com layout ABNT2 troca ç e til.
     try:
@@ -205,7 +205,7 @@ def apertar_tecla(a: AtalhoArgs, ctx: Contexto) -> str:
     try:
         pg = _pyautogui()
     except ImportError:
-        return 'falta instalar: pip install pyautogui'
+        return 'falta instalar: python -m pip install pyautogui'
     partes = [t.strip().lower() for t in a.teclas.replace(' ', '+').split('+') if t.strip()]
     for _ in range(max(1, a.vezes)):
         if len(partes) == 1:
@@ -229,7 +229,7 @@ def clicar_na_tela(a: CliqueArgs, ctx: Contexto) -> str:
     try:
         pg = _pyautogui()
     except ImportError:
-        return 'falta instalar: pip install pyautogui'
+        return 'falta instalar: python -m pip install pyautogui'
     pg.click(a.x, a.y, clicks=2 if a.duplo else 1,
              button='right' if a.direito else 'left')
     return f'cliquei em {a.x},{a.y}'
@@ -275,7 +275,7 @@ def area_de_transferencia(a: ClipArgs, ctx: Contexto) -> str:
                 _shell(f'Set-Clipboard -Value {a.texto!r}')
                 return 'copiado'
             return _shell('Get-Clipboard')[1]
-        return 'falta instalar: pip install pyperclip'
+        return 'falta instalar: python -m pip install pyperclip'
     if a.texto:
         pyperclip.copy(a.texto)
         return 'copiado'
@@ -305,7 +305,7 @@ def controlar_midia(a: MidiaArgs, ctx: Contexto) -> str:
     try:
         pg = _pyautogui()
     except ImportError:
-        return 'falta instalar: pip install pyautogui'
+        return 'falta instalar: python -m pip install pyautogui'
     for _ in range(a.passos if a.acao in ('subir', 'baixar') else 1):
         pg.press(tecla)
     return f'mídia: {a.acao}'
@@ -342,7 +342,7 @@ def estado_do_computador(a: NadaArgs, ctx: Contexto) -> str:
                         if p.info['name']})
         linhas.append(f'Processos: {len(nomes)} programas diferentes rodando')
     except ImportError:
-        linhas.append('(instale psutil para memória, disco e bateria: pip install psutil)')
+        linhas.append('(instale psutil para memória, disco e bateria: python -m pip install psutil)')
     return '\n'.join(linhas)
 
 

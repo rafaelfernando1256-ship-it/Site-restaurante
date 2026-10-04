@@ -151,7 +151,7 @@ def pergunta_gpt(pergunta: str, chave: str, modelo: str = 'gpt-4o') -> str:
     try:
         from openai import OpenAI
     except ImportError:
-        return 'falta instalar: pip install openai'
+        return 'falta instalar: python -m pip install openai'
     try:
         c = OpenAI(api_key=chave)
         r = c.chat.completions.create(
@@ -167,7 +167,7 @@ def pergunta_gemini(pergunta: str, chave: str, modelo: str = 'gemini-3.8-flash')
     try:
         from google import genai      # noqa: F401
     except ImportError:
-        return 'falta instalar: pip install google-genai'
+        return 'falta instalar: python -m pip install google-genai'
     try:
         c = gemini(chave)
         r = c.models.generate_content(model=modelo, contents=pergunta)

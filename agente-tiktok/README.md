@@ -31,7 +31,7 @@ Precisa de **Python 3.11+**.
 
 ```bash
 cd agente-tiktok
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 python -m playwright install chromium
 cp config.exemplo.toml config.toml
 ```

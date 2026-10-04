@@ -65,7 +65,7 @@ O passo a passo completo, do zero ao primeiro site publicado, está em
 
 ```bash
 cd funil
-pip install -r requirements.txt     # anthropic, google-genai e pydantic
+python -m pip install -r requirements.txt     # anthropic, google-genai e pydantic
 cp .env.exemplo .env                # e preencha as chaves
 cp config.exemplo.toml config.toml  # opcional
 python3 testes.py                   # 49 testes, nenhum toca a rede
