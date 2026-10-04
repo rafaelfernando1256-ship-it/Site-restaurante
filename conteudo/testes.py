@@ -108,6 +108,58 @@ def _():
         os.environ.pop('PIXABAY_API_KEY', None)
 
 
+@prova('acervo: cada um autentica do seu jeito, que é diferente dos outros')
+def _():
+    import json as J
+    import urllib.request
+    from motor import imagens as I
+
+    visto = {}
+
+    class Resposta:
+        def __init__(self, corpo): self.corpo = corpo
+        def read(self): return self.corpo
+        def __enter__(self): return self
+        def __exit__(self, *_): return False
+
+    def espia(req, timeout=None):
+        visto['url'] = req.full_url
+        visto['cabecalhos'] = dict(req.headers)
+        return Resposta(J.dumps(
+            {'photos': [], 'hits': [], 'results': []}).encode())
+
+    original, urllib.request.urlopen = urllib.request.urlopen, espia
+    try:
+        # Os três são DIFERENTES, e trocar um pelo outro dá 401 sem dizer
+        # por quê. Pexels: chave crua no Authorization, sem "Bearer".
+        I._pexels('gym', 1, 'CHAVE_PEXELS')
+        igual(visto['cabecalhos'].get('Authorization'), 'CHAVE_PEXELS')
+        verdade('Bearer' not in str(visto['cabecalhos']),
+                'Pexels não usa Bearer — com ele dá 401')
+        verdade('orientation=portrait' in visto['url'])
+
+        # Unsplash: prefixo "Client-ID", que é só dele.
+        I._unsplash('gym', 1, 'CHAVE_UNSPLASH')
+        igual(visto['cabecalhos'].get('Authorization'),
+              'Client-ID CHAVE_UNSPLASH')
+        verdade('orientation=portrait' in visto['url'])
+
+        # Pixabay: NÃO usa cabeçalho nenhum — a chave vai na URL.
+        I._pixabay('gym', 1, 'CHAVE_PIXABAY')
+        verdade('Authorization' not in visto['cabecalhos'],
+                'Pixabay não tem cabeçalho de autenticação')
+        verdade('key=CHAVE_PIXABAY' in visto['url'])
+        # e a palavra dele para "vertical" é outra
+        verdade('orientation=vertical' in visto['url'],
+                'Pixabay usa vertical, não portrait')
+
+        # Todos se identificam: o User-Agent padrão do Python já nos
+        # custou uma sessão de caça com o Cloudflare do Groq.
+        verdade('urllib' not in str(visto['cabecalhos'].get('User-agent', '')).lower())
+    finally:
+        urllib.request.urlopen = original
+
+
 # ── visual ──────────────────────────────────────────────────────────
 @prova('visual: qualquer proporção vira 1080x1920 exato')
 def _():
