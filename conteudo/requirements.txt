@@ -1,0 +1,11 @@
+# O caminho inteiro depende destes cinco. Nenhum precisa de compilador.
+pillow>=10.0          # corte, tratamento dark e legenda
+numpy>=1.24           # o grão da imagem
+pydantic>=2.0         # a saída do modelo, validada por esquema
+edge-tts>=6.1         # a narração (grátis, sem cadastro)
+imageio-ffmpeg>=0.4   # traz o ffmpeg junto — no Windows isso poupa muito
+
+# Nada de SDK de modelo: com Groq ou OpenRouter a ponte do funil fala
+# HTTPS puro. Só se você usar Claude ou Gemini é que entram:
+#   anthropic      (provedor = claude)
+#   google-genai   (provedor = gemini)
