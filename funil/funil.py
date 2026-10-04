@@ -27,6 +27,7 @@ depende do anterior ter rodado agora: quem guarda o lugar é o banco.
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 import textwrap
 from pathlib import Path
@@ -44,7 +45,65 @@ def _estado(cfg) -> Estado:
 
 
 # ── comandos ────────────────────────────────────────────────────────
+def _painel_json(cfg) -> dict:
+    """
+    O estado do funil num dicionário, para quem lê por programa.
+
+    Existe porque o plugin da barra precisa disso, e fazer o plugin
+    adivinhar o texto bonito do `resumo` seria combinar dois formatos que
+    ninguém prometeu manter iguais. Saída de máquina é contrato; saída de
+    tela é desenho.
+    """
+    saida: dict = {'pronto': False, 'leads': {}, 'total': 0,
+                   'esperando_voce': 0, 'chaves': {}, 'colonia': None}
+    saida['chaves'] = {
+        'places': bool(cfg.google_places),
+        'cerebro': bool({'gemini': cfg.gemini, 'openrouter': cfg.openrouter,
+                         'groq': cfg.groq}.get(cfg.provedor, cfg.anthropic)),
+        'netlify': bool(cfg.netlify),
+        'provedor': cfg.provedor,
+    }
+    banco = Path(cfg.banco)
+    if not banco.exists():
+        return saida
+    saida['pronto'] = True
+    try:
+        with _estado(cfg) as est:
+            saida['leads'] = est.resumo()
+            saida['total'] = sum(saida['leads'].values())
+            # O que depende de VOCÊ para o funil andar: rascunho para ler e
+            # aprovada para clicar. É o número que a barra mostra.
+            saida['esperando_voce'] = (
+                len(est.mensagens(situacao='rascunho'))
+                + len(est.mensagens(situacao='aprovada')))
+    except Exception as e:
+        saida['erro'] = str(e)[:200]
+
+    col = banco.with_suffix('.colonia.json')
+    if col.exists():
+        try:
+            d = json.loads(col.read_text(encoding='utf-8-sig'))
+            vivos = [o for o in d.get('organismos', []) if not o.get('morto')]
+            saida['colonia'] = {
+                'banco': int(d.get('banco', 0)),
+                'vivos': len(vivos),
+                'envelopes': sum(int(o.get('carteira', 0)) for o in vivos),
+                'toques': sum(int(o.get('toques', 0)) for o in vivos),
+            }
+        except Exception:
+            pass
+    return saida
+
+
 def cmd_resumo(a, cfg) -> int:
+    if a.json:
+        print(json.dumps(_painel_json(cfg), ensure_ascii=False))
+        return 0
+    if not Path(cfg.banco).exists():
+        print(f'\n  banco ainda não existe — {cfg.banco}')
+        print('  comece com: python3 funil.py cacar --cidade '
+              f'"{cfg.cidade or "Natal, RN"}"\n')
+        return 0
     with _estado(cfg) as est:
         r = est.resumo()
         total = sum(r.values())
@@ -529,7 +588,9 @@ def principal(argv: list[str] | None = None) -> int:
     s.add_argument('--seco', action='store_true',
                    help='só olha se está preenchido, sem tocar na rede')
 
-    sub.add_parser('resumo', help='quantos leads em cada estado')
+    s = sub.add_parser('resumo', help='quantos leads em cada estado')
+    s.add_argument('--json', action='store_true',
+                   help='saída para programa (é o que a barra do plugin lê)')
 
     s = sub.add_parser('cacar', help='AGENTE 1 — acha restaurante sem site')
     s.add_argument('--cidade', help='"Natal, RN"')

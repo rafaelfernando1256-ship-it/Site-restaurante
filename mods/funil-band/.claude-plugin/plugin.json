@@ -1,0 +1,9 @@
+{
+  "name": "funil-band",
+  "version": "0.1.0",
+  "description": "O estado do funil acima do prompt: leads por etapa, o que espera o seu clique, e o caixa da colônia.",
+  "types": "./types/index.d.ts",
+  "author": {
+    "name": "Rafael Fernando"
+  }
+}
