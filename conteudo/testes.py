@@ -401,9 +401,13 @@ def _():
         # 3. o corpo manda 2-3-2-0 e o fecho manda 2+2
         ('o plano tem de ser um só', '2-3-2-0'),
     )
+    import re
     for nome, i in (('roteiro', roteiro.INSTRUCAO),
                     ('gatilhos', gatilhos.INSTRUCAO)):
-        baixo = i.lower()
+        # A instrução é texto quebrado em linhas de 72 colunas, e a quebra
+        # cai no meio das frases. Procurar sem normalizar o espaço testa a
+        # largura do parágrafo, não o conteúdo.
+        baixo = re.sub(r'\s+', ' ', i.lower())
         for regra, exemplo in casos:
             verdade(regra in baixo, f'{nome}: sumiu a regra "{regra}"')
             verdade(exemplo in baixo,
