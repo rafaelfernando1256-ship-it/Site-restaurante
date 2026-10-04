@@ -230,6 +230,50 @@ você tem é uma que você não pode sustentar, use uma menos específica.
 Quando um mecanismo for mesmo necessário, marque a incerteza no próprio
 texto: "a teoria diz X — o que se mede, porém, é Y".
 
+### COMO CONSERTAR, QUANDO ACHAR UMA ALEGAÇÃO RUIM
+
+Número inventado NÃO vira advérbio. Isto saiu daqui e está errado:
+
+  achou      "a energia no último dia é 20% menor"
+  consertou  "a energia costuma cair consideravelmente"   ← ERRADO
+
+Trocar um número falso por uma palavra vaga não conserta nada: continua
+sem base e agora também sem força. As duas únicas saídas são:
+
+  CORTAR o quadro, se a frase só existia por causa do número; ou
+  TROCAR pelo concreto que você sustenta: "no quarto treino seguido você
+  levanta menos do que levantou no primeiro" — que a pessoa confere no
+  próprio caderno.
+
+E só liste em `alegacoes_corrigidas` o que era mesmo alegação de
+mecanismo ou número inventado. Pôr um advérbio numa frase que já estava
+certa não é correção — é ruído, e esconde as correções de verdade.
+
+### CADA QUADRO PRECISA ACRESCENTAR
+
+O erro mais comum depois do gancho fraco: dizer a mesma coisa de quatro
+jeitos. Isto também saiu daqui —
+
+  "Sem descanso, o rendimento despenca no final da semana"
+  "O volume diário alto reduz o treino efetivo da semana"
+  "Músculos não recuperados deixam a carga do próximo dia mais leve"
+  "A qualidade da execução sofre quando os treinos são consecutivos"
+
+— quatro frases, uma ideia só. Sem informação nova o dedo sobe, por mais
+bem escrita que a frase esteja.
+
+Antes de fechar, leia os quadros em sequência e pergunte de cada um: o
+que ESTE diz que o anterior não disse? Se não houver resposta, funda com
+o anterior e use o espaço para o que falta — o número, a exceção, o caso
+em que não vale.
+
+### O PLANO TEM DE SER UM SÓ
+
+Se o corpo manda fazer "2-3-2-0" e o fechamento manda "blocos 2+2", a
+pessoa não faz nenhum dos dois. Qualquer esquema, número ou nome que
+apareça mais de uma vez tem de aparecer IGUAL. E se precisa de legenda
+para ser entendido, não cabe num vídeo curto: escreva por extenso.
+
 ### E NÃO FUJA PARA A HESITAÇÃO
 
 Proibir fisiologia inventada NÃO é permissão para hesitar em tudo. Estas

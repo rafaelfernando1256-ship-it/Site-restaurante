@@ -387,6 +387,33 @@ def _():
                 'é o que produziu a hesitação')
 
 
+@prova('gatilhos: as três regras que nasceram de roteiros reais ruins')
+def _():
+    from motor import gatilhos, roteiro
+    # Cada uma destas saiu de um roteiro que o pipeline produziu de
+    # verdade. São o registro do que já deu errado, e por isso ficam
+    # travadas: instrução que perde um caso volta a produzi-lo.
+    casos = (
+        # 1. o conserto virou muleta: número falso trocado por advérbio
+        ('número inventado não vira advérbio', '20%'),
+        # 2. quatro frases dizendo a mesma coisa
+        ('cada quadro precisa acrescentar', 'o que este diz que o anterior'),
+        # 3. o corpo manda 2-3-2-0 e o fecho manda 2+2
+        ('o plano tem de ser um só', '2-3-2-0'),
+    )
+    for nome, i in (('roteiro', roteiro.INSTRUCAO),
+                    ('gatilhos', gatilhos.INSTRUCAO)):
+        baixo = i.lower()
+        for regra, exemplo in casos:
+            verdade(regra in baixo, f'{nome}: sumiu a regra "{regra}"')
+            verdade(exemplo in baixo,
+                    f'{nome}: a regra "{regra}" perdeu o exemplo concreto; '
+                    'regra sem o caso que a gerou vira conselho vago')
+    # e as duas saídas honestas para um número inventado
+    for saida in ('cortar', 'troCAR pelo concreto'.lower()):
+        verdade(saida in gatilhos.INSTRUCAO.lower(), saida)
+
+
 @prova('gatilhos: a correção de fisiologia aparece separada da manipulação')
 def _():
     from motor import gatilhos
