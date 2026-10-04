@@ -28,6 +28,8 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
+from .modelo import AGENTE_HTTP
+
 VERDE = '\033[32m'
 VERMELHO = '\033[31m'
 AMARELO = '\033[33m'
@@ -69,7 +71,8 @@ def testa_places(chave: str) -> tuple[bool, str]:
                          'pageSize': 1}).encode(),
         headers={'Content-Type': 'application/json',
                  'X-Goog-Api-Key': chave,
-                 'X-Goog-FieldMask': 'places.id'})
+                 'X-Goog-FieldMask': 'places.id',
+                 'User-Agent': AGENTE_HTTP})
     try:
         with urllib.request.urlopen(req, timeout=30) as r:
             d = json.loads(r.read())

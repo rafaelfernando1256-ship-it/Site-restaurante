@@ -36,6 +36,7 @@ import urllib.request
 from dataclasses import dataclass
 
 from .estado import Estado
+from .modelo import AGENTE_HTTP
 
 ENDERECO = 'https://places.googleapis.com/v1/places:searchText'
 
@@ -138,6 +139,7 @@ def _pede(chave: str, corpo: dict, tentativas: int = 3) -> dict:
             'Content-Type': 'application/json',
             'X-Goog-Api-Key': chave,
             'X-Goog-FieldMask': CAMPOS,
+            'User-Agent': AGENTE_HTTP,
         },
     )
     espera = 1.5

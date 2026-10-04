@@ -31,7 +31,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-from .modelo import pede_json
+from .modelo import AGENTE_HTTP, pede_json
 from .estado import Estado, Lead, DEMO_PRONTA, PUBLICADO
 
 AGENTE = 'a4_entrega'
@@ -43,7 +43,8 @@ def _pede(token: str, caminho: str, metodo: str = 'GET', corpo: bytes | None = N
           tipo: str = 'application/json', tentativas: int = 3) -> Any:
     req = urllib.request.Request(
         f'{API}{caminho}', data=corpo, method=metodo,
-        headers={'Authorization': f'Bearer {token}', 'Content-Type': tipo},
+        headers={'Authorization': f'Bearer {token}', 'Content-Type': tipo,
+                 'User-Agent': AGENTE_HTTP},
     )
     espera = 2.0
     for t in range(tentativas):

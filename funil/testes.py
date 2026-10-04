@@ -1415,6 +1415,82 @@ def _():
         verdade(not achado, f'{f.name} tem chave escrita: {achado}')
 
 
+@teste('rede: TODO pedido que sai se identifica (o Cloudflare do Groq exige)')
+def _():
+    import re
+    raiz = Path(__file__).parent
+    # O Cloudflare na frente do api.groq.com recusa o User-Agent padrão do
+    # Python com 403/1010 ANTES de olhar a chave — e o erro parece chave
+    # inválida. Custou uma sessão de caça. Este teste existe para o
+    # cabeçalho não sumir de novo numa refatoração: ele é invisível, não
+    # quebra nada em teste, e só falha na máquina de quem está usando.
+    faltam = []
+    for f in list(raiz.glob('*.py')) + list((raiz / 'nucleo').glob('*.py')):
+        texto = f.read_text(encoding='utf-8')
+        for m in re.finditer(r'urllib\.request\.Request\((.{0,600}?)\)\n',
+                             texto, re.S):
+            if 'User-Agent' not in m.group(1):
+                faltam.append(f'{f.name}:{texto[:m.start()].count(chr(10)) + 1}')
+    verdade(not faltam, 'pedido sem User-Agent: ' + ', '.join(faltam))
+
+
+@teste('rede: o 403/1010 do Cloudflare não é confundido com chave errada')
+def _():
+    import io
+    import urllib.error
+    import urllib.request
+    import nucleo.modelo as Mod
+
+    original = urllib.request.urlopen
+
+    def falso(*a, **k):
+        raise urllib.error.HTTPError(
+            'u', 403, 'x', {},
+            io.BytesIO(b'error code: 1010'))
+
+    urllib.request.urlopen = falso
+    try:
+        Mod._groq_pede('/models', 'gsk_valida')
+    except RuntimeError as e:
+        verdade('Cloudflare' in str(e), f'mensagem ruim: {e}')
+        verdade('não da sua chave' in str(e),
+                'tem que dizer que NÃO é a chave, senão a pessoa troca de '
+                f'chave para sempre: {e}')
+    else:
+        raise AssertionError('403/1010 não virou erro')
+    finally:
+        urllib.request.urlopen = original
+
+
+@teste('rede: o User-Agent chega mesmo no pedido do Groq')
+def _():
+    import io
+    import urllib.request
+    import nucleo.modelo as Mod
+
+    visto = {}
+
+    class Resposta(io.BytesIO):
+        def __enter__(self): return self
+        def __exit__(self, *_): return False
+
+    def falso(req, timeout=None):
+        visto['ua'] = req.headers.get('User-agent', '')
+        visto['url'] = req.full_url
+        return Resposta(b'{"data":[{"id":"llama-3.3-70b-versatile"}]}')
+
+    original, urllib.request.urlopen = urllib.request.urlopen, falso
+    try:
+        Mod._groq_pede('/models', 'gsk_x')
+    finally:
+        urllib.request.urlopen = original
+    verdade(visto['ua'], 'saiu sem User-Agent')
+    verdade('urllib' not in visto['ua'].lower(),
+            f'ficou com o padrão do Python, que é o que o Cloudflare bane: '
+            f'{visto["ua"]}')
+    verdade(visto['url'].startswith('https://api.groq.com'), visto['url'])
+
+
 # ── o diagnóstico ───────────────────────────────────────────────────
 @teste('conferir: chave colada do site errado é pega antes de ir à rede')
 def _():

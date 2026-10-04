@@ -30,7 +30,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-from .modelo import pede_json
+from .modelo import AGENTE_HTTP, pede_json
 from .estado import Estado, Lead, NOVO, RASCUNHO, ABORDADO
 
 AGENTE = 'a2_abordagem'
@@ -179,7 +179,9 @@ def _envia_cloud(telefone_e164: str, texto: str) -> tuple[bool, str]:
             'type': 'text',
             'text': {'body': texto},
         }).encode(),
-        headers={'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'},
+        headers={'Authorization': f'Bearer {token}',
+                 'Content-Type': 'application/json',
+                 'User-Agent': AGENTE_HTTP},
     )
     try:
         with urllib.request.urlopen(req, timeout=30) as r:

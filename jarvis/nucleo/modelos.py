@@ -25,6 +25,15 @@ _gemini: Any = None
 _modelo_rota: str = ''
 _modelo_groq: str = ''
 
+# Todo pedido sai identificado. Não é educação: o Cloudflare na frente da
+# API do Groq RECUSA o User-Agent padrão do Python (`Python-urllib/3.x`)
+# com 403 e código 1010 — "browser signature banned" — antes de olhar a
+# chave. O erro parece chave inválida e não é; nenhuma chave passaria.
+# Qualquer User-Agent próprio resolve, e identificar o cliente é o que um
+# cliente de API bem-comportado faz de todo jeito.
+AGENTE_HTTP = ('jarvis/1.0 '
+               '(+https://github.com/rafaelfernando1256-ship-it/Site-restaurante)')
+
 ROTA = 'https://openrouter.ai/api/v1'
 GROQ = 'https://api.groq.com/openai/v1'
 
@@ -181,6 +190,7 @@ def dialeto_pede(caminho: str, chave: str, corpo: dict | None = None,
         data=json.dumps(corpo).encode() if corpo is not None else None,
         headers={'Authorization': f'Bearer {chave}',
                  'Content-Type': 'application/json',
+                 'User-Agent': AGENTE_HTTP,
                  'X-Title': 'Jarvis'},
         method='POST' if corpo is not None else 'GET')
     try:
@@ -193,6 +203,10 @@ def dialeto_pede(caminho: str, chave: str, corpo: dict | None = None,
         if e.code == 402:
             raise RuntimeError(f'sem crédito no {nome}. Há modelos grátis em '
                                'openrouter.ai/models?q=free') from e
+        if e.code == 403 and '1010' in detalhe:
+            raise RuntimeError(
+                f'o Cloudflare na frente do {nome} recusou o pedido (403/1010) '
+                'por causa da identificação do cliente, não da sua chave.') from e
         if e.code == 429:
             # No plano grátis do Groq são 30 por minuto. Repassar o
             # retry-after evita o "tentei de novo e deu o mesmo erro".

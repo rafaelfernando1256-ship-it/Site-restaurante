@@ -37,6 +37,15 @@ MODELO_GEMINI = 'gemini-3.8-flash'
 MODELO_OPENROUTER = ''          # vazio = escolhe do catálogo na primeira vez
 MODELO_GROQ = ''                # idem
 
+# Todo pedido sai identificado. Não é educação: o Cloudflare na frente da
+# API do Groq RECUSA o User-Agent padrão do Python (`Python-urllib/3.x`)
+# com 403 e código 1010 — "browser signature banned" — antes de olhar a
+# chave. O erro parece chave inválida e não é; nenhuma chave passaria.
+# Qualquer User-Agent próprio resolve, e identificar o cliente é o que um
+# cliente de API bem-comportado faz de todo jeito.
+AGENTE_HTTP = ('funil-prospeccao/1.0 '
+               '(+https://github.com/rafaelfernando1256-ship-it/Site-restaurante)')
+
 OPENROUTER = 'https://openrouter.ai/api/v1'
 GROQ = 'https://api.groq.com/openai/v1'
 
@@ -337,6 +346,7 @@ def _fala(dialeto: dict, caminho: str, chave: str, corpo: dict | None = None,
         data=json.dumps(corpo).encode() if corpo is not None else None,
         headers={'Authorization': f'Bearer {chave}',
                  'Content-Type': 'application/json',
+                 'User-Agent': AGENTE_HTTP,
                  **dialeto['cabecalhos']},
         method='POST' if corpo is not None else 'GET')
     try:
@@ -350,6 +360,13 @@ def _fala(dialeto: dict, caminho: str, chave: str, corpo: dict | None = None,
         if e.code == 402:
             raise RuntimeError(f'sem crédito no {nome}. Pode usar um modelo '
                                'grátis: openrouter.ai/models?q=free') from e
+        if e.code == 403 and '1010' in detalhe:
+            # Se isto voltar, não é a chave: é o Cloudflare recusando a
+            # assinatura do cliente. Dizer isso poupa horas caçando chave.
+            raise RuntimeError(
+                f'o Cloudflare na frente do {nome} recusou o pedido (403/1010) '
+                'por causa da identificação do cliente, não da sua chave. '
+                'Isso é bug de código, não de configuração — me avise.') from e
         if e.code == 429:
             # Esperar quanto o servidor pediu, e não um palpite. No plano
             # grátis do Groq isto chega todo dia: 30 por minuto, 1.000 por

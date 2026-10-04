@@ -437,6 +437,8 @@ class CerebroRota(Motor):
         import urllib.error
         import urllib.request
 
+        from nucleo.modelos import AGENTE_HTTP
+
         corpo = {
             'model': alvo,
             'messages': self.historico,
@@ -449,6 +451,8 @@ class CerebroRota(Motor):
             data=json.dumps(corpo).encode(),
             headers={'Authorization': f'Bearer {self.chave}',
                      'Content-Type': 'application/json',
+                     # sem isto o Cloudflare do Groq devolve 403/1010
+                     'User-Agent': AGENTE_HTTP,
                      'X-Title': 'Jarvis'})
 
         texto, pendente = '', ''
