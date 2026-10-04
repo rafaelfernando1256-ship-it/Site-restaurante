@@ -368,6 +368,25 @@ def _():
             verdade(saida in baixo, f'{nome}: não diz o que usar no lugar')
 
 
+@prova('gatilhos: proíbe a hesitação com a mesma força que a invenção')
+def _():
+    from motor import gatilhos, roteiro
+    # Esta regra nasceu de eu ter exagerado na anterior: proibi mecanismo
+    # inventado e o modelo passou a hesitar em tudo. "A energia que você
+    # sente muda durante a sessão" é verdade e não diz nada. Trocar
+    # mentira afiada por verdade vaga é trocar um problema por outro.
+    for nome, i in (('roteiro', roteiro.INSTRUCAO),
+                    ('gatilhos', gatilhos.INSTRUCAO)):
+        baixo = i.lower()
+        verdade('não fuja para a hesitação' in baixo, f'{nome}: regra ausente')
+        for muleta in ('muitas pessoas relatam', 'depende de vários fatores',
+                       'cada corpo é diferente'):
+            verdade(muleta in baixo, f'{nome}: faltou a muleta "{muleta}"')
+        verdade('verdade afiada' in baixo,
+                f'{nome}: não mostra o par certo — proibir sem dar a saída '
+                'é o que produziu a hesitação')
+
+
 @prova('gatilhos: a correção de fisiologia aparece separada da manipulação')
 def _():
     from motor import gatilhos

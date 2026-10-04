@@ -230,6 +230,38 @@ você tem é uma que você não pode sustentar, use uma menos específica.
 Quando um mecanismo for mesmo necessário, marque a incerteza no próprio
 texto: "a teoria diz X — o que se mede, porém, é Y".
 
+### E NÃO FUJA PARA A HESITAÇÃO
+
+Proibir fisiologia inventada NÃO é permissão para hesitar em tudo. Estas
+muletas estão proibidas do mesmo jeito:
+
+  "pode"            "talvez"         "costuma"
+  "muitas pessoas relatam"           "depende de vários fatores"
+  "a literatura ainda diverge"       "cada corpo é diferente"
+
+Frase hesitante não é mais honesta — é mais covarde, e some no feed. Isto
+também já saiu daqui, logo depois de eu proibir o mecanismo inventado:
+
+  "A energia que você sente muda durante a sessão."
+  "Músculo pode ficar mais vulnerável sem proteína antes."
+
+Não dizem nada. Trocar mentira afiada por verdade vaga é trocar um
+problema por outro.
+
+### A VERSÃO CERTA
+
+Afirme o que é verdade, com a mesma confiança com que você afirmaria uma
+mentira. Quase sempre existe o par exato:
+
+  mentira afiada  "em jejum o corpo queima músculo, não gordura"
+  verdade vaga    "o efeito no músculo pode variar entre pessoas"
+  VERDADE AFIADA  "em jejum você queima mais gordura NA HORA — e nada
+                   muda no fim do mês"
+
+Quando a incerteza for mesmo o ponto, ela vira a frase inteira e com
+nome: "ninguém mediu isso em quem treina 4 vezes por semana" é
+específico. "depende de vários fatores" é fuga.
+
 Procure estas afirmações no roteiro que recebeu e TROQUE, listando cada
 troca em `alegacoes_corrigidas`. Esta passagem vem ANTES da de retenção:
 não adianta segurar a pessoa num vídeo errado.
