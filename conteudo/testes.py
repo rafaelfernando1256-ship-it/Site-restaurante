@@ -387,6 +387,113 @@ def _():
                 'é o que produziu a hesitação')
 
 
+@prova('gatilhos: a muleta é pega em CÓDIGO, não confiada ao modelo')
+def _():
+    from motor import gatilhos
+    from motor.roteiro import Quadro
+    # "costuma" voltou duas vezes num roteiro real, DUAS rodadas depois de
+    # a palavra ser proibida na instrução. Empilhar proibição em prosa faz
+    # o modelo obedecer umas e esquecer outras; o que dá para checar na
+    # máquina não se pede, se cobra.
+    sujo = gatilhos.Revisao(**revisao_exemplo(
+        quadros=[Quadro(fala='Na última sessão a carga costuma cair.',
+                        busca='gym'),
+                 Quadro(fala='Trocar um treino pode ajudar na recuperação.',
+                        busca='gym')]))
+    achados = gatilhos.problemas(sujo)
+    verdade(any('costuma' in a for a in achados), achados)
+    verdade(any('pode ajudar' in a for a in achados), achados)
+    # a mensagem é escrita para VOLTAR ao modelo: diz onde, o quê e a saída
+    for a in achados:
+        verdade('quadro' in a or 'gancho' in a or 'fechamento' in a or
+                'aposta' in a or 'esquema' in a, f'sem localização: {a}')
+
+    limpo = gatilhos.Revisao(**revisao_exemplo(
+        quadros=[Quadro(fala='Na quarta sessão você levanta menos.',
+                        busca='gym')],
+        aposta='lacuna no gancho, sustentada pela especificidade do número'))
+    igual(gatilhos.problemas(limpo), [])
+
+
+@prova('gatilhos: "pode" legítimo não é confundido com hesitação')
+def _():
+    from motor import gatilhos
+    from motor.roteiro import Quadro
+    # "você pode registrar a carga" é instrução, não fuga. Marcar isso
+    # obrigaria o modelo a escrever torto para passar na verificação.
+    ok = gatilhos.Revisao(**revisao_exemplo(
+        quadros=[Quadro(fala='Você pode registrar a carga no caderno.',
+                        busca='notebook')],
+        aposta='autorreferência: nomeia a situação de quem treina 4 dias'))
+    igual(gatilhos.problemas(ok), [])
+
+
+@prova('gatilhos: sigla sem explicação é pega; explicada, passa')
+def _():
+    from motor import gatilhos
+    from motor.roteiro import Quadro
+    cripto = gatilhos.Revisao(**revisao_exemplo(
+        quadros=[Quadro(fala='Use a sequência 2-2-0 na semana.', busca='gym')],
+        fechamento='Teste 2-2-0 por duas semanas.',
+        aposta='quebra de padrão no meio, com a lacuna aberta no gancho'))
+    verdade(any('2-2-0' in a for a in gatilhos.problemas(cripto)))
+
+    claro = gatilhos.Revisao(**revisao_exemplo(
+        quadros=[Quadro(fala='Dois dias de treino, dois de descanso.',
+                        busca='gym')],
+        fechamento='Teste duas semanas e compare a carga.',
+        aposta='quebra de padrão no meio, com a lacuna aberta no gancho'))
+    igual(gatilhos.problemas(claro), [])
+
+
+@prova('gatilhos: roteiro sujo é refeito; se a segunda vier ruim, entrega a 1ª')
+def _():
+    from motor import gatilhos
+    from motor.roteiro import Quadro, Roteiro
+
+    sujo = revisao_exemplo(
+        quadros=[Quadro(fala='A carga costuma cair.', busca='gym')])
+    limpo = revisao_exemplo(
+        quadros=[Quadro(fala='Na quarta sessão você levanta menos.',
+                        busca='gym')],
+        aposta='lacuna no gancho, fechada pelo teste do caderno')
+
+    entregues = []
+
+    def duble(sequencia):
+        class Msgs:
+            def parse(self, **kw):
+                campos = sequencia[min(len(entregues), len(sequencia) - 1)]
+                entregues.append(1)
+                class R:
+                    parsed_output = gatilhos.Revisao(**campos)
+                    stop_reason = 'end_turn'
+                return R()
+        class Cli:
+            messages = Msgs()
+        return Cli()
+
+    cru = Roteiro(gancho='g', quadros=[Quadro(fala='f', busca='b')],
+                  fechamento='f', legenda_post='l')
+
+    # sujo → limpo: entrega o limpo, e foram duas idas
+    entregues.clear()
+    r = gatilhos.revisa(cru, provedor='claude', cli=duble([sujo, limpo]))
+    igual(len(entregues), 2, 'não tentou de novo com o roteiro sujo')
+    igual(gatilhos.problemas(r), [], 'entregou o sujo')
+
+    # sujo → sujo: não fica tentando para sempre, e entrega algo
+    entregues.clear()
+    r = gatilhos.revisa(cru, provedor='claude', cli=duble([sujo, sujo]))
+    igual(len(entregues), 2, 'tentou mais de duas vezes')
+    verdade(r is not None, 'devolveu nada porque a regra não foi cumprida')
+
+    # já limpo: uma ida só, sem gastar chamada à toa
+    entregues.clear()
+    gatilhos.revisa(cru, provedor='claude', cli=duble([limpo]))
+    igual(len(entregues), 1, 'refez um roteiro que já estava bom')
+
+
 @prova('gatilhos: as três regras que nasceram de roteiros reais ruins')
 def _():
     from motor import gatilhos, roteiro

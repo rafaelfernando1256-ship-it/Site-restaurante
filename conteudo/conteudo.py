@@ -120,6 +120,17 @@ def _mostra_revisao(rev) -> None:
     for i, q in enumerate(rev.quadros, 1):
         print(f'    {i:>2}.     {q.fala}')
     print(f'    FECHA   {rev.fechamento}')
+    from motor.gatilhos import problemas
+    sobrou = problemas(rev)
+    if sobrou:
+        # Depois de duas tentativas ainda saiu torto. Melhor dizer do que
+        # entregar calado: é meio minuto de leitura contra um vídeo ruim
+        # publicado com o seu nome.
+        print(f'\n  {AMARELO} AINDA TORTO (nem a segunda tentativa limpou){FIM}')
+        for s in sobrou:
+            print(f'    • {s}')
+        print(f'    {CINZA}edite saida/<tema>/roteiro.json à mão e rode o '
+              f'video com --pular-roteiro{FIM}')
     print(f'\n  APOSTA  {rev.aposta}')
     print(f'  {CINZA}(é isso que você mede quando o vídeo for bem ou mal){FIM}\n')
 

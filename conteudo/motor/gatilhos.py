@@ -71,6 +71,7 @@ honesto, que quase sempre retém mais:
 """
 from __future__ import annotations
 
+import re
 import sys
 from pathlib import Path
 from typing import Any, Literal
@@ -333,6 +334,77 @@ anima. Nenhuma fala sua pode caber em qualquer outro roteiro: se couber, \
 está genérica, e genérico é o que não retém."""
 
 
+# ── a verificação, em código ─────────────────────────────────────────
+#
+# Proibir em prosa não bastou. A instrução foi crescendo — não invente
+# fisiologia, não hesite, não repita, um plano só — e o modelo passou a
+# obedecer umas e esquecer outras: "costuma" voltou duas vezes num
+# roteiro, duas rodadas DEPOIS de a palavra ser proibida.
+#
+# O que dá para checar deterministicamente, checa-se aqui. O modelo não
+# precisa lembrar de uma regra que a máquina cobra.
+
+MULETAS = (
+    'costuma', 'costumam', 'talvez', 'geralmente', 'normalmente',
+    'tende a', 'tendem a', 'muitas pessoas', 'algumas pessoas',
+    'depende de vários', 'depende de muitos', 'cada corpo',
+    'cada pessoa é', 'pode variar', 'podem variar',
+)
+
+# "pode" sozinho é palavra legítima ("você pode registrar a carga"), e
+# vira muleta quando enfraquece uma AFIRMAÇÃO. Estas combinações são as
+# que aparecem de verdade.
+MULETAS_COMPOSTAS = (
+    'pode ajudar', 'pode melhorar', 'pode reduzir', 'pode aumentar',
+    'pode ficar', 'pode cair', 'pode mudar', 'pode não',
+)
+
+ESQUEMA_CRIPTICO = re.compile(r'\b\d+\s*[-+]\s*\d+\s*(?:[-+]\s*\d+)?\b')
+
+
+def problemas(r: Revisao) -> list[str]:
+    """
+    O que o modelo não deveria ter feito, dito na linguagem dele.
+
+    Devolve uma lista vazia quando está limpo. Cada item é escrito para
+    ser mandado DE VOLTA ao modelo: diz o quadro, a palavra e a saída, que
+    é o que faz a segunda tentativa acertar em vez de repetir.
+    """
+    falas = [('gancho', r.gancho)]
+    falas += [(f'quadro {i}', q.fala) for i, q in enumerate(r.quadros, 1)]
+    falas.append(('fechamento', r.fechamento))
+
+    achados: list[str] = []
+    for onde, fala in falas:
+        baixo = fala.lower()
+        for m in MULETAS + MULETAS_COMPOSTAS:
+            if m in baixo:
+                achados.append(
+                    f'{onde}: "{fala}" usa a muleta "{m}". Afirme ou corte — '
+                    'frase hesitante não é mais honesta, é mais fraca.')
+                break
+
+    # Esquema numérico que a pessoa não entende sem legenda. Só reclama
+    # quando ele aparece SEM nenhuma frase explicando o que significa.
+    tudo = ' '.join(f for _, f in falas)
+    for achado in set(ESQUEMA_CRIPTICO.findall(tudo)):
+        explicado = any(p in tudo.lower() for p in
+                        ('dias seguidos', 'dias de treino', 'dias de',
+                         'significa', 'ou seja', 'dias e'))
+        if not explicado:
+            achados.append(
+                f'o esquema "{achado}" aparece sem explicação. Em vídeo '
+                'curto ninguém decifra sigla: escreva por extenso '
+                '("dois dias de treino, dois de descanso").')
+
+    if len(r.aposta.split()) < 5:
+        achados.append(
+            f'a aposta "{r.aposta}" é uma palavra solta. Escreva a frase '
+            'inteira: qual mecanismo carrega o vídeo e por quê — é o que '
+            'se mede quando ele for bem ou mal.')
+    return achados
+
+
 def revisa(roteiro: Roteiro, tema: str = '', biotipo: str = '',
            provedor: str = 'groq', modelo: str = '', chave: str = '',
            cli: Any = None) -> Revisao:
@@ -353,9 +425,30 @@ def revisa(roteiro: Roteiro, tema: str = '', biotipo: str = '',
                      'falar a língua dele; NÃO baseie recomendação no biotipo '
                      'em si, que é classificação descritiva sem valor '
                      'preditivo para treino ou dieta.')
-    return pede_json(instrucao=INSTRUCAO, conteudo=conteudo, esquema=Revisao,
-                     modelo=modelo or None, cli=cli or (chave or None),
-                     provedor=provedor, max_tokens=6000)
+    aviso = ''
+    melhor: Revisao | None = None
+    for tentativa in range(2):
+        r: Revisao = pede_json(
+            instrucao=INSTRUCAO + aviso, conteudo=conteudo, esquema=Revisao,
+            modelo=modelo or None, cli=cli or (chave or None),
+            provedor=provedor, max_tokens=6000)
+        achados = problemas(r)
+        if not achados:
+            return r
+        # Guarda a primeira: se a segunda vier pior, ainda há o que
+        # entregar. Devolver nada porque a regra não foi cumprida seria
+        # trocar um roteiro imperfeito por roteiro nenhum.
+        melhor = melhor or r
+        if tentativa:
+            break
+        aviso = ('\n\n## O QUE VOCÊ ACABOU DE ERRAR\n\n'
+                 + '\n'.join(f'- {a}' for a in achados)
+                 + '\n\nRefaça corrigindo exatamente isto, sem mexer no '
+                   'resto do que já estava bom.')
+    return melhor or r
+
+
+
 
 
 def para_roteiro(r: Revisao) -> Roteiro:
