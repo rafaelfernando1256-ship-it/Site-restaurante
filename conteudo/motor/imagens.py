@@ -64,8 +64,13 @@ class SemChave(RuntimeError):
 
 
 ONDE_PEGAR = {
-    'pexels': 'pexels.com/api/new — grátis, 200 buscas/hora',
-    'pixabay': 'pixabay.com/api/docs — grátis, 100 por minuto',
+    # Em out/2026 o Pexels suspendeu a emissão de chaves novas. Quem já
+    # tem continua usando; quem não tem, não consegue. Dizer isso aqui
+    # evita a viagem perdida até a página para descobrir no aviso amarelo.
+    'pexels': 'pexels.com/api/new — chaves NOVAS suspensas desde out/2026; '
+              'só serve se você já tiver uma',
+    'pixabay': 'pixabay.com/api/docs — grátis, 100/min (a chave aparece na '
+               'própria página quando você está logado)',
     'unsplash': 'unsplash.com/developers — grátis, 50/hora no modo demo',
 }
 

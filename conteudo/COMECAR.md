@@ -53,23 +53,26 @@ GROQ_API_KEY=gsk_sua_chave
 **Sem ela os vídeos saem em preto puro.** Funciona — e preto puro é o
 fundo mais dark que existe — mas é metade do produto.
 
-Basta **uma**. Recomendo o Pexels, que tem o acervo fitness maior:
+Basta **uma**. Vá de **Pixabay**, que é a mais rápida:
 
-1. **https://www.pexels.com/api/new/** → entre ou crie conta
-2. Descreva o uso em uma linha ("vídeos curtos de treino")
-3. Copie a chave
+1. **https://pixabay.com/** → crie conta ou entre
+2. **https://pixabay.com/api/docs/** → role até **Parameters**; no campo
+   `key` a sua chave já aparece preenchida
+3. Copie
 
 Em `conteudo\.env`:
 
 ```
-PEXELS_API_KEY=sua_chave_aqui
+PIXABAY_API_KEY=sua_chave_aqui
 ```
 
-Se quiser folga para quando a cota apertar, pegue as outras duas também
-— ele usa em cascata:
+Quer folga para quando a cota apertar? Ele usa em cascata, então vale
+pegar uma segunda:
 
-- **https://pixabay.com/api/docs/** — a chave aparece na própria página
-- **https://unsplash.com/developers** — crie um app, pegue a *Access Key*
+- **https://unsplash.com/developers** → Register as a developer → New
+  Application → copie a **Access Key** (não a Secret)
+- ~~Pexels~~ — **suspendeu a emissão de chaves novas em out/2026.** O
+  código continua suportando, para quem já tem uma de antes.
 
 **Confirme:** a linha `acervo de imagem` fica verde e lista o que achou.
 
