@@ -146,7 +146,10 @@ async function redesenha(i) {
   // centraliza, senão sobra 60% de preto e lê como erro de carregamento.
   const fundo = E.fundos[i];
   const posicao = (!fundo || i === 0 || i === total - 1) ? 'meio' : 'alto';
-  Quadro.desenha(canvas, { imagem: fundo, texto, posicao });
+  // Gancho e fechamento em CAIXA ALTA: são os dois que precisam ser lidos
+  // de relance — um para parar o dedo, o outro para dizer o que fazer.
+  Quadro.desenha(canvas, { imagem: fundo, texto, posicao,
+                           caixaAlta: i === 0 || i === total - 1 });
 }
 
 async function buscarImagem(i) {

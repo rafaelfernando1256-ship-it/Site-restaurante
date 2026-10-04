@@ -69,6 +69,30 @@ Tem um segundo. Comece pela afirmação mais específica e contraintuitiva \
 que você puder sustentar. Nada de "fala galera", "você sabia que", \
 "3 dicas para".
 
+## A INTENSIDADE
+
+Você recebe um nível. Ele muda o quanto a frase CONFRONTA — nunca o
+quanto ela PROMETE. Os três dizem a verdade; mudam de volume.
+
+`seco`     constata. "Na quarta sessão você levanta menos."
+`direto`   acusa o comportamento. "Você treina 4 dias e não anota nada."
+`ataque`   nomeia a perda, com o custo na cara. "Oito meses de academia
+           e o mesmo corpo. Não é genética — é que você nunca aumentou
+           a carga."
+
+No `ataque`, três coisas ficam liberadas, e só elas:
+
+1. ACUSAR O COMPORTAMENTO, não a pessoa. "você não anota" sim; "você é
+   preguiçoso" não — insulto não converte, fecha.
+2. NOMEAR A PERDA JÁ ACONTECIDA. "oito meses", "doze semanas repetidas".
+   O tempo que já passou é fato, e dói mais que ganho futuro.
+3. NEGAR A DESCULPA CONFORTÁVEL: "não é genética", "não é metabolismo",
+   "não é a idade" — quando for verdade que não é.
+
+O que NÃO muda em nível nenhum: sem promessa de resultado, sem prazo,
+sem número que você não tem. Intensidade é o volume da verdade, não
+permissão para inventar uma mais vendável.
+
 O TOM é seco e direto. Nada de motivação genérica, nada de emoji, nada \
 de exclamação. Quem fala é alguém que treina há anos e está contando \
 como é, incluindo a parte chata. Se a frase caberia em qualquer perfil \
@@ -192,18 +216,51 @@ Quando a incerteza for mesmo o ponto, ela vira a frase inteira e com
 nome: "ninguém mediu isso em quem treina 4 vezes por semana" é
 específico. "depende de vários fatores" é fuga.
 
-A BUSCA DE IMAGEM é em INGLÊS, concreta e fotografável. Pense no que uma \
-câmera veria. "barbell deadlift gym", "man eating rice kitchen", \
-"empty gym night" — nunca "foco", "disciplina", "jornada".
+## A BUSCA DE IMAGEM
+
+Em INGLÊS, e é aqui que o vídeo fica com cara de banco de imagem. O erro
+é pedir o ÓBVIO do assunto: falou de treino, pediu "man lifting weights"
+— e vem o mesmo sujeito sorrindo de regata que está em mil vídeos.
+
+Peça o que a CENA tem em volta, não o assunto:
+
+  progressão de carga
+    ruim  "man lifting weights gym"
+    bom   "chalk hands barbell knurling close up"
+
+  treinar demais
+    ruim  "tired man gym"
+    bom   "empty locker room fluorescent light"
+
+  anotar o treino
+    ruim  "fitness notebook"
+    bom   "worn notebook pencil wooden table"
+
+Três regras que fazem a diferença:
+
+1. UM OBJETO, não uma situação. Objeto rende foto específica; situação
+   rende modelo posando.
+2. DIGA A LUZ ou a textura: "harsh light", "low key", "close up",
+   "concrete floor", "rust", "sweat". É o que separa foto de acervo de
+   foto que parece sua.
+3. NUNCA peça pessoa sorrindo nem de frente. Costas, mãos, detalhe,
+   lugar vazio. Rosto de modelo é o que mais denuncia estoque — e o seu
+   vídeo é dark, não é anúncio de plano de academia.
 
 O FECHAMENTO diz o que fazer agora, em uma frase. Sem "link na bio" se \
 não houver link."""
 
 
+INTENSIDADES = ('seco', 'direto', 'ataque')
+
+
 def escreve(tema: str, biotipo: str = '', provedor: str = 'groq',
-            modelo: str = '', chave: str = '', cli: Any = None) -> Roteiro:
+            modelo: str = '', chave: str = '', cli: Any = None,
+            intensidade: str = 'direto') -> Roteiro:
     from nucleo.modelo import pede_json
-    conteudo = f'Tema do vídeo: {tema}'
+    if intensidade not in INTENSIDADES:
+        intensidade = 'direto'
+    conteudo = f'Tema do vídeo: {tema}\nIntensidade: {intensidade}'
     if biotipo:
         conteudo += (f'\n\nO público é quem se identifica como {biotipo}. '
                      'Use isso para falar a língua dele, mas NÃO baseie '

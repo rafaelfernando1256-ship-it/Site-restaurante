@@ -387,6 +387,95 @@ def _():
                 'é o que produziu a hesitação')
 
 
+@prova('legenda: a palavra realçada ganha BLOCO sólido, não só cor')
+def _():
+    import numpy as np
+    # Texto colorido some sobre foto; bloco sólido não some sobre nada, e
+    # é o que o olho acha primeiro no feed. A diferença entre legenda
+    # amadora e legenda de perfil grande custa quatro linhas.
+    p = legenda.quadro(None, 'Não é *genética*', TMP / 'bloco.jpg')
+    a = np.asarray(Image.open(p))
+    r, g, b = visual.DARK.destaque
+    vermelhos = ((abs(a[:, :, 0].astype(int) - r) < 40)
+                 & (abs(a[:, :, 1].astype(int) - g) < 40)
+                 & (abs(a[:, :, 2].astype(int) - b) < 40))
+    # Só a cor do texto daria algumas centenas de pixels; um bloco atrás
+    # da palavra dá milhares.
+    verdade(vermelhos.sum() > 12000,
+            f'parece cor de texto, não bloco: {vermelhos.sum()} pixels')
+
+
+@prova('legenda: nunca passa de 4 linhas, por mais longa que seja a frase')
+def _():
+    from motor.legenda import MAX_LINHAS, _cabe, acha_fonte
+    from PIL import ImageDraw
+    img = visual.quadro_vazio()
+    d = ImageDraw.Draw(img)
+    # No orçamento que a instrução cobra (12 palavras), nunca passa de 4.
+    for frase in ('VOCÊ TREINA HÁ OITO MESES E AINDA NÃO MUDOU NADA DISSO',
+                  'CADA SEMANA SEM PROGRESSÃO É UMA SEMANA INTEIRA REPETIDA',
+                  'SE VOCÊ NÃO ANOTA A CARGA ENTÃO VOCÊ APENAS FREQUENTA'):
+        _f, linhas = _cabe(frase, d, visual.LARGURA - 260,
+                           int(visual.ALTURA * .42))
+        verdade(len(linhas) <= MAX_LINHAS,
+                f'{len(linhas)} linhas em "{frase[:40]}…" — vira parágrafo')
+
+    # E uma frase absurda não pode QUEBRAR: desenha feio, mas desenha.
+    absurda = ' '.join(['palavra'] * 60)
+    caminho = legenda.quadro(None, absurda, TMP / 'absurda.jpg')
+    igual(Image.open(caminho).size, (visual.LARGURA, visual.ALTURA))
+
+
+@prova('legenda: caixa alta é opção, não padrão')
+def _():
+    import numpy as np
+    normal = legenda.quadro(None, 'não é genética', TMP / 'cx-normal.jpg')
+    alta = legenda.quadro(None, 'não é genética', TMP / 'cx-alta.jpg',
+                          caixa_alta=True)
+    brancos = lambda p: int((np.asarray(Image.open(p).convert('L')) > 200).sum())
+    # Caixa alta ocupa mais área que minúscula no mesmo corpo.
+    verdade(brancos(alta) != brancos(normal),
+            'o caixa_alta não mudou nada')
+
+
+@prova('roteiro: a intensidade muda o CONFRONTO, nunca a promessa')
+def _():
+    from motor import roteiro
+    i = roteiro.INSTRUCAO
+    igual(roteiro.INTENSIDADES, ('seco', 'direto', 'ataque'))
+    verdade('A INTENSIDADE' in i)
+    # O nível mais alto libera três coisas, e precisa dizer QUAIS — senão
+    # "ataque" vira licença para inventar.
+    for liberado in ('ACUSAR O COMPORTAMENTO', 'NOMEAR A PERDA JÁ ACONTECIDA',
+                     'NEGAR A DESCULPA CONFORTÁVEL'):
+        verdade(liberado in i, f'não diz o que o ataque libera: {liberado}')
+    baixo = i.lower()
+    verdade('insulto não converte' in baixo,
+            'não separa acusar o comportamento de xingar a pessoa')
+    verdade('sem promessa de resultado, sem prazo' in baixo,
+            'o teto da promessa tem de valer em TODO nível, inclusive ataque')
+
+    # e um nível inventado não passa
+    import inspect
+    fonte = inspect.getsource(roteiro.escreve)
+    verdade('intensidade = ' in fonte and 'INTENSIDADES' in fonte,
+            'aceita qualquer string como intensidade')
+
+
+@prova('roteiro: a busca de imagem foge do óbvio do assunto')
+def _():
+    from motor import roteiro
+    i = roteiro.INSTRUCAO
+    # "man lifting weights" traz o mesmo sujeito de regata que está em mil
+    # vídeos. O exemplo ruim precisa estar escrito ao lado do bom, senão
+    # a regra vira conselho vago.
+    for par in ('man lifting weights gym', 'chalk hands barbell knurling',
+                'empty locker room fluorescent', 'worn notebook pencil'):
+        verdade(par in i, f'faltou o exemplo: {par}')
+    verdade('NUNCA peça pessoa sorrindo' in i,
+            'rosto de modelo é o que mais denuncia estoque')
+
+
 @prova('gatilhos: a muleta é pega em CÓDIGO, não confiada ao modelo')
 def _():
     from motor import gatilhos

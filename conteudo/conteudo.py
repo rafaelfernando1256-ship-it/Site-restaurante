@@ -81,7 +81,8 @@ def cmd_roteiro(a) -> int:
     pasta = SAIDA / slug(a.tema)
     pasta.mkdir(parents=True, exist_ok=True)
     print(f'\n  escrevendo o roteiro ({prov})...\n')
-    r = R.escreve(a.tema, biotipo=a.biotipo, provedor=prov, chave=chave)
+    r = R.escreve(a.tema, biotipo=a.biotipo, provedor=prov, chave=chave,
+                  intensidade=getattr(a, 'intensidade', 'direto'))
     (pasta / 'roteiro.json').write_text(
         r.model_dump_json(indent=2), encoding='utf-8')
 
@@ -181,7 +182,8 @@ def cmd_video(a) -> int:
         from motor import roteiro as R
         prov, chave = _provedor()
         print(f'\n  1/6 roteiro ({prov})...')
-        r = R.escreve(a.tema, biotipo=a.biotipo, provedor=prov, chave=chave)
+        r = R.escreve(a.tema, biotipo=a.biotipo, provedor=prov, chave=chave,
+                  intensidade=getattr(a, 'intensidade', 'direto'))
         (pasta / 'roteiro.json').write_text(
             r.model_dump_json(indent=2), encoding='utf-8')
 
@@ -244,9 +246,13 @@ def cmd_video(a) -> int:
                    else 'alto')
         if cortes and fundo is not None:
             posicao = cortes[i][1]
+        # Gancho e fechamento em CAIXA ALTA: são os dois quadros que
+        # precisam ser lidos de relance, um para parar o dedo e o outro
+        # para dizer o que fazer. O corpo em caixa normal, que cansa menos.
         quadros_prontos.append(
             legenda.quadro(fundo, fala, pasta / 'quadros' / f'{i:02d}.jpg',
-                           posicao=posicao))
+                           posicao=posicao,
+                           caixa_alta=i in (0, len(falas) - 1)))
 
     audios: list[Path | None] = [None] * len(falas)
     # O plano de corte da revisão manda; sem ele, tudo com a mesma duração.
@@ -355,6 +361,10 @@ def principal(argv=None) -> int:
         s.add_argument('tema')
         s.add_argument('--biotipo', default='',
                        help='ectomorfo | mesomorfo | endomorfo')
+        s.add_argument('--intensidade', default='direto',
+                       choices=('seco', 'direto', 'ataque'),
+                       help='o quanto a frase confronta — nunca o quanto '
+                            'promete')
         if nome == 'video':
             s.add_argument('--pular-roteiro', action='store_true',
                            help='usa o roteiro.json que já está na pasta')

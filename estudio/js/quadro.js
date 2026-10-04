@@ -105,24 +105,31 @@ function quebra(ctx, texto, larguraMax) {
   return linhas;
 }
 
-/* Acha o maior corpo que cabe. Diminuir é melhor que cortar: frase
-   cortada no meio é o que mais faz rolar o feed. */
+/* Entrelinha apertada: legenda de vídeo curto é bloco, não parágrafo, e
+   o espaço entre linhas é espaço em que o olho escapa. */
+export const ENTRELINHA = 1.02;
+export const MAX_LINHAS = 4;
+
+/* Acha o maior corpo que cabe EM ATÉ 4 LINHAS. Caber na altura não
+   basta: seis linhas de caixa alta cabem e afogam o quadro — o olho lê
+   como texto, e texto se rola. */
 function corpoQueCabe(ctx, texto, larguraMax, alturaMax) {
-  for (let tam = 110; tam >= 46; tam -= 4) {
+  for (let tam = 128; tam >= 38; tam -= 4) {
     ctx.font = `700 ${tam}px ${FONTES}`;
     const linhas = quebra(ctx, texto, larguraMax);
-    if (linhas.length * Math.round(tam * 1.18) <= alturaMax) {
+    if (linhas.length * Math.round(tam * ENTRELINHA) <= alturaMax
+        && linhas.length <= MAX_LINHAS) {
       return { tam, linhas };
     }
   }
-  ctx.font = `700 46px ${FONTES}`;
-  return { tam: 46, linhas: quebra(ctx, texto, larguraMax) };
+  ctx.font = `700 38px ${FONTES}`;
+  return { tam: 38, linhas: quebra(ctx, texto, larguraMax) };
 }
 
 const MARCA = /\*([^*]+)\*/g;
 
 export function desenha(canvas, { imagem = null, texto = '', posicao = 'meio',
-                                  tema = TEMA } = {}) {
+                                  tema = TEMA, caixaAlta = false } = {}) {
   canvas.width = LARGURA;
   canvas.height = ALTURA;
   const ctx = canvas.getContext('2d');
@@ -146,14 +153,17 @@ export function desenha(canvas, { imagem = null, texto = '', posicao = 'meio',
 
   const margem = Math.round(LARGURA * 0.12);
   const larguraMax = LARGURA - 2 * margem;
-  const limpo = texto.replace(MARCA, '$1');
+  let limpo = texto.replace(MARCA, '$1');
+  if (caixaAlta) limpo = limpo.toUpperCase();
   const { tam, linhas } = corpoQueCabe(ctx, limpo, larguraMax, ALTURA * 0.42);
-  const passo = Math.round(tam * 1.18);
+  const passo = Math.round(tam * ENTRELINHA);
   const alto = linhas.length * passo;
 
-  let y = posicao === 'alto' ? Math.round(ALTURA * 0.17)
+  // O centro ÓTICO fica acima do geométrico: o olho lê o quadro como se
+  // o meio fosse uns 6% mais alto, e texto no centro exato parece caído.
+  let y = posicao === 'alto' ? Math.round(ALTURA * 0.15)
         : posicao === 'baixo' ? Math.round(ALTURA * 0.62)
-        : Math.round((ALTURA - alto) / 2);
+        : Math.round((ALTURA - alto) / 2 - ALTURA * 0.06);
 
   const marcadas = new Set();
   for (const m of texto.matchAll(MARCA)) {
@@ -162,23 +172,47 @@ export function desenha(canvas, { imagem = null, texto = '', posicao = 'meio',
 
   ctx.textBaseline = 'top';
   ctx.lineJoin = 'round';
-  ctx.lineWidth = Math.max(4, Math.round(tam / 7));
+  ctx.lineWidth = Math.max(5, Math.round(tam / 9));
   ctx.strokeStyle = '#000';
+  const folgaX = Math.max(8, Math.round(tam / 7));
+  const folgaY = Math.max(4, Math.round(tam / 12));
+  const raio = Math.max(6, Math.round(tam / 10));
 
   for (const linha of linhas) {
     let x = Math.round((LARGURA - ctx.measureText(linha).width) / 2);
     for (const palavra of linha.split(' ')) {
       const largura = ctx.measureText(palavra + ' ').width;
+      if (marcadas.has(limpa(palavra))) {
+        // BLOCO sólido atrás, não só cor. Texto colorido some sobre foto;
+        // bloco não some sobre nada, e é o que o olho acha primeiro no
+        // feed — a maior diferença entre legenda amadora e de perfil
+        // grande, por quatro linhas de código.
+        const l = ctx.measureText(palavra).width;
+        bloco(ctx, x - folgaX, y - folgaY,
+              l + folgaX * 2, tam + folgaY * 2, raio, tema.destaque);
+        ctx.fillStyle = tema.texto;
+        ctx.fillText(palavra, x, y);
+        x += largura + folgaX;
+        continue;
+      }
       // Contorno grosso em vez de caixa: legível sobre qualquer foto, sem
       // tapar a imagem nem parecer template.
       ctx.strokeText(palavra, x, y);
-      ctx.fillStyle = marcadas.has(limpa(palavra)) ? tema.destaque : tema.texto;
+      ctx.fillStyle = tema.texto;
       ctx.fillText(palavra, x, y);
       x += largura;
     }
     y += passo;
   }
   return canvas;
+}
+
+function bloco(ctx, x, y, l, a, r, cor) {
+  ctx.fillStyle = cor;
+  ctx.beginPath();
+  ctx.roundRect ? ctx.roundRect(x, y, l, a, r)
+                : ctx.rect(x, y, l, a);     // navegador antigo: canto reto
+  ctx.fill();
 }
 
 function limpa(p) {
