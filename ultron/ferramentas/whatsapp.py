@@ -20,7 +20,7 @@ faturamento do dia dos comprovantes que chegam.
 > • **nada de disparo em lista.** Uma mensagem por vez, ditada por você.
 >
 > Se um dia quiser o caminho sem risco, é a API oficial do WhatsApp
-> Business — e aí é trocar este arquivo, não o Jarvis inteiro.
+> Business — e aí é trocar este arquivo, não o Ultron inteiro.
 
 Sobre os seletores: o WhatsApp Web muda o HTML sem avisar. Por isso cada
 coisa é procurada por VÁRIOS caminhos, e o último recurso é ler o texto

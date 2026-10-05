@@ -5,7 +5,7 @@ Chave nenhuma dentro do código. A ordem é: ambiente → `.env` → `config.tom
 (só o que não é segredo).
 
 Um detalhe que decide muita coisa: `RAIZ_SEGURA`. É a lista de pastas em
-que o Jarvis pode escrever sem perguntar. Fora dela, ele pede. Sem isso,
+que o Ultron pode escrever sem perguntar. Fora dela, ele pede. Sem isso,
 "apaga os temporários" vira uma frase perigosa.
 """
 from __future__ import annotations
@@ -68,7 +68,7 @@ class Config:
     groq: str = ''
 
     # ── voz ─────────────────────────────────────────────────────────
-    palavra_chave: str = 'hey jarvis'
+    palavra_chave: str = 'hey ultron'
     escuta_sempre: bool = True
     atalho_fala: str = 'ctrl+alt+j'      # vale quando escuta_sempre = false
     modelo_voz: str = 'pt-BR-AntonioNeural'
@@ -91,7 +91,7 @@ class Config:
     modelo_openrouter: str = MODELO_OPENROUTER
     modelo_groq: str = MODELO_GROQ
     voltas_maximas: int = 24             # teto de idas e vindas numa só tarefa
-    nome: str = 'Jarvis'
+    nome: str = 'Ultron'
     tratamento: str = 'chefe'
 
     # ── permissões ──────────────────────────────────────────────────

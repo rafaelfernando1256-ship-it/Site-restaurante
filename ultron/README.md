@@ -1,4 +1,4 @@
-# Jarvis
+# Ultron
 
 Um assistente de voz que mora dentro do seu notebook e faz as coisas de
 verdade: abre programa, mexe no navegador, lê o seu WhatsApp, cria
@@ -28,9 +28,9 @@ monta o `config.toml` **com os caminhos da sua máquina** e abre o
 bloco de notas para você colar a chave. Depois:
 
 ```
-jarvis.bat --checar     diz o que está pronto e o que falta
-jarvis.bat              liga o modo voz
-jarvis.bat --texto      modo teclado, para testar sem microfone
+ultron.bat --checar     diz o que está pronto e o que falta
+ultron.bat              liga o modo voz
+ultron.bat --texto      modo teclado, para testar sem microfone
 ```
 
 Precisa de Python 3.10 ou mais novo (na instalação dele, marque **"Add
@@ -66,10 +66,10 @@ O ChatGPT (`OPENAI_API_KEY`) é só consultor, nunca cérebro — é opcional.
 
 ## Como se fala com ele
 
-Diga **"Hey Jarvis"** e fale. Ele fica quieto até ser chamado.
+Diga **"Hey Ultron"** e fale. Ele fica quieto até ser chamado.
 
 ```
-"Hey Jarvis"  ...  abre o YouTube e toca Tim Maia
+"Hey Ultron"  ...  abre o YouTube e toca Tim Maia
                    quantos clientes estão em negociação?
                    quanto a gente faturou hoje?
                    lê a última mensagem do grupo Pedidos
@@ -83,6 +83,84 @@ Diga **"Hey Jarvis"** e fale. Ele fica quieto até ser chamado.
 ```
 
 Pode cortar ele no meio: diga **"para"** e ele cala na hora.
+
+---
+
+## O cérebro: ele pensa antes, e confere depois
+
+Um assistente comum é um laço de ferramentas: o modelo chama uma, vê o
+resultado, chama outra, e no fim diz que terminou. Isso funciona para
+"que horas são" e falha exatamente onde dói — *"pega os leads que
+responderam, monta um resumo e me manda no WhatsApp"*: ele faz o
+primeiro passo, se perde, e **responde como se tivesse feito tudo**.
+
+O Ultron faz três coisas num pedido desses:
+
+```
+  você pede  ─→  1. PLANO      o que entendi, os passos, e — a coluna que
+                               muda tudo — COMO EU VOU SABER que cada
+                               passo deu certo. Escrito ANTES de agir.
+                 2. AÇÃO       o laço das 51 ferramentas, calado
+                 3. VEREDITO   o que aconteceu, confrontado com o critério
+                               que ele mesmo escreveu
+```
+
+A coluna **"como eu sei"** é o projeto inteiro. Obrigar a dizer o
+critério antes de agir força três coisas que nenhuma instrução educada
+consegue:
+
+1. **decidir o que conta como pronto** — que é metade do trabalho;
+2. **perceber na hora** quando um passo não tem como ser verificado. Esse
+   é justamente o passo que falha calado, e o Ultron o anota no diário
+   mesmo que ninguém pergunte;
+3. **poder dizer "não deu"** no fim. Assistente que nunca falha é
+   assistente que você não pode usar para nada sério.
+
+No veredito, "quase" conta como **não cumpriu** — e a frase que ele fala
+começa pela falha, porque descobrir depois que não foi feito é pior que
+ouvir agora que falhou.
+
+Duas decisões que valem dizer:
+
+- **Pergunta simples não vira cerimônia.** Planejar "que horas são" é
+  insuportável. A regra está em `nucleo/plano.py` e é barata: só planeja
+  o que mexe em alguma coisa, o que tem conjunção ("e depois"), ou o que
+  é longo demais para ser uma pergunta.
+- **Planejar e agir são chamadas separadas.** O plano é pedido *sem
+  ferramenta nenhuma na mesa* — com as 51 disponíveis, o modelo começa a
+  usá-las em vez de pensar, e o plano vira o trabalho feito às pressas.
+- **Se o planejamento falhar, ele age de qualquer jeito.** Plano é ajuda,
+  não portão. Transformar um erro de rede em recusa de atender seria
+  piorar o assistente para ele parecer cuidadoso.
+
+Falta informação sem a qual o plano não se sustenta? Ele **pergunta e
+para** — em vez de escolher no escuro e você descobrir depois.
+
+---
+
+## Ele acorda com o notebook
+
+```
+python ultron.py despertar --ligar       sobe quando você entra na conta
+python ultron.py despertar --desligar    para de subir
+python ultron.py despertar               diz como está
+```
+
+Três decisões que custam caro se forem erradas:
+
+- **Na sua conta, não como serviço do sistema.** Serviço roda como
+  SYSTEM: sem o seu microfone, sem o seu navegador logado, sem o seu
+  WhatsApp Web. Um Ultron sem as suas sessões é um Ultron inútil.
+- **Sem janela preta.** Ele usa o `pythonw.exe`; senão aparece um
+  terminal que você vai querer fechar — e fechar mata o Ultron.
+- **O microfone não abre sozinho.** Ele sobe esperando a palavra de
+  ativação. Microfone aberto por padrão numa máquina que vai para a mesa
+  de qualquer lugar é decisão sua, não minha: `config.toml` →
+  `voz.escuta_sempre`.
+
+O atalho é um `.vbs` de três linhas na pasta Inicializar, de propósito:
+um `.lnk` precisa de COM e de `pywin32`, e um arquivo de texto você abre,
+lê e apaga quando quiser. Transparência vale mais que elegância aqui.
 
 ---
 
@@ -125,7 +203,7 @@ equivalentes nunca são seguros, mesmo que você os coloque na lista.
 
 ### Tudo fica escrito
 
-Cada ação vai para um diário em `dados/jarvis.db`: hora, ferramenta,
+Cada ação vai para um diário em `dados/ultron.db`: hora, ferramenta,
 argumentos, nível, decisão e resultado. Pergunte **"o que você fez
 hoje?"** e ele lê de lá. Nada é apagado antes de 90 dias.
 
@@ -133,7 +211,7 @@ hoje?"** e ele lê de lá. Nada é apagado antes de 90 dias.
 
 ## O que ele sabe fazer
 
-`jarvis.bat --ferramentas` lista as 51 com o nível de cada uma.
+`ultron.bat --ferramentas` lista as 51 com o nível de cada uma.
 
 | grupo | o que dá para pedir |
 |---|---|
@@ -177,7 +255,7 @@ vez não é faturamento.
 total parecer estranho, dá para ver de onde veio cada centavo. E o que
 ficou com pouca certeza vem marcado com ⚠.
 
-Dá para lançar na mão também: *"Jarvis, lança uma venda de mil e duzentos
+Dá para lançar na mão também: *"Ultron, lança uma venda de mil e duzentos
 do Grão Dourado"*.
 
 > **Dinheiro é inteiro, em centavos.** E o leitor de valores distingue
@@ -228,7 +306,7 @@ Na primeira vez ele abre o WhatsApp Web e você lê o QR code com o celular
 dele.
 
 Se um dia quiser o caminho sem risco nenhum, é a API oficial do WhatsApp
-Business — e aí troca-se `ferramentas/whatsapp.py`, não o Jarvis inteiro.
+Business — e aí troca-se `ferramentas/whatsapp.py`, não o Ultron inteiro.
 
 ---
 
@@ -264,7 +342,7 @@ como `DLL load failed ... política de Controle de Aplicativo bloqueou
 este arquivo` e parece falha de instalação — não é, e reinstalar não
 resolve.
 
-Quando isso acontece, o Jarvis avisa na tela e usa o Gemini. A troca é
+Quando isso acontece, o Ultron avisa na tela e usa o Gemini. A troca é
 real e você precisa saber dela: o áudio passa a sair da máquina. O que
 não muda é o destino — **o texto do que você fala já ia para o modelo de
 qualquer jeito**, porque é ele que o cérebro recebe. O que muda é o
@@ -280,10 +358,10 @@ Eu não faria isso por causa de um microfone.
 ## Como está montado
 
 ```
-jarvis.py            a entrada: modo voz, modo teclado, um comando só
+ultron.py            a entrada: modo voz, modo teclado, um comando só
 primeira_vez.py      monta config.toml com os caminhos da sua máquina
 instalar.bat         instalação Windows em dois cliques
-jarvis.bat           atalho para rodar
+ultron.bat           atalho para rodar
 
 nucleo/
   permissao.py       OS TRÊS NÍVEIS — leia este primeiro
@@ -392,7 +470,7 @@ tela. Então:
 
 | | |
 |---|---|
-| **microfone, palavra de ativação e transcrição** | código escrito, **não exercitado com áudio real**. É a primeira coisa a conferir com `jarvis.bat --checar` e depois falando com ele. O empacotamento do áudio em WAV e a escolha do motor têm teste; a captura e o reconhecimento, não |
+| **microfone, palavra de ativação e transcrição** | código escrito, **não exercitado com áudio real**. É a primeira coisa a conferir com `ultron.bat --checar` e depois falando com ele. O empacotamento do áudio em WAV e a escolha do motor têm teste; a captura e o reconhecimento, não |
 | **voz (SAPI do Windows)** | idem — a lógica de fila e corte está testada, o som não |
 | **teclado e mouse (pyautogui)** | sem tela aqui; roda na sua |
 | **WhatsApp Web** | os seletores foram escritos a partir da estrutura conhecida do app. **O WhatsApp muda o HTML sem avisar** — se um dia ele não achar a lista de conversas, é em `ferramentas/whatsapp.py`, e só ali, que se mexe |
@@ -405,7 +483,7 @@ fechadas) e os slides também (arquivo gerado e reaberto).
 
 ## Uma coisa que eu faria no primeiro dia
 
-Rode `jarvis.bat --texto` antes de ligar o microfone. Peça umas dez
+Rode `ultron.bat --texto` antes de ligar o microfone. Peça umas dez
 coisas digitando. Você vai ver exatamente o que ele escolhe fazer, qual
 nível cada ação tem e onde ele pergunta — sem a camada de incerteza do
 reconhecimento de voz no meio. Quando o comportamento estiver do seu

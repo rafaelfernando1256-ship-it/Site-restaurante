@@ -20,6 +20,7 @@ from __future__ import annotations
 import contextlib
 import io
 import json
+import os
 import shutil
 import sys
 import tempfile
@@ -41,7 +42,7 @@ from nucleo.vendas import Caixa, centavos, inicio_do_dia, reais        # noqa: E
 from nucleo.voz import limpa_para_fala                                 # noqa: E402
 
 CASOS: list[tuple[str, object]] = []
-TMP = Path(tempfile.mkdtemp(prefix='jarvis-testes-'))
+TMP = Path(tempfile.mkdtemp(prefix='ultron-testes-'))
 carrega_tudo()
 
 
@@ -861,7 +862,7 @@ def _():
     guarda = {k: os.environ.get(k) for k in
               ('ANTHROPIC_API_KEY', 'GEMINI_API_KEY', 'OPENROUTER_API_KEY',
                'GROQ_API_KEY')}
-    vazio = TMP / 'nao_existe_jarvis.toml'
+    vazio = TMP / 'nao_existe_ultron.toml'
     try:
         for k in guarda:
             os.environ.pop(k, None)
@@ -919,7 +920,7 @@ def _():
 
 @teste('diagnóstico: chave do Gemini recusada não passa por válida')
 def _():
-    import jarvis as J
+    import ultron as J
     import nucleo.modelos as M
     original = M.modelos_gemini, M.gemini
     M.gemini = lambda chave='': object()
@@ -1086,7 +1087,7 @@ def _():
 
 @teste('diagnóstico: token do claude.ai é reconhecido antes de ir à rede')
 def _():
-    import jarvis as J
+    import ultron as J
     bem, detalhe = J._testa_chave(cfg_teste(anthropic='sk-ant-usr-1abcdef'))
     igual(bem, False)
     verdade('token do claude.ai' in detalhe, f'não identificou o token: {detalhe}')
@@ -1100,7 +1101,7 @@ def _():
 def _():
     import types as _t
 
-    import jarvis as J
+    import ultron as J
 
     class Recusa:
         class messages:
@@ -1244,7 +1245,7 @@ def _():
 def _():
     from nucleo.voz import Voz
     import os
-    os.environ['JARVIS_SEM_VOZ'] = '1'
+    os.environ['ULTRON_SEM_VOZ'] = '1'
     v = Voz(cfg_teste())
     for i in range(20):
         v.fala(f'frase {i}')
@@ -1254,6 +1255,175 @@ def _():
 
 
 # ══ corrida ═════════════════════════════════════════════════════════
+# ══ plano: pensar antes, conferir depois ════════════════════════════
+@teste('plano: pergunta passa direto, ação sempre planeja')
+def _():
+    from nucleo.plano import merece_plano
+    for pedido in ('que horas são?', 'qual a capital da França',
+                   'me diz o nome do arquivo', 'como está o tempo'):
+        verdade(not merece_plano(pedido), f'não devia planejar: {pedido}')
+    for pedido in ('apaga o arquivo velho.txt',
+                   'manda mensagem pro cliente',
+                   'roda os testes',
+                   'pega os leads que responderam e depois me resume',
+                   'abre o navegador no painel, confere quantos leads '
+                   'entraram hoje e me fala o total'):
+        verdade(merece_plano(pedido), f'devia planejar: {pedido}')
+
+
+@teste('plano: passo sem critério verificável é denunciado')
+def _():
+    from nucleo.plano import Passo, Plano, sem_verificacao
+    p = Plano(entendi='x', passos=[
+        Passo(o_que='ler os leads', como_sei='a lista volta com 1+ item'),
+        Passo(o_que='mandar o resumo', como_sei='NÃO SEI'),
+        Passo(o_que='arquivar', como_sei=''),
+    ])
+    cegos = [s.o_que for s in sem_verificacao(p)]
+    igual(cegos, ['mandar o resumo', 'arquivar'])
+
+
+@teste('plano: falta de informação vira pergunta, não vira ação')
+def _():
+    from nucleo.plano import Passo, Plano, fala_o_plano
+    p = Plano(entendi='mandar o resumo', pergunta='pra qual número?',
+              passos=[Passo(o_que='mandar', como_sei='o envio confirma')])
+    # a pergunta engole o plano: falar os passos e perguntar na sequência
+    # é como se perde a pergunta no meio da frase.
+    igual(fala_o_plano(p), 'pra qual número?')
+
+
+class CerebroDeMentira(Cerebro):
+    """Um cérebro com o pensamento no lugar do modelo."""
+
+    def __init__(self, *a, plano=None, veredito=None, resposta='pronto', **k):
+        super().__init__(*a, **k)
+        self._plano, self._veredito = plano, veredito
+        self._resposta, self.respondeu = resposta, 0
+
+    def _pensa(self, instrucao, conteudo, esquema):
+        from nucleo.plano import Plano
+        self.visto = conteudo
+        return self._plano if esquema is Plano else self._veredito
+
+    def responde(self, pedido, ao_falar=None):
+        self.respondeu += 1
+        self.atos.append('ferramenta_qualquer() -> feito')
+        if ao_falar:
+            ao_falar(self._resposta)
+        return self._resposta
+
+
+def _de_mentira(**k):
+    cfg = cfg_teste()
+    diario = Diario(TMP / f'p{len(CASOS)}-{time.time_ns()}.db')
+    porteiro = Porteiro(cfg, diario, perguntar_teclado=lambda _: 'nao')
+    ctx = Contexto(cfg=cfg, diario=diario, porteiro=porteiro)
+    return CerebroDeMentira(cfg, diario, porteiro, ctx=ctx, **k), diario
+
+
+@teste('atende: quando o critério não foi atingido, ele diz que não deu')
+def _():
+    from nucleo.plano import Passo, Plano, Veredito as Vd
+    plano = Plano(entendi='mandar o resumo no WhatsApp', passos=[
+        Passo(o_que='mandar a mensagem', como_sei='o envio confirma')])
+    vd = Vd(cumpriu=False, falhou_em='o envio não confirmou',
+            resposta='não deu: a mensagem não saiu.')
+    c, diario = _de_mentira(plano=plano, veredito=vd,
+                            resposta='Mandei o resumo, tudo certo!')
+    dito = []
+    r = c.atende('manda o resumo dos leads no meu WhatsApp', dito.append)
+
+    # o que ele FALA é o veredito, não a narração tranquila do laço
+    verdade('não deu' in r, f'resposta devia admitir a falha: {r!r}')
+    verdade('tudo certo' not in r, f'não devia narrar sucesso: {r!r}')
+    verdade(dito and dito[-1] == r, 'a última fala é a resposta final')
+    # a conferência viu o que ele ia dizer e o que ele fez
+    verdade('ferramenta_qualquer' in c.visto, 'o veredito não viu os atos')
+    verdade('não cumpriu' in json.dumps([dict(x) for x in diario.ultimas(10)],
+                                        ensure_ascii=False, default=str),
+            'a falha não ficou registrada no diário')
+
+
+@teste('atende: faltando informação, pergunta e não age')
+def _():
+    from nucleo.plano import Passo, Plano
+    plano = Plano(entendi='mandar mensagem', pergunta='pra qual número?',
+                  passos=[Passo(o_que='mandar', como_sei='confirma')])
+    c, _ = _de_mentira(plano=plano)
+    r = c.atende('manda uma mensagem pro cliente novo')
+    igual(r, 'pra qual número?')
+    igual(c.respondeu, 0, 'agiu sem a informação que ele mesmo disse faltar')
+
+
+@teste('atende: pergunta simples não vira cerimônia de plano')
+def _():
+    c, _ = _de_mentira(plano=None, resposta='são três da tarde')
+    dito = []
+    igual(c.atende('que horas são?', dito.append), 'são três da tarde')
+    igual(dito, ['são três da tarde'], 'falou plano numa pergunta simples')
+
+
+@teste('atende: planejamento quebrado não impede agir')
+def _():
+    c, _ = _de_mentira(resposta='apaguei o arquivo')
+
+    def explode(*a, **k):
+        raise RuntimeError('modelo fora do ar')
+
+    c._pensa = explode
+    igual(c.atende('apaga o arquivo velho.txt'), 'apaguei o arquivo')
+    igual(c.respondeu, 1)
+
+
+@teste('atende: cada ferramenta usada fica registrada para a conferência')
+def _():
+    alvo = TMP / 'livre' / 'ato.txt'
+    alvo.write_text('oi')
+    c, _, _ = monta_cerebro(FalsoClaude())
+    texto, erro = c.executa('ler_arquivo', {'caminho': str(alvo)})
+    igual(erro, False)
+    igual(len(c.atos), 1)
+    verdade('ler_arquivo' in c.atos[0] and 'oi' in c.atos[0], c.atos[0])
+    # ferramenta que nem existe também é um ato — é falha para conferir
+    c.executa('ferramenta_inventada', {})
+    igual(len(c.atos), 2)
+    verdade('ERRO' in c.atos[1], c.atos[1])
+
+
+# ══ despertar ═══════════════════════════════════════════════════════
+@teste('despertar: o atalho sobe escondido, sem janela e sem esperar')
+def _():
+    import despertar
+    # PureWindowsPath e não Path: rodando o teste no Linux, a `.parent`
+    # de um caminho com barra invertida daria "." e o teste passaria
+    # medindo a máquina errada.
+    from pathlib import PureWindowsPath
+    vbs = despertar._script_vbs(
+        r'C:\Py\pythonw.exe',
+        PureWindowsPath(r'C:\Users\eu\ultron\ultron.py'))
+    # 0 = janela escondida; False = não bloqueia o login esperando
+    verdade(', 0, False' in vbs, f'janela/espera erradas: {vbs}')
+    # caminho com espaço só funciona com as aspas duplicadas do VBS
+    verdade('"""C:\\Py\\pythonw.exe""' in vbs, vbs)
+    # chama "ouvir": modo voz, e não um pedido de uma palavra
+    verdade('ultron.py"" ouvir' in vbs, vbs)
+    # a pasta de trabalho é a do projeto, senão nada acha o config.toml
+    verdade('CurrentDirectory = "C:\\Users\\eu\\ultron"' in vbs, vbs)
+
+
+@teste('despertar: fora do Windows ele diz o que fazer, não mente')
+def _():
+    import despertar
+    if os.name == 'nt':
+        return
+    ligado, recado = despertar.estado()
+    igual(ligado, False)
+    verdade('ouvir' in recado, 'devia dizer qual comando usar à mão')
+    igual(despertar.liga(Path('.'))[0], False)
+
+
+
 def main() -> int:
     ok = falhas = 0
     print()

@@ -1,7 +1,7 @@
 """
 O DIÁRIO
 
-Tudo que o Jarvis faz fica escrito: hora, ferramenta, argumentos,
+Tudo que o Ultron faz fica escrito: hora, ferramenta, argumentos,
 decisão da permissão e o que voltou. Dois motivos, nenhum burocrático:
 
   • quando algo der errado, você precisa saber EXATAMENTE o que ele
@@ -36,7 +36,7 @@ CREATE INDEX IF NOT EXISTS idx_acoes_quando ON acoes(quando);
 CREATE TABLE IF NOT EXISTS conversas (
   id      INTEGER PRIMARY KEY AUTOINCREMENT,
   quando  INTEGER NOT NULL,
-  quem    TEXT NOT NULL,          -- voce | jarvis
+  quem    TEXT NOT NULL,          -- voce | ultron
   texto   TEXT NOT NULL
 );
 
@@ -76,6 +76,18 @@ class Diario:
              str(resultado)[:4000], segundos))
         self.cx.commit()
         return cur.lastrowid
+
+    def anota(self, assunto: str, decisao: str, detalhe: str = '') -> int:
+        """
+        Uma nota que não é ferramenta: plano, veredito, o que ele decidiu.
+
+        Vai na MESMA tabela das ações de propósito. Quando você for
+        entender por que ele fez o que fez, o plano e as ferramentas
+        precisam aparecer na mesma linha do tempo — em tabelas separadas
+        ninguém cruza as duas na hora da dúvida.
+        """
+        return self.acao(assunto, {}, 'nota', decisao, detalhe,
+                         pedido='', segundos=0)
 
     def fala(self, quem: str, texto: str) -> None:
         self.cx.execute('INSERT INTO conversas (quando,quem,texto) VALUES (?,?,?)',

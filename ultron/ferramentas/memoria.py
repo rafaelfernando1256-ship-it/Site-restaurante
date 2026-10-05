@@ -48,7 +48,7 @@ class NadaArgs(BaseModel):
     pass
 
 
-@ferramenta('o_que_voce_fez', 'Conta o que o Jarvis fez hoje: tudo fica registrado.',
+@ferramenta('o_que_voce_fez', 'Conta o que o Ultron fez hoje: tudo fica registrado.',
             NadaArgs, nivel=LIVRE, resumo=lambda a: 'contar o que fiz hoje')
 def o_que_voce_fez(a: NadaArgs, ctx: Contexto) -> str:
     if ctx.diario is None:

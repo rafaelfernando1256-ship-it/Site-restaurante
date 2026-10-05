@@ -31,7 +31,7 @@ _modelo_groq: str = ''
 # chave. O erro parece chave inválida e não é; nenhuma chave passaria.
 # Qualquer User-Agent próprio resolve, e identificar o cliente é o que um
 # cliente de API bem-comportado faz de todo jeito.
-AGENTE_HTTP = ('jarvis/1.0 '
+AGENTE_HTTP = ('ultron/1.0 '
                '(+https://github.com/rafaelfernando1256-ship-it/Site-restaurante)')
 
 ROTA = 'https://openrouter.ai/api/v1'
@@ -41,7 +41,7 @@ GROQ = 'https://api.groq.com/openai/v1'
 # mão. Quem vai dirigir ferramenta precisa seguir esquema bem.
 GOSTO = ('claude', 'gpt-5', 'gpt-4o', 'gemini', 'llama', 'mistral')
 
-# No Groq o critério é o mesmo, com outro catálogo: aqui o Jarvis tem 51
+# No Groq o critério é o mesmo, com outro catálogo: aqui o Ultron tem 51
 # ferramentas na mão, e modelo que não sabe chamar ferramenta responde
 # texto onde devia agir. Kimi e gpt-oss são os que dirigem direito.
 GOSTO_GROQ = ('kimi', 'gpt-oss', 'llama-4', 'llama-3.3', 'qwen', 'llama')
@@ -191,7 +191,7 @@ def dialeto_pede(caminho: str, chave: str, corpo: dict | None = None,
         headers={'Authorization': f'Bearer {chave}',
                  'Content-Type': 'application/json',
                  'User-Agent': AGENTE_HTTP,
-                 'X-Title': 'Jarvis'},
+                 'X-Title': 'Ultron'},
         method='POST' if corpo is not None else 'GET')
     try:
         with urllib.request.urlopen(req, timeout=tempo) as r:

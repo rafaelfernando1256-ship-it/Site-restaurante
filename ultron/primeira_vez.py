@@ -52,13 +52,13 @@ def monta_config() -> str:
 # Segredo não entra aqui — segredo vai no .env.
 
 [geral]
-nome = "Jarvis"
+nome = "Ultron"
 tratamento = "chefe"
 modelo = "claude-opus-5-5"
 voltas_maximas = 24
 
 [voz]
-palavra_chave = "hey jarvis"
+palavra_chave = "hey ultron"
 escuta_sempre = true
 modelo_voz = "pt-BR-AntonioNeural"
 velocidade_voz = "+8%"
@@ -83,7 +83,7 @@ pasta_musica = "{acha_musica()}"
 
 
 def principal() -> int:
-    print('\n  Preparando o Jarvis para esta máquina...\n')
+    print('\n  Preparando o Ultron para esta máquina...\n')
 
     env = RAIZ / '.env'
     if not env.exists():
@@ -132,7 +132,7 @@ def principal() -> int:
         print('             (AQ.... ou AIza... · tem camada gratuita)')
         print()
         print(f'  Abra {env} e preencha a linha da que você escolher.')
-    print('  Depois rode:  jarvis.bat --checar')
+    print('  Depois rode:  ultron.bat --checar')
     print('  ─────────────────────────────────────────────\n')
     return 0
 

@@ -1,5 +1,5 @@
 """
-O núcleo do Jarvis.
+O núcleo do Ultron.
 
     permissao   os três níveis — a peça que torna seguro dar a máquina inteira
     cerebro     o laço: pensa, pede licença, faz, responde

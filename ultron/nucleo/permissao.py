@@ -1,7 +1,7 @@
 """
 A PERMISSÃO — a peça mais importante deste projeto
 
-Você pediu um Jarvis com acesso a tudo. Acesso a tudo é fácil; o que é
+Você pediu um Ultron com acesso a tudo. Acesso a tudo é fácil; o que é
 difícil é acesso a tudo que não destrói a sua máquina num mal-entendido.
 E aqui o mal-entendido não é hipótese: **voz é um canal com erro**. O
 reconhecimento confunde palavra parecida, a TV ao fundo entra no
@@ -173,7 +173,7 @@ class Porteiro:
                 return False
             if r == 'sempre':
                 # Vale só para esta ferramenta, neste nível, nesta sessão.
-                # Fechou o Jarvis, volta a perguntar.
+                # Fechou o Ultron, volta a perguntar.
                 self.liberados.add(chave)
                 return True
             return r == 'sim'

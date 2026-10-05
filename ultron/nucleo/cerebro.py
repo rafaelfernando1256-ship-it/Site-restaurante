@@ -81,6 +81,11 @@ class Motor:
                                    falar=self.falar)
         self.historico: list[Any] = []
         self.ultimo_detalhe = ''
+        self.plano = None
+        # O que ele FEZ neste turno, uma linha por ferramenta. É contra
+        # isto que o veredito confere o plano — sem registro, conferir
+        # viraria o modelo perguntando à própria memória se deu certo.
+        self.atos: list[str] = []
 
     # ── o que o modelo precisa saber antes de decidir ───────────────
     def _sistema(self) -> str:
@@ -101,7 +106,14 @@ class Motor:
 
     # ── executar uma ferramenta, com permissão ──────────────────────
     def executa(self, nome: str, bruto: dict) -> tuple[str, bool]:
-        """Devolve (texto, deu_erro). É aqui que a permissão acontece."""
+        """Devolve (texto, deu_erro), e guarda o ato para a conferência."""
+        texto, erro = self._faz(nome, bruto)
+        self.atos.append(f'{nome}({json.dumps(bruto, ensure_ascii=False)[:200]})'
+                         f' -> {"ERRO: " if erro else ""}{texto[:600]}')
+        return texto, erro
+
+    def _faz(self, nome: str, bruto: dict) -> tuple[str, bool]:
+        """É aqui que a permissão acontece."""
         inicio = time.time()
         f = REGISTRO.get(nome)
         if f is None:
@@ -161,9 +173,120 @@ class Motor:
         if self.diario:
             self.diario.fala('voce', pedido)
 
+    # ── pensar antes de agir ────────────────────────────────────────
+    def planeja(self, pedido: str,
+                ao_falar: Callable[[str], None] | None = None):
+        """
+        Monta o plano, fala em voz alta, e guarda para a conferência.
+
+        Devolve None quando o pedido não merece plano (pergunta simples)
+        ou quando o planejamento falhou — e falhar aqui NÃO impede agir:
+        plano é ajuda, não portão. Transformar erro de planejamento em
+        recusa de atender seria piorar o assistente para parecer
+        cuidadoso.
+        """
+        from nucleo.plano import (INSTRUCAO_PLANO, Plano, fala_o_plano,
+                                  merece_plano, sem_verificacao)
+        if not merece_plano(pedido):
+            return None
+        try:
+            p = self._pensa(INSTRUCAO_PLANO, pedido, Plano)
+        except Exception as e:
+            if self.diario:
+                self.diario.anota('plano', 'falhou', str(e)[:200])
+            return None
+
+        self.plano = p
+        if ao_falar:
+            ao_falar(fala_o_plano(p))
+        # Os passos que ele mesmo disse não saber verificar são a lista
+        # dos que vão falhar calados. Fica no diário mesmo que ninguém
+        # pergunte na hora.
+        cegos = sem_verificacao(p)
+        if cegos and self.diario:
+            self.diario.anota('plano', 'sem verificação',
+                              ' · '.join(s.o_que for s in cegos))
+        return p
+
+    def confere(self, pedido: str, feito: str, plano=None):
+        """O veredito: o que aconteceu bate com o que foi planejado?"""
+        from nucleo.plano import INSTRUCAO_VEREDITO, Veredito
+        plano = plano or getattr(self, 'plano', None)
+        if not plano:
+            return None
+        criterios = '\n'.join(
+            f'- {s.o_que} -> eu disse que saberia por: {s.como_sei}'
+            for s in plano.passos)
+        conteudo = (f'Pedido: {pedido}\n\nO plano que eu fiz:\n{criterios}'
+                    f'\n\nO que de fato aconteceu:\n{feito[:4000]}')
+        try:
+            return self._pensa(INSTRUCAO_VEREDITO, conteudo, Veredito)
+        except Exception:
+            return None
+
+    def _pensa(self, instrucao: str, conteudo: str, esquema):
+        """
+        Uma pergunta ao modelo com saída validada, SEM ferramenta nenhuma.
+
+        Separado do laço de ação de propósito: planejar com as 50
+        ferramentas na mesa faz o modelo começar a usá-las em vez de
+        pensar, e aí o plano vira o trabalho feito às pressas.
+        """
+        raise NotImplementedError(
+            f'{type(self).__name__} não sabe pensar sem ferramenta')
+
+    # ── o turno completo: pensa, age, confere ───────────────────────
+    def atende(self, pedido: str,
+               ao_falar: Callable[[str], None] | None = None) -> str:
+        """
+        O turno inteiro do Ultron: plano → ação → veredito.
+
+        `responde()` continua sendo o laço cru de ferramentas, e continua
+        servindo a quem só quer isso. Quem chama `atende()` recebe a
+        parte que importa: no fim, a frase que ele diz passou por uma
+        conferência contra critérios que ELE escreveu antes de começar —
+        é isso que permite ouvir "não deu" em vez de uma narração
+        tranquila de um trabalho que não aconteceu.
+        """
+        self.plano = None
+        self.atos = []
+        p = self.planeja(pedido, ao_falar)
+
+        # Faltou informação sem a qual o plano não se sustenta: pergunta
+        # e para. Agir no escuro aqui é o erro caro — ele já avisou.
+        if p is not None and p.pergunta:
+            return self._fecha_conversa(p.pergunta)
+
+        # Sem plano (pergunta simples), a fala sai frase a frase como
+        # sempre: esperar o fim para falar faria uma pergunta de dois
+        # segundos parecer lenta.
+        if p is None:
+            return self.responde(pedido, ao_falar=ao_falar)
+
+        # Com plano, o laço trabalha calado. Narrar enquanto age e só
+        # depois descobrir no veredito que não deu é o pior dos mundos:
+        # a pessoa já ouviu "pronto, mandei".
+        resposta = self.responde(pedido)
+
+        feito = '\n'.join(self.atos) or '(nenhuma ferramenta foi usada)'
+        feito += f'\n\nO que ele ia dizer no fim: {resposta}'
+        v = self.confere(pedido, feito, plano=p)
+        final = (v.resposta.strip() if v and v.resposta.strip() else resposta)
+
+        if v and not v.cumpriu:
+            if self.diario:
+                self.diario.anota('plano', 'não cumpriu', v.falhou_em[:300])
+            # A resposta do veredito já começa pelo que falhou. Mas se o
+            # modelo esqueceu de dizer, o fato não pode sumir por isso.
+            if v.falhou_em and v.falhou_em.lower()[:20] not in final.lower():
+                final = f'{final} (falhou em: {v.falhou_em})'
+        if ao_falar:
+            ao_falar(final)
+        return final
+
     def _fecha_conversa(self, resposta: str) -> str:
         if self.diario:
-            self.diario.fala('jarvis', resposta)
+            self.diario.fala('ultron', resposta)
         self._encolhe()
         return resposta
 
@@ -183,6 +306,11 @@ class CerebroClaude(Motor):
             from nucleo.modelos import claude
             self._cli = claude(self.cfg.anthropic)
         return self._cli
+
+    def _pensa(self, instrucao: str, conteudo: str, esquema):
+        from nucleo.modelos import pede_json
+        return pede_json(instrucao, conteudo, esquema, self.cfg.modelo,
+                         cli=self.cliente, max_tokens=2000)
 
     def responde(self, pedido: str, ao_falar: Callable[[str], None] | None = None) -> str:
         self._abre_conversa(pedido)
@@ -289,6 +417,21 @@ class CerebroGemini(Motor):
             max_output_tokens=8000,
         )
 
+    def _pensa(self, instrucao: str, conteudo: str, esquema):
+        from google.genai import types
+        r = self.cliente.models.generate_content(
+            model=self.alvo, contents=conteudo,
+            config=types.GenerateContentConfig(
+                system_instruction=instrucao,
+                response_mime_type='application/json',
+                response_schema=esquema, max_output_tokens=2000,
+                automatic_function_calling=
+                    types.AutomaticFunctionCallingConfig(disable=True)))
+        saida = getattr(r, 'parsed', None)
+        if saida is None:
+            raise RuntimeError('o Gemini não devolveu o JSON do plano')
+        return saida
+
     def responde(self, pedido: str, ao_falar: Callable[[str], None] | None = None) -> str:
         from google.genai import types
         self._abre_conversa(pedido)
@@ -393,6 +536,38 @@ class CerebroRota(Motor):
                               'parameters': e['input_schema']}}
                 for e in catalogo()]
 
+    def _pensa(self, instrucao: str, conteudo: str, esquema):
+        import json as _json
+        import urllib.request
+        from nucleo.modelos import AGENTE_HTTP, modelo_dialeto
+        alvo = modelo_dialeto(self.chave, self.modelo_pedido, self.DIALETO)
+        corpo = {
+            'model': alvo,
+            'messages': [
+                {'role': 'system',
+                 'content': instrucao + '\n\nResponda SÓ com um JSON neste '
+                            'formato:\n'
+                            + _json.dumps(esquema.model_json_schema(),
+                                          ensure_ascii=False)},
+                {'role': 'user', 'content': conteudo}],
+            'max_tokens': 2000,
+            # json_object e não json_schema: a maioria dos modelos do Groq
+            # não aceita esquema, e mandar esquema ali é 400 na cara.
+            'response_format': {'type': 'json_object'},
+        }
+        req = urllib.request.Request(
+            f'{self.dialeto["base"]}/chat/completions',
+            data=_json.dumps(corpo).encode(),
+            headers={'Authorization': f'Bearer {self.chave}',
+                     'Content-Type': 'application/json',
+                     'User-Agent': AGENTE_HTTP, 'X-Title': 'Ultron'})
+        with urllib.request.urlopen(req, timeout=120) as r:
+            d = _json.loads(r.read())
+        bruto = (d.get('choices') or [{}])[0].get('message', {}).get('content', '')
+        limpo = bruto.strip().removeprefix('```json').removeprefix('```')
+        limpo = limpo.removesuffix('```').strip()
+        return esquema.model_validate_json(limpo)
+
     def responde(self, pedido: str, ao_falar: Callable[[str], None] | None = None) -> str:
         from nucleo.modelos import modelo_dialeto
         self._abre_conversa(pedido)
@@ -453,7 +628,7 @@ class CerebroRota(Motor):
                      'Content-Type': 'application/json',
                      # sem isto o Cloudflare do Groq devolve 403/1010
                      'User-Agent': AGENTE_HTTP,
-                     'X-Title': 'Jarvis'})
+                     'X-Title': 'Ultron'})
 
         texto, pendente = '', ''
         chamadas: dict[int, dict] = {}

@@ -14,7 +14,7 @@ Três coisas que cada ferramenta declara:
            que você confirma — então tem que descrever a coisa real,
            não a ferramenta
 
-Ferramenta que depende de pacote opcional não derruba o Jarvis: ela
+Ferramenta que depende de pacote opcional não derruba o Ultron: ela
 simplesmente não entra no catálogo, e ele diz o que falta instalar.
 """
 from __future__ import annotations

@@ -1,7 +1,7 @@
 """
 SLIDES
 
-"Jarvis, monta uma apresentação sobre X" → um .pptx que abre no
+"Ultron, monta uma apresentação sobre X" → um .pptx que abre no
 PowerPoint, no Google Slides e no LibreOffice.
 
 Duas decisões que separam isto de um gerador de slide feio:

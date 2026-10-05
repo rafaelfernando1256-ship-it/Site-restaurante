@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-JARVIS
+ULTRON
 
-    python jarvis.py                 modo voz: diga "Hey Jarvis" e fale
-    python jarvis.py --texto         modo teclado: digita em vez de falar
-    python jarvis.py "abre o chrome" um comando só e sai
-    python jarvis.py --checar        diz o que está instalado e o que falta
-    python jarvis.py --ferramentas   lista tudo que ele sabe fazer
+    python ultron.py                 modo voz: diga "Hey Ultron" e fale
+    python ultron.py --texto         modo teclado: digita em vez de falar
+    python ultron.py "abre o chrome" um comando só e sai
+    python ultron.py --checar        diz o que está instalado e o que falta
+    python ultron.py --ferramentas   lista tudo que ele sabe fazer
 
 No modo voz ele fica quieto até você chamar. A palavra de ativação roda
 na sua máquina; o áudio não sai daqui — só o texto do que você falou, e
@@ -36,7 +36,7 @@ NAO = {'não', 'nao', 'para', 'pare', 'cancela', 'cancelar', 'negativo', 'deixa'
 SEMPRE = {'sempre', 'pode sempre', 'não precisa perguntar', 'nao precisa perguntar'}
 
 PARAR = {'para', 'pare', 'cala', 'calado', 'silêncio', 'silencio', 'chega', 'para tudo'}
-SAIR = {'tchau', 'até logo', 'sair', 'desliga', 'fecha o jarvis', 'bom descanso'}
+SAIR = {'tchau', 'até logo', 'sair', 'desliga', 'fecha o ultron', 'bom descanso'}
 
 
 def faixa(texto: str = '', cor: str = '36') -> None:
@@ -45,7 +45,7 @@ def faixa(texto: str = '', cor: str = '36') -> None:
 
 # ── montagem ────────────────────────────────────────────────────────
 def monta(cfg, modo_voz: bool):
-    diario = Diario(config.DADOS / 'jarvis.db')
+    diario = Diario(config.DADOS / 'ultron.db')
     voz = Voz(cfg, motor='auto' if modo_voz else 'imprime')
     carrega_tudo()
 
@@ -104,9 +104,15 @@ def monta(cfg, modo_voz: bool):
 
 def responde(cerebro, voz, pedido: str, falando: bool) -> str:
     inicio = time.time()
-    resposta = cerebro.responde(pedido, ao_falar=voz.fala if falando else None)
-    if not falando:
-        print(f'\n  {cerebro.cfg.nome}: {resposta}')
+    # `atende` e não `responde`: é o turno com plano antes e conferência
+    # depois. Vale nos dois modos — no teclado o plano aparece escrito,
+    # o que também serve de prévia antes de ele mexer em alguma coisa.
+    if falando:
+        dizer = voz.fala
+    else:
+        def dizer(t: str) -> None:
+            print(f'\n  {cerebro.cfg.nome}: {t}')
+    resposta = cerebro.atende(pedido, ao_falar=dizer)
     print(f'\033[90m  ({time.time() - inicio:.1f}s)\033[0m')
     return resposta
 
@@ -231,7 +237,7 @@ def _testa_chave_gemini(cfg) -> tuple[bool, str]:
         return False, 'falta instalar: python -m pip install google-genai'
     try:
         # modelos_gemini e NÃO resolve_modelo_gemini: o resolvedor engole a
-        # exceção de propósito (para não derrubar o Jarvis por causa do
+        # exceção de propósito (para não derrubar o Ultron por causa do
         # catálogo), e engolir aqui faria uma chave falsa passar por válida.
         from nucleo.modelos import modelos_gemini
         cli = gemini(cfg.gemini)
@@ -420,8 +426,25 @@ def lista_ferramentas() -> int:
 
 
 # ── entrada ─────────────────────────────────────────────────────────
+def comanda_despertar(ligar: bool, desligar: bool) -> int:
+    """`ultron.py despertar [--ligar|--desligar]`."""
+    import despertar
+    raiz = Path(__file__).resolve().parent
+    if ligar and desligar:
+        faixa('  escolha um: --ligar ou --desligar.', '31')
+        return 2
+    if ligar:
+        bem, recado = despertar.liga(raiz)
+    elif desligar:
+        bem, recado = despertar.desliga()
+    else:
+        bem, recado = despertar.estado()
+    faixa(f'  {recado}', '32' if bem else '33')
+    return 0 if bem or not (ligar or desligar) else 1
+
+
 def principal(argv: list[str] | None = None) -> int:
-    p = argparse.ArgumentParser(prog='jarvis', description=__doc__,
+    p = argparse.ArgumentParser(prog='ultron', description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument('pedido', nargs='*', help='um comando só, sem entrar no laço')
     p.add_argument('--texto', action='store_true', help='teclado em vez de voz')
@@ -429,7 +452,20 @@ def principal(argv: list[str] | None = None) -> int:
     p.add_argument('--checar', action='store_true', help='o que está instalado')
     p.add_argument('--ferramentas', action='store_true', help='lista o que ele sabe fazer')
     p.add_argument('--config', type=Path, help='outro config.toml')
+    p.add_argument('--ligar', action='store_true',
+                   help='com "despertar": sobe junto com o notebook')
+    p.add_argument('--desligar', action='store_true',
+                   help='com "despertar": para de subir junto')
     a = p.parse_args(argv)
+
+    # Duas palavras reservadas no lugar do pedido. "ouvir" é o que o
+    # atalho da inicialização chama, e tem que cair no modo voz em vez
+    # de virar um pedido de uma palavra.
+    primeira = a.pedido[0].lower() if a.pedido else ''
+    if primeira == 'despertar':
+        return comanda_despertar(a.ligar, a.desligar)
+    if primeira == 'ouvir' and len(a.pedido) == 1:
+        a.pedido, a.voz = [], True
 
     cfg = config.carrega(a.config)
 

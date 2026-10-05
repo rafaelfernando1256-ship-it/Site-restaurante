@@ -2,11 +2,11 @@
 O COMPUTADOR — terminal, teclado, mouse, janelas, som.
 
 Tudo que é específico de sistema fica aqui, atrás de uma função só, para
-o resto do Jarvis não precisar saber se está no Windows ou no Linux.
+o resto do Ultron não precisar saber se está no Windows ou no Linux.
 
 Os pacotes de automação de tela (pyautogui, pygetwindow) entram DENTRO
 das funções, não no topo: se faltarem, só aquela ferramenta avisa o que
-instalar — o Jarvis inteiro continua de pé.
+instalar — o Ultron inteiro continua de pé.
 """
 from __future__ import annotations
 

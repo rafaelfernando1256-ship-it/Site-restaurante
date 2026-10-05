@@ -54,7 +54,7 @@ class Voz:
         self._linha.start()
 
     def _escolhe(self) -> str:
-        if os.environ.get('JARVIS_SEM_VOZ') == '1':
+        if os.environ.get('ULTRON_SEM_VOZ') == '1':
             return 'imprime'
         try:
             import pyttsx3                      # noqa: F401
@@ -129,7 +129,7 @@ class Voz:
         import asyncio
 
         import edge_tts
-        destino = Path(tempfile.gettempdir()) / f'jarvis-{int(time.time() * 1000)}.mp3'
+        destino = Path(tempfile.gettempdir()) / f'ultron-{int(time.time() * 1000)}.mp3'
 
         async def gera():
             com = edge_tts.Communicate(texto, self.cfg.modelo_voz,

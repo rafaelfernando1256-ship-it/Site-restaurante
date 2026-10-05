@@ -7,7 +7,7 @@ ele continua logado nas próximas vezes.
 
 Por que perfil próprio e não o seu Chrome do dia a dia: o Chrome tranca
 a pasta do perfil enquanto está aberto. Apontar para o seu perfil faria
-o Jarvis falhar toda vez que você estivesse navegando — que é sempre.
+o Ultron falhar toda vez que você estivesse navegando — que é sempre.
 Com perfil próprio, os dois convivem.
 
 Ele enxerga as abas como você: lista, troca, fecha, abre. "Fecha essa
@@ -48,13 +48,13 @@ class Navegador:
         self._pw = sync_playwright().start()
         pasta = Path(self.cfg.perfil_navegador or PERFIL).expanduser()
         pasta.mkdir(parents=True, exist_ok=True)
-        # JARVIS_HEADLESS=1 roda sem janela (serve para teste e para máquina
-        # sem tela); JARVIS_CHROME aponta um executável fora do lugar comum.
-        escondido = os.environ.get('JARVIS_HEADLESS') == '1'
+        # ULTRON_HEADLESS=1 roda sem janela (serve para teste e para máquina
+        # sem tela); ULTRON_CHROME aponta um executável fora do lugar comum.
+        escondido = os.environ.get('ULTRON_HEADLESS') == '1'
         opcoes = dict(user_data_dir=str(pasta), headless=escondido,
                       viewport=None if not escondido else {'width': 1280, 'height': 900},
                       args=[] if escondido else ['--start-maximized'])
-        exe = os.environ.get('JARVIS_CHROME', '')
+        exe = os.environ.get('ULTRON_CHROME', '')
         if exe:
             self.ctx = self._pw.chromium.launch_persistent_context(
                 executable_path=exe, **opcoes)

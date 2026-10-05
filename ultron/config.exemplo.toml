@@ -1,7 +1,7 @@
 # Copie para config.toml. Segredo não entra aqui — segredo vai no .env.
 
 [geral]
-nome = "Jarvis"
+nome = "Ultron"
 tratamento = "chefe"          # como ele te chama
 
 # Quem DECIDE e usa as 51 ferramentas: "claude", "gemini", "openrouter"
@@ -16,7 +16,7 @@ modelo_groq = ""                    # idem — e o do Groq muda bastante
 voltas_maximas = 24           # teto de ferramentas numa tarefa só
 
 [voz]
-palavra_chave = "hey jarvis"
+palavra_chave = "hey ultron"
 escuta_sempre = true
 modelo_voz = "pt-BR-AntonioNeural"   # vale para a voz neural (edge-tts)
 velocidade_voz = "+8%"
@@ -47,9 +47,9 @@ modo_livre = false            # true = não pergunta em nível CUIDADO.
 # O banco do projeto funil/, para responder "quantos clientes em negociação"
 funil_db = "C:/Users/SEU_USUARIO/Site-restaurante/funil/dados/funil.db"
 
-# Pasta do perfil do Chrome que o Jarvis controla. Deixe vazio para ele
+# Pasta do perfil do Chrome que o Ultron controla. Deixe vazio para ele
 # usar um perfil próprio (recomendado: o Chrome tranca o perfil que já
-# está aberto, e aí o Jarvis falharia sempre que você estivesse usando).
+# está aberto, e aí o Ultron falharia sempre que você estivesse usando).
 perfil_navegador = ""
 
 # As conversas de onde sai o faturamento. Nome exato, como aparece no

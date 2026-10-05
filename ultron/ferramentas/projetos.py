@@ -1,11 +1,11 @@
 """
 PROJETOS
 
-"Jarvis, cria um site para a pizzaria do Marcos" — e ele cria, sozinho,
+"Ultron, cria um site para a pizzaria do Marcos" — e ele cria, sozinho,
 um projeto inteiro.
 
 Quem escreve o código é o **Claude Code**, em modo não interativo
-(`claude -p`), rodando dentro da pasta nova. Não é o Jarvis gerando
+(`claude -p`), rodando dentro da pasta nova. Não é o Ultron gerando
 arquivo por arquivo pelo chat: é a ferramenta certa para a tarefa, com
 contexto de projeto, build e correção de erro.
 
@@ -102,7 +102,7 @@ class VerArgs(BaseModel):
     nome: str = Field(default='', description='Qual projeto. Vazio = o último.')
 
 
-@ferramenta('ver_projetos', 'Diz como estão os projetos que o Jarvis está construindo.',
+@ferramenta('ver_projetos', 'Diz como estão os projetos que o Ultron está construindo.',
             VerArgs, nivel=LIVRE, resumo=lambda a: 'ver como estão os projetos')
 def ver_projetos(a: VerArgs, ctx: Contexto) -> str:
     if not OBRAS:
