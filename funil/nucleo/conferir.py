@@ -213,6 +213,33 @@ def testa_navegador() -> tuple[str, str]:
 
 
 # ── a função ────────────────────────────────────────────────────────
+def testa_fotos() -> tuple[str, str]:
+    """
+    A prévia usa o acervo de fotos do projeto `conteudo`. Sem chave ela
+    sai com uma capa de CSS — o que é aceitável e proposital, mas tem
+    que estar ESCRITO aqui. Sair sem foto e sem explicação é o jeito
+    mais fácil de você achar que o gerador está quebrado.
+    """
+    import sys as _sys
+    raiz = Path(__file__).resolve().parent.parent.parent / 'conteudo'
+    if not (raiz / 'motor' / 'imagens.py').exists():
+        return 'talvez', (f'não achei {raiz} — a prévia sai com capa de '
+                         'CSS em vez de foto')
+    if str(raiz) not in _sys.path:
+        _sys.path.insert(0, str(raiz))
+    try:
+        from motor import imagens
+    except Exception as e:
+        return 'talvez', f'não consegui carregar o acervo ({e}) — capa de CSS'
+    tem = imagens.chaves_configuradas()
+    if not tem:
+        return 'talvez', ('nenhuma chave de foto — a prévia sai com capa de '
+                         'CSS. Para ter foto, ponha PIXABAY_API_KEY ou '
+                         'UNSPLASH_ACCESS_KEY no .env (deste projeto ou do '
+                         'conteudo)')
+    return 'ok', ', '.join(tem) + ' — a capa da prévia sai com foto'
+
+
 def confere(cfg, com_rede: bool = True) -> int:
     """Devolve 0 quando dá para trabalhar, 1 quando falta o essencial."""
     print(f'\n  FUNIL — diagnóstico\n')
@@ -234,6 +261,10 @@ def confere(cfg, com_rede: bool = True) -> int:
                 ('Netlify', cfg.netlify, 'NETLIFY_TOKEN')):
             _linha('ok' if valor else 'ruim', nome,
                    'preenchida' if valor else f'falta {var} no .env')
+        # O acervo de foto não precisa de rede para ser conferido: a
+        # pergunta é se existe chave, não se o site responde.
+        estado, detalhe = testa_fotos()
+        _linha(estado, 'acervo de fotos (capa da prévia)', detalhe)
         print('\n  (modo --seco: só olhei se está preenchido. Sem --seco eu '
               'testo as chaves de verdade.)\n')
         return 0
@@ -261,6 +292,9 @@ def confere(cfg, com_rede: bool = True) -> int:
 
     estado, detalhe = testa_navegador()
     _linha(estado, 'navegador (Instagram e WhatsApp Web)', detalhe)
+
+    estado, detalhe = testa_fotos()
+    _linha(estado, 'acervo de fotos (capa da prévia)', detalhe)
 
     # As chaves dos OUTROS provedores. Valem como reserva: se o seu cair
     # (503, cota, modelo aposentado), trocar é uma linha em config.toml.

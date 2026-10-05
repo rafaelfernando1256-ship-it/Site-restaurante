@@ -47,9 +47,9 @@ TERMOS_HOSPEDAGEM = [
 RAMOS = {'comida': TERMOS, 'hospedagem': TERMOS_HOSPEDAGEM}
 
 
-def _carrega_env() -> None:
+def _carrega_env(arquivo: Path | None = None) -> None:
     """Lê o `.env` sem dependência, sem sobrescrever o que já está no ambiente."""
-    arquivo = RAIZ / '.env'
+    arquivo = arquivo or (RAIZ / '.env')
     if not arquivo.exists():
         return
     for linha in arquivo.read_text(encoding='utf-8').splitlines():
@@ -64,6 +64,11 @@ def _carrega_env() -> None:
 
 
 _carrega_env()
+# As chaves de FOTO moram no .env do projeto `conteudo` — foi lá que
+# elas foram cadastradas. A prévia usa o acervo de lá, então sem esta
+# linha ela sairia sem foto nenhuma e sem dizer por quê, que é o pior
+# jeito de uma coisa não funcionar.
+_carrega_env(RAIZ.parent / 'conteudo' / '.env')
 
 
 @dataclass

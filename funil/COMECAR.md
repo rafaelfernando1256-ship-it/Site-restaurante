@@ -24,6 +24,37 @@ python -m pip install -r requirements.txt
 **Confirme:** `python funil.py conferir --seco` tem de imprimir o
 diagnóstico. Se der erro de comando, você está na pasta errada.
 
+
+---
+
+## Atalho — a prévia antes da venda (10 min, sem chave nenhuma)
+
+Se você quer o caminho mais curto até um site pronto para mandar, **pule
+os passos 1 a 5**. Este fluxo não precisa de Places, nem de Claude, nem
+de Gemini:
+
+```powershell
+python funil.py planilha                  # cria planilha.csv com 3 exemplos
+notepad planilha.csv                      # apague os exemplos, ponha os seus
+python funil.py importar planilha.csv
+python funil.py previa                    # os sites, em segundos
+```
+
+Abra o `index.html` que ele imprimir e confira. Para publicar e mandar o
+link você precisa só do **token da Netlify** (passo 4):
+
+```powershell
+python funil.py publicar
+python funil.py oferta
+python funil.py revisar
+python funil.py aprovar --todas
+python funil.py enviar --abrir
+```
+
+O manual completo deste caminho — colunas da planilha, preço, os cinco
+toques de seguimento e os serviços recorrentes — está em
+**[PREVIA.md](PREVIA.md)**.
+
 ---
 
 ## Passo 1 — A chave da Places API (15 min)

@@ -15,6 +15,11 @@ chave de API nenhuma** e em segundos por negócio.
                                                       VOCÊ lê, aprova e manda
 ```
 
+
+> **No Windows, escreva `python` e não `python3`.** Os comandos abaixo
+> estão com `python3` porque é o que funciona no Mac e no Linux; no
+> PowerShell, `python3` abre a loja da Microsoft em vez de rodar nada.
+
 ---
 
 ## O que fica onde
