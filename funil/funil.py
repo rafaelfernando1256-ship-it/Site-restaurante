@@ -126,7 +126,7 @@ def cmd_cacar(a, cfg) -> int:
     if not cidade:
         print('diga a cidade: --cidade "Natal, RN"', file=sys.stderr)
         return 2
-    termos = a.termos or cfg.termos
+    termos = a.termos or (config.RAMOS[a.ramo] if a.ramo else cfg.termos)
     with _estado(cfg) as est:
         print(f'\nAgente 1 — caçando em {cidade} ({len(termos)} termos)\n')
         c = a1_cacador.caca(est, cfg.google_places, cidade, termos,
@@ -792,6 +792,9 @@ def principal(argv: list[str] | None = None) -> int:
     s = sub.add_parser('cacar', help='AGENTE 1 — acha restaurante sem site')
     s.add_argument('--cidade', help='"Natal, RN"')
     s.add_argument('--termos', nargs='*', help='sobrepõe os termos do config')
+    s.add_argument('--ramo', choices=['comida', 'hospedagem'], default='',
+                   help='"hospedagem" caça pousada e hotel — é onde mora a '
+                        'conversa da comissão de OTA')
     s.add_argument('--paginas', type=int, default=3)
     s.add_argument('--minimo', type=int, default=4, help='pontuação mínima (0-10)')
 

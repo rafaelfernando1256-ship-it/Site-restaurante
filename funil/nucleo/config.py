@@ -35,6 +35,17 @@ TERMOS = [
     'comida nordestina', 'sorveteria', 'tapiocaria',
 ]
 
+# Hospedagem é outro ramo e outra venda: aqui o dono já paga comissão de
+# OTA todo mês, e a conversa começa num número que ele conhece de cor.
+# Fica em lista separada porque misturar os dois numa busca só gasta
+# cota da Places e volta com lead de dois tipos no mesmo lote.
+TERMOS_HOSPEDAGEM = [
+    'pousada', 'hotel', 'hostel', 'chalé para alugar', 'flat',
+    'pousada à beira-mar', 'hotel fazenda', 'casa de temporada',
+]
+
+RAMOS = {'comida': TERMOS, 'hospedagem': TERMOS_HOSPEDAGEM}
+
 
 def _carrega_env() -> None:
     """Lê o `.env` sem dependência, sem sobrescrever o que já está no ambiente."""
