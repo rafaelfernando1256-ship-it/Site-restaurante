@@ -13,6 +13,9 @@ modelo_groq = ""                    # idem — e o catálogo do Groq muda bastan
 
 cidade = "Natal, RN"
 
+# Seu nome: assina a mensagem e o aviso de prévia no rodapé do site.
+autor = "Rafael"
+
 # "link" = o agente escreve, você clica e manda (padrão, e o que mantém
 # o seu número vivo). "cloud" = Cloud API oficial, exige conta aprovada.
 canal_envio = "link"

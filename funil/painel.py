@@ -19,13 +19,14 @@ from pathlib import Path
 from nucleo.estado import Estado
 
 ORDEM = ['rascunho', 'novo', 'abordado', 'respondeu', 'quer_demo', 'demo_pronta',
-         'publicado', 'sem_resposta', 'sem_interesse', 'fechado', 'descartado']
+         'publicado', 'negociando', 'sem_resposta', 'sem_interesse', 'fechado',
+         'descartado']
 
 COR = {
     'rascunho': '#d97706', 'novo': '#64748b', 'abordado': '#2563eb',
     'respondeu': '#7c3aed', 'quer_demo': '#059669', 'demo_pronta': '#0d9488',
     'publicado': '#16a34a', 'sem_resposta': '#78716c', 'sem_interesse': '#9f1239',
-    'fechado': '#15803d', 'descartado': '#525252',
+    'fechado': '#15803d', 'descartado': '#525252', 'negociando': '#b45309',
 }
 
 CSS = """
@@ -74,6 +75,14 @@ code{background:var(--fundo);border:1px solid var(--borda);border-radius:6px;
 .aviso{background:var(--cartao);border:1px solid var(--borda);
   border-left:3px solid #d97706;border-radius:8px;padding:12px 14px;
   font-size:.875rem;margin:0 0 28px}
+/* o quadro comercial: seis números grandes, que é o que você olha
+   antes de abrir qualquer outra coisa */
+.quadro{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 20px}
+.quadro .col{background:var(--cartao);border:1px solid var(--borda);
+  border-radius:10px;padding:14px 10px;text-align:center}
+.quadro .n2{display:block;font-size:1.6rem;font-weight:700;line-height:1.1}
+.quadro .rot{display:block;font-size:.75rem;color:var(--fraco);margin-top:4px}
+@media (min-width:640px){.quadro{grid-template-columns:repeat(6,1fr)}}
 @media (max-width:480px){.env{padding:20px 14px 60px}.topo{display:block}}
 """
 
@@ -120,6 +129,15 @@ def gera(est: Estado, cfg) -> Path:
         f'<li><span class="bola" style="background:{COR.get(e, "#999")}"></span>'
         f'{e.replace("_", " ")} <strong>{resumo[e]}</strong></li>'
         for e in ORDEM if resumo.get(e))
+
+    # O quadro que responde à pergunta que você faz de manhã: quantos
+    # estão em cada ponto da VENDA. A fita de cima conta estados do
+    # sistema; esta conta dinheiro em potencial, que é outra conversa.
+    from nucleo.estado import COMERCIAIS
+    quadro = ''.join(
+        f'<div class="col"><span class="n2">{sum(resumo.get(e, 0) for e in es)}</span>'
+        f'<span class="rot">{nome}</span></div>'
+        for nome, es in COMERCIAIS)
 
     blocos = []
 
@@ -172,14 +190,27 @@ def gera(est: Estado, cfg) -> Path:
             itens.append(cartao.replace('</article>', acao + '</article>'))
         blocos.append(('Site pronto — mande o link', len(entregas), ''.join(itens), ''))
 
-    for estado in ('quer_demo', 'novo', 'abordado', 'respondeu', 'publicado'):
+    for estado in ('demo_pronta', 'quer_demo', 'novo', 'abordado', 'respondeu',
+                   'negociando', 'publicado', 'sem_resposta', 'fechado',
+                   'sem_interesse'):
         leads = est.leads(estado, limite=60)
         if not leads:
             continue
         dica = {
             'quer_demo': 'Ponha as capturas do Instagram em '
                          f'{cfg.material}/&lt;slug&gt;/ e rode: python3 funil.py construir',
-            'novo': 'Rode: python3 funil.py escrever',
+            'novo': 'Prévia antes da venda: python3 funil.py previa · '
+                    'ou contato frio: python3 funil.py escrever',
+            'demo_pronta': 'A prévia está pronta no disco. Publique: '
+                           'python3 funil.py publicar',
+            'publicado': 'No ar. Escreva a mensagem com o link: '
+                         'python3 funil.py oferta',
+            'abordado': 'Mandou e ele não respondeu? Os cinco toques: '
+                        'python3 funil.py seguir --lead &lt;id&gt;',
+            'sem_resposta': 'python3 funil.py seguir --lead &lt;id&gt; --passo 2',
+            'respondeu': 'Conversando preço? python3 funil.py negociando &lt;id&gt;',
+            'negociando': 'Fechou: python3 funil.py fechado &lt;id&gt; · '
+                          'Não deu: python3 funil.py perdido &lt;id&gt;',
         }.get(estado, '')
         blocos.append((estado.replace('_', ' '), len(leads),
                        ''.join(_cartao_lead(est, l) for l in leads), dica))
@@ -205,6 +236,7 @@ def gera(est: Estado, cfg) -> Path:
 <p class="aviso"><strong>Nada daqui dispara sozinho.</strong> Os botões abrem o
 WhatsApp com a mensagem escrita; quem aperta enviar é você. Depois de enviar,
 rode o comando que aparece embaixo do botão para o funil andar.</p>
+<div class="quadro">{quadro}</div>
 <ul class="fita">{fita}</ul>
 {corpo}
 </div></body></html>"""

@@ -42,6 +42,34 @@ E transição inválida levanta erro em vez de corromper o funil em
 silêncio. Um pipeline que roda sozinho precisa de erro barulhento, não
 de dado errado.
 
+
+---
+
+## Dois caminhos para a mesma venda
+
+O que está desenhado acima é o **contato frio**: acha, aborda, e só
+constrói o site para quem respondeu que quer ver.
+
+Existe o inverso, e é o mais rápido de operar: **a prévia antes da
+venda**. Você preenche uma planilha, ele monta o site de demonstração em
+segundos (sem chave de API nenhuma, com três modelos visuais escritos à
+mão), publica e escreve a mensagem com o link dentro.
+
+```bash
+python3 funil.py planilha                 # cria a planilha que você preenche
+python3 funil.py importar planilha.csv
+python3 funil.py previa                   # o site, em segundos
+python3 funil.py publicar                 # link no ar
+python3 funil.py oferta                   # a mensagem, com o link
+```
+
+O passo a passo inteiro — com as colunas da planilha, as faixas de
+preço, os cinco toques de seguimento e os serviços recorrentes — está em
+**[PREVIA.md](PREVIA.md)**.
+
+Os dois caminhos usam o mesmo banco, o mesmo painel e o mesmo envio: um
+abre a porta, o outro fecha a venda.
+
 ---
 
 ## Antes de tudo

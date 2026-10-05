@@ -98,6 +98,10 @@ class Config:
     modelo_openrouter: str = MODELO_OPENROUTER
     modelo_groq: str = MODELO_GROQ
     cidade: str = ''
+    # Seu nome. Aparece no aviso de prévia no rodapé do site e na
+    # assinatura da mensagem — sem ele, a prévia diz "um desenvolvedor
+    # local", que funciona mas não constrói nome nenhum.
+    autor: str = 'um desenvolvedor local'
     canal_envio: str = 'link'      # link (padrão) | cloud
     equipe_netlify: str = 'conta5197-99'
     termos: list[str] = field(default_factory=lambda: list(TERMOS))
@@ -201,6 +205,7 @@ def carrega(caminho: Path | None = None) -> Config:
             if campo in colonia:
                 setattr(c, destino, int(colonia[campo]))
         c.cidade = g.get('cidade', c.cidade)
+        c.autor = g.get('autor', c.autor)
         c.canal_envio = g.get('canal_envio', c.canal_envio)
         c.equipe_netlify = g.get('equipe_netlify', c.equipe_netlify)
         if g.get('termos'):

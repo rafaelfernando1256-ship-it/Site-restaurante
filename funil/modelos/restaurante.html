@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>{{nome}} — {{tipo}}{{#cidade}} em {{cidade}}{{/cidade}}</title>
+<meta name="description" content="Prévia de demonstração de site para {{nome}}.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ── MODELO 1 · RESTAURANTE E LANCHONETE ──────────────────────────
+     Escuro e quente. Comida aparece em fundo escuro: é por isso que
+     quase todo cardápio impresso é preto. Laranja queimado no lugar do
+     vermelho de praxe — vermelho puro em tela grita e envelhece mal. */
+  :root{
+    --tinta:#120f0d; --papel:#f7f1e8; --carne:#e8762c; --brasa:#c2410c;
+    --fumaca:#2a211c; --linha:rgba(247,241,232,.14); --suave:#c9bcae;
+    --raio:16px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--tinta);color:var(--papel);
+       font:400 17px/1.65 Inter,system-ui,sans-serif;
+       -webkit-font-smoothing:antialiased;overflow-x:hidden}
+  h1,h2,h3{font-family:Fraunces,Georgia,serif;line-height:1.08;letter-spacing:-.02em}
+  a{color:inherit}
+  .env{width:min(100% - 32px,1060px);margin-inline:auto}
+
+  /* a faixa de prévia: discreta, mas impossível de não ver */
+  .previa{position:sticky;top:0;z-index:40;background:var(--brasa);
+    color:#fff;font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;
+    font-weight:600;text-align:center;padding:7px 14px}
+
+  /* ── capa ── */
+  header{position:relative;min-height:84svh;display:grid;align-items:end;
+    padding:120px 0 56px;isolation:isolate}
+  header .foto{position:absolute;inset:0;z-index:-2;object-fit:cover;
+    width:100%;height:100%}
+  header::after{content:"";position:absolute;inset:0;z-index:-1;
+    background:linear-gradient(180deg,rgba(18,15,13,.55) 0%,rgba(18,15,13,.72) 45%,var(--tinta) 100%)}
+  /* Sem foto, 84svh viram um retângulo preto e o site parece quebrado.
+     A capa encolhe para o tamanho do texto e o gradiente sobe de
+     intensidade: vazio proposital, não vazio por falta. */
+  header.sem-foto{min-height:auto;padding:76px 0 52px;background:
+    radial-gradient(760px 420px at 14% -8%,rgba(232,118,44,.52),transparent 64%),
+    radial-gradient(620px 460px at 92% 12%,rgba(194,65,12,.38),transparent 62%),
+    linear-gradient(180deg,#1d1512,var(--tinta))}
+  header.sem-foto::after{display:none}
+  .chapeu{display:inline-block;font-size:13px;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--carne);font-weight:600;margin-bottom:14px}
+  h1{font-size:clamp(2.6rem,10vw,5rem);font-weight:800}
+  .sub{margin-top:14px;font-size:clamp(1rem,3.6vw,1.22rem);color:var(--suave);max-width:46ch}
+
+  /* ── botões ── */
+  .acoes{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
+  .bt{display:inline-flex;align-items:center;gap:9px;padding:15px 24px;
+    border-radius:999px;font-weight:600;text-decoration:none;font-size:16px;
+    transition:transform .15s ease,filter .15s ease}
+  .bt:active{transform:translateY(1px)}
+  .bt-1{background:var(--carne);color:#1a0e05}
+  .bt-1:hover{filter:brightness(1.08)}
+  .bt-2{background:rgba(247,241,232,.09);color:var(--papel);
+    border:1px solid var(--linha);backdrop-filter:blur(6px)}
+
+  section{padding:64px 0}
+  h2{font-size:clamp(1.7rem,6vw,2.5rem);margin-bottom:8px}
+  .olho{color:var(--carne);font-size:13px;letter-spacing:.16em;
+    text-transform:uppercase;font-weight:600;margin-bottom:10px}
+
+  /* ── cardápio ── */
+  .menu{list-style:none;margin-top:28px;display:grid;gap:12px}
+  .menu li{background:var(--fumaca);border:1px solid var(--linha);
+    border-radius:var(--raio);padding:20px 22px;display:flex;
+    align-items:center;gap:14px}
+  .menu li::before{content:"";width:7px;height:7px;border-radius:50%;
+    background:var(--carne);flex:none}
+  .item{font-family:Fraunces,serif;font-size:1.22rem;font-weight:600}
+  .nota{margin-top:16px;font-size:14.5px;color:var(--suave)}
+
+  /* ── galeria ── */
+  .galeria{display:grid;gap:12px;grid-template-columns:1fr;margin-top:26px}
+  .galeria img{width:100%;height:240px;object-fit:cover;border-radius:var(--raio)}
+
+  /* ── visita ── */
+  .cartoes{display:grid;gap:14px;margin-top:26px}
+  .cartao{background:var(--fumaca);border:1px solid var(--linha);
+    border-radius:var(--raio);padding:22px}
+  .cartao h3{font-size:1.05rem;letter-spacing:.1em;text-transform:uppercase;
+    font-family:Inter,sans-serif;color:var(--carne);margin-bottom:8px;font-weight:600}
+  .cartao p{color:var(--papel)}
+  .mapa{margin-top:22px;border-radius:var(--raio);overflow:hidden;
+    border:1px solid var(--linha);line-height:0;background:var(--fumaca)}
+  .mapa iframe{width:100%;height:300px;border:0;filter:grayscale(.3) contrast(1.05)}
+
+  /* ── chamada final ── */
+  .fim{background:linear-gradient(135deg,var(--brasa),var(--carne));
+    color:#1a0e05;border-radius:24px;padding:46px 30px;text-align:center;margin:10px 0 60px}
+  .fim h2{color:#1a0e05}
+  .fim .bt-1{background:#1a0e05;color:var(--carne);margin-top:22px}
+
+  footer{border-top:1px solid var(--linha);padding:34px 0 120px;
+    font-size:13.5px;color:var(--suave)}
+  footer p + p{margin-top:10px}
+  footer strong{color:var(--papel)}
+
+  /* o botão que fica: no celular, o polegar vive aqui embaixo */
+  .flutua{position:fixed;right:16px;bottom:16px;z-index:50;
+    background:#25D366;color:#06281a;border-radius:999px;padding:15px 22px;
+    font-weight:700;text-decoration:none;display:inline-flex;gap:9px;
+    align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.45)}
+
+  @media (min-width:720px){
+    .galeria{grid-template-columns:1fr 1fr}
+    .cartoes{grid-template-columns:repeat(3,1fr)}
+    .menu{grid-template-columns:1fr 1fr}
+    section{padding:84px 0}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<div class="previa">Prévia · site de demonstração</div>
+
+<header class="{{^tem_hero}}sem-foto{{/tem_hero}}">
+  {{#tem_hero}}<img class="foto" src="{{hero}}" alt="Imagem de exemplo">{{/tem_hero}}
+  <div class="env">
+    <span class="chapeu">{{tipo}}{{#cidade}} · {{cidade}}{{/cidade}}</span>
+    <h1>{{nome}}</h1>
+    <p class="sub">{{#tem_telefone}}Peça pelo WhatsApp ou venha comer com a gente.{{/tem_telefone}}{{^tem_telefone}}O jeito mais rápido de conhecer a casa.{{/tem_telefone}}</p>
+    <div class="acoes">
+      {{#tem_telefone}}<a class="bt bt-1" href="{{whats}}">Pedir pelo WhatsApp</a>{{/tem_telefone}}
+      {{#tem_mapa}}<a class="bt bt-2" href="{{mapa_busca}}" target="_blank" rel="noopener">Como chegar</a>{{/tem_mapa}}
+    </div>
+  </div>
+</header>
+
+{{#itens}}
+<section class="env" id="cardapio">
+  <p class="olho">Da casa</p>
+  <h2>O que a gente faz</h2>
+  <ul class="menu">
+{{&cardapio_html}}
+  </ul>
+  <p class="nota">Cardápio completo e valores: fale com a casa pelo WhatsApp.</p>
+</section>
+{{/itens}}
+
+{{#tem_galeria}}
+<section class="env">
+  <p class="olho">Ambiente</p>
+  <h2>Um gostinho</h2>
+  <div class="galeria">
+{{&galeria_html}}
+  </div>
+  <p class="nota">Imagens de exemplo — entram as fotos da casa na versão final.</p>
+</section>
+{{/tem_galeria}}
+
+<section class="env" id="visita">
+  <p class="olho">Visite</p>
+  <h2>Onde e quando</h2>
+  <div class="cartoes">
+    {{#tem_endereco}}<div class="cartao"><h3>Endereço</h3><p>{{endereco}}{{#cidade}}<br>{{cidade}}{{/cidade}}</p></div>{{/tem_endereco}}
+    <div class="cartao"><h3>Horário</h3><p>{{horario}}</p></div>
+    {{#tem_telefone}}<div class="cartao"><h3>Contato</h3><p><a href="{{tel_link}}">{{telefone}}</a>{{#tem_instagram}}<br><a href="{{instagram_url}}" target="_blank" rel="noopener">{{instagram}}</a>{{/tem_instagram}}</p></div>{{/tem_telefone}}
+  </div>
+  {{#tem_mapa}}
+  <div class="mapa"><iframe src="{{mapa_embed}}" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Mapa de {{nome}}"></iframe></div>
+  <p class="nota"><a href="{{mapa_busca}}" target="_blank" rel="noopener">Abrir no Google Maps</a> — o mapa acima pode não carregar em conexões lentas.</p>
+  {{/tem_mapa}}
+</section>
+
+<div class="env">
+  <div class="fim">
+    <h2>Bateu a fome?</h2>
+    {{#tem_telefone}}<a class="bt bt-1" href="{{whats}}">Chamar no WhatsApp</a>{{/tem_telefone}}
+    {{^tem_telefone}}<p>Deixe aqui o contato da casa para os clientes chamarem.</p>{{/tem_telefone}}
+  </div>
+</div>
+
+<footer class="env">
+  <p>{{&aviso}}</p>
+  {{#creditos}}<p>{{creditos}}</p>{{/creditos}}
+</footer>
+
+{{#tem_telefone}}<a class="flutua" href="{{whats}}" aria-label="Falar no WhatsApp">WhatsApp</a>{{/tem_telefone}}
+</body>
+</html>

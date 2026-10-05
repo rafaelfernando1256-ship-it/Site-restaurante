@@ -83,11 +83,11 @@ def _():
 def _():
     chamados = []
 
-    def quebrado(termo, quantas, chave):
+    def quebrado(termo, quantas, chave, orientacao='portrait'):
         chamados.append('pexels')
         raise RuntimeError('cota estourada')
 
-    def bom(termo, quantas, chave):
+    def bom(termo, quantas, chave, orientacao='portrait'):
         chamados.append('pixabay')
         return [imagens.Foto(id='1', url='u', largura=800, altura=1200,
                              autor='A', fonte='pixabay', pagina='p')]

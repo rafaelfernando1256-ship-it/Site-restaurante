@@ -575,6 +575,202 @@ def cmd_colonia(a, cfg) -> int:
     return 0
 
 
+# ══ PRÉVIA ANTES DA VENDA ═══════════════════════════════════════════
+#
+# Os quatro comandos abaixo são o caminho curto: planilha → site →
+# link no ar → mensagem pronta. Nenhum deles chama modelo de linguagem,
+# então rodam em segundos, de graça, e dão o mesmo resultado toda vez.
+def cmd_planilha(a, cfg) -> int:
+    from nucleo.planilha import escreve_modelo
+    alvo = a.arquivo or Path('planilha.csv')
+    if alvo.exists() and not a.forcar:
+        print(f'\n  {alvo} já existe. Use --forcar para sobrescrever '
+              '(e perder o que estiver lá dentro).\n')
+        return 1
+    escreve_modelo(alvo)
+    print(f'\n  planilha criada: {alvo}')
+    print('  Abra no Excel ou no Google Planilhas, apague os três exemplos')
+    print('  e ponha os seus. Depois:\n')
+    print(f'    python3 funil.py importar {alvo}\n')
+    return 0
+
+
+def cmd_importar(a, cfg) -> int:
+    from nucleo.planilha import le
+    if not a.arquivo.exists():
+        print(f'\n  não achei {a.arquivo}. Gere o modelo com: '
+              'python3 funil.py planilha\n')
+        return 1
+    linhas = le(a.arquivo)
+    if not linhas:
+        print('\n  a planilha não tem nenhuma linha com nome preenchido.\n')
+        return 1
+    novos = atualizados = 0
+    print()
+    with _estado(cfg) as est:
+        for l in linhas:
+            _id, era_novo = est.guarda_lead(**l.para_lead())
+            novos += era_novo
+            atualizados += not era_novo
+            falta = l.pontua_vazios()
+            print(f'  {"＋" if era_novo else "↻"} #{_id} {l.nome} · '
+                  f'{l.modelo} · {l.pontuacao()}/10'
+                  + (f'  (falta: {", ".join(x.split("(")[0].strip() for x in falta)})'
+                     if falta else ''))
+            for p in l.problemas:
+                print(f'      ⚠ {p}')
+    print(f'\n  {novos} novos, {atualizados} atualizados.')
+    print('  próximo: python3 funil.py previa\n')
+    return 0
+
+
+def cmd_previa(a, cfg) -> int:
+    """Gera o site de demonstração. É o passo que não precisa de chave."""
+    from nucleo.estado import DEMO_PRONTA, NOVO
+    from nucleo.planilha import Linha
+    from nucleo.previa import monta
+    with _estado(cfg) as est:
+        if a.lead:
+            alvos = [l for l in (est.lead(i) for i in a.lead) if l]
+        else:
+            alvos = est.leads(NOVO, limite=a.limite)
+        if not alvos:
+            print('\n  nenhum lead em NOVO. Importe a planilha primeiro:'
+                  '\n    python3 funil.py importar planilha.csv\n')
+            return 1
+        print()
+        feitos = 0
+        for l in alvos:
+            d = l.dados or {}
+            linha = Linha(
+                nome=l.nome, tipo=l.categoria, endereco=l.endereco,
+                telefone=l.telefone, instagram=l.instagram,
+                tem_site=(l.presenca == 'tem_site'), cidade=l.cidade,
+                horario=d.get('horario', ''),
+                especialidades=d.get('especialidades') or [],
+                observacao=d.get('observacao', ''))
+            try:
+                p = monta(linha, cfg.saida / 'previas', autor=a.autor or cfg.autor,
+                          com_fotos=not a.sem_fotos)
+            except Exception as e:
+                est.anota('previa', 'erro', l.id, str(e)[:300])
+                print(f'  ✗ {l.nome}: {e}')
+                continue
+            from nucleo.a3_estudio import empacota
+            zip_ = empacota(p.pasta)
+            est.guarda_demo(l.id, pasta=str(p.pasta), zip=str(zip_),
+                            situacao='pronta')
+            if l.estado != DEMO_PRONTA:
+                est.move(l.id, DEMO_PRONTA, 'previa',
+                         f'modelo {p.modelo}, {p.fotos} fotos')
+            feitos += 1
+            print(f'  ✓ {l.nome} · modelo {p.modelo} · {p.fotos} fotos'
+                  + (f' · falta: {", ".join(x.split("(")[0].strip() for x in p.pendencias)}'
+                     if p.pendencias else ''))
+            print(f'      abra para conferir: {p.indice}')
+    print(f'\n  {feitos} prévia(s) prontas.')
+    print('  próximo: python3 funil.py publicar\n')
+    return 0
+
+
+def cmd_oferta(a, cfg) -> int:
+    """A mensagem com o link, para quem já está publicado."""
+    from nucleo.estado import PUBLICADO, RASCUNHO
+    from nucleo.oferta import primeira
+    from nucleo.planilha import Linha
+    with _estado(cfg) as est:
+        alvos = ([l for l in (est.lead(i) for i in a.lead) if l] if a.lead
+                 else est.leads(PUBLICADO, limite=a.limite))
+        if not alvos:
+            print('\n  ninguém publicado esperando mensagem. '
+                  'Rode: python3 funil.py publicar\n')
+            return 1
+        print()
+        escritas = 0
+        for l in alvos:
+            d = est.demo(l.id)
+            link = (d['url'] if d else '') or ''
+            if not link:
+                print(f'  ✗ {l.nome}: sem link publicado ainda')
+                continue
+            dados = l.dados or {}
+            falta = Linha(nome=l.nome, tipo=l.categoria, endereco=l.endereco,
+                          telefone=l.telefone, cidade=l.cidade,
+                          horario=dados.get('horario', ''),
+                          especialidades=dados.get('especialidades') or []
+                          ).pontua_vazios()
+            texto = primeira(l, link, a.autor or cfg.autor,
+                             modelo=dados.get('modelo', ''), pendencias=falta)
+            est.guarda_mensagem(l.id, 'abordagem', texto)
+            if l.estado != RASCUNHO:
+                est.move(l.id, RASCUNHO, 'oferta', 'mensagem com o link')
+            escritas += 1
+            print(f'  ✓ {l.nome}\n{_recuado(texto)}\n')
+    print(f'  {escritas} mensagem(ns) em rascunho. Nenhuma saiu sozinha.')
+    print('  você lê, aprova e manda:')
+    print('    python3 funil.py revisar')
+    print('    python3 funil.py aprovar --todas')
+    print('    python3 funil.py enviar --abrir\n')
+    return 0
+
+
+def cmd_seguir(a, cfg) -> int:
+    """O toque N de quem não respondeu. Imprime para você copiar."""
+    from nucleo.oferta import SEGUIMENTO, seguinte
+    with _estado(cfg) as est:
+        l = est.lead(a.lead)
+        if not l:
+            print(f'\n  não achei o lead #{a.lead}\n')
+            return 1
+        d = est.demo(l.id)
+        link = (d['url'] if d else '') or '(sem link publicado)'
+        if a.passo:
+            s = seguinte(l, link, a.passo, (l.dados or {}).get('modelo', ''))
+            print(f'\n  TOQUE {a.passo} · dia {s["dia"]} · {s["nome"]}')
+            print(f'  \033[90m{s["porque"]}\033[0m\n')
+            print(_recuado(s['texto']))
+            print(f'\n  mandar agora: {_link_whats(l, s["texto"])}\n')
+            return 0
+        print(f'\n  SEGUIMENTO de {l.nome} — cinco toques, contados do dia '
+              'em que você mandou a primeira:\n')
+        for i, s in enumerate(SEGUIMENTO, 1):
+            print(f'  {i}. dia {s["dia"]:>2} · {s["nome"]}')
+        print(f'\n  o texto de um deles: python3 funil.py seguir '
+              f'--lead {l.id} --passo 2\n')
+    return 0
+
+
+def cmd_estagio(a, cfg) -> int:
+    """Move o lead na parte comercial: negociando, fechado, perdido."""
+    from nucleo.estado import FECHADO, NEGOCIANDO, SEM_INTERESSE
+    destino = {'negociando': NEGOCIANDO, 'fechado': FECHADO,
+               'perdido': SEM_INTERESSE}[a.cmd]
+    with _estado(cfg) as est:
+        for i in a.lead:
+            l = est.lead(i)
+            if not l:
+                print(f'  não achei o lead #{i}')
+                continue
+            try:
+                est.move(l.id, destino, 'você', a.nota)
+                print(f'  #{l.id} {l.nome}: {l.estado} → {destino}')
+            except Exception as e:
+                print(f'  #{l.id} {l.nome}: {e}')
+    print()
+    return 0
+
+
+def _recuado(texto: str) -> str:
+    return '\n'.join('      ' + x for x in texto.splitlines())
+
+
+def _link_whats(lead, texto: str) -> str:
+    from nucleo.a2_abordagem import link_whats
+    return (link_whats(lead.telefone_e164, texto) if lead.telefone_e164
+            else '(lead sem telefone)')
+
+
+
 def principal(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(
         prog='funil', description='Quatro agentes: caça, aborda, constrói, entrega.',
@@ -609,6 +805,41 @@ def principal(argv: list[str] | None = None) -> int:
     s.add_argument('--avaliacoes', type=int, default=0)
     s.add_argument('--pontuacao', type=int, default=8)
     s.add_argument('--place-id', dest='place_id', default='')
+
+    # ── prévia antes da venda ───────────────────────────────────────
+    s = sub.add_parser('planilha', help='cria a planilha CSV que você preenche')
+    s.add_argument('arquivo', nargs='?', type=Path, default=None)
+    s.add_argument('--forcar', action='store_true',
+                   help='sobrescreve uma planilha que já existe')
+
+    s = sub.add_parser('importar', help='põe no funil os negócios da planilha')
+    s.add_argument('arquivo', type=Path)
+
+    s = sub.add_parser('previa', help='PRÉVIA — gera o site de demonstração '
+                                      '(sem chave, em segundos)')
+    s.add_argument('--lead', type=int, nargs='*', default=[],
+                   help='só estes; sem isto, pega quem está em NOVO')
+    s.add_argument('--limite', type=int, default=10)
+    s.add_argument('--sem-fotos', action='store_true',
+                   help='não baixa foto de acervo (mais rápido; o modelo '
+                        'tem um plano B de CSS)')
+    s.add_argument('--autor', default='', help='seu nome na mensagem e no aviso')
+
+    s = sub.add_parser('oferta', help='escreve a mensagem COM o link da prévia')
+    s.add_argument('--lead', type=int, nargs='*', default=[])
+    s.add_argument('--limite', type=int, default=10)
+    s.add_argument('--autor', default='')
+
+    s = sub.add_parser('seguir', help='os cinco toques de quem não respondeu')
+    s.add_argument('--lead', type=int, required=True)
+    s.add_argument('--passo', type=int, help='1 a 5; sem isto, lista os cinco')
+
+    for nome, ajuda in (('negociando', 'ele respondeu e está conversando preço'),
+                        ('fechado', 'ele pagou — parabéns'),
+                        ('perdido', 'ele disse não, ou sumiu de vez')):
+        s = sub.add_parser(nome, help=ajuda)
+        s.add_argument('lead', type=int, nargs='+')
+        s.add_argument('--nota', default='', help='por quê, para você lembrar')
 
     s = sub.add_parser('escrever', help='AGENTE 2 — escreve as abordagens')
     s.add_argument('--limite', type=int, default=20)
@@ -703,6 +934,10 @@ def principal(argv: list[str] | None = None) -> int:
         'construir': cmd_construir, 'publicar': cmd_publicar, 'lead': cmd_lead,
         'painel': cmd_painel, 'descartar': cmd_descartar, 'vigiar': cmd_vigiar,
         'capturar': cmd_capturar, 'colonia': cmd_colonia,
+        'planilha': cmd_planilha, 'importar': cmd_importar,
+        'previa': cmd_previa, 'oferta': cmd_oferta, 'seguir': cmd_seguir,
+        'negociando': cmd_estagio, 'fechado': cmd_estagio,
+        'perdido': cmd_estagio,
     }[a.cmd](a, cfg)
 
 

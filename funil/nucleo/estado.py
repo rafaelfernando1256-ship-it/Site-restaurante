@@ -58,30 +58,61 @@ SEM_INTERESSE = 'sem_interesse'
 QUER_DEMO = 'quer_demo'
 DEMO_PRONTA = 'demo_pronta'
 PUBLICADO = 'publicado'
+NEGOCIANDO = 'negociando'
 FECHADO = 'fechado'
 DESCARTADO = 'descartado'
 
 ESTADOS = [
     NOVO, RASCUNHO, ABORDADO, SEM_RESPOSTA, RESPONDEU, SEM_INTERESSE,
-    QUER_DEMO, DEMO_PRONTA, PUBLICADO, FECHADO, DESCARTADO,
+    QUER_DEMO, DEMO_PRONTA, PUBLICADO, NEGOCIANDO, FECHADO, DESCARTADO,
 ]
 
 # Transições permitidas. Um agente que tenta pular etapa levanta erro em
 # vez de corromper o funil em silêncio — num pipeline que roda sozinho,
 # erro barulhento é melhor que dado errado.
+#
+# ── O SEGUNDO CAMINHO: PRÉVIA ANTES DA VENDA ────────────────────────
+#
+# O de cima é o caminho frio: aborda, e só constrói para quem respondeu
+# que quer ver. Este é o inverso, e é o que o `previa` faz:
+#
+#   NOVO ──(previa)──> DEMO_PRONTA ──(publicar)──> PUBLICADO
+#                                                       │
+#                                          (oferta: mensagem COM o link)
+#                                                       ↓
+#                                                   RASCUNHO ──> ABORDADO ...
+#
+# Custa um site de graça para quem talvez nunca responda. Paga-se porque
+# a conversa começa em "o que você achou?" em vez de "posso te mandar
+# uma proposta?" — e porque o site já existe, não é promessa.
+#
 TRANSICOES: dict[str, set[str]] = {
-    NOVO: {RASCUNHO, DESCARTADO},
+    NOVO: {RASCUNHO, DEMO_PRONTA, DESCARTADO},
     RASCUNHO: {ABORDADO, NOVO, DESCARTADO},
-    ABORDADO: {RESPONDEU, SEM_RESPOSTA, SEM_INTERESSE, DESCARTADO},
-    SEM_RESPOSTA: {ABORDADO, RESPONDEU, DESCARTADO},
-    RESPONDEU: {QUER_DEMO, SEM_INTERESSE, DESCARTADO},
+    ABORDADO: {RESPONDEU, SEM_RESPOSTA, SEM_INTERESSE, NEGOCIANDO, DESCARTADO},
+    SEM_RESPOSTA: {ABORDADO, RESPONDEU, NEGOCIANDO, DESCARTADO},
+    RESPONDEU: {QUER_DEMO, NEGOCIANDO, SEM_INTERESSE, DESCARTADO},
     SEM_INTERESSE: {DESCARTADO, RESPONDEU},
     QUER_DEMO: {DEMO_PRONTA, DESCARTADO},
     DEMO_PRONTA: {PUBLICADO, QUER_DEMO, DESCARTADO},
-    PUBLICADO: {FECHADO, SEM_INTERESSE, DESCARTADO},
+    PUBLICADO: {RASCUNHO, NEGOCIANDO, FECHADO, SEM_INTERESSE, DESCARTADO},
+    NEGOCIANDO: {FECHADO, SEM_INTERESSE, SEM_RESPOSTA, DESCARTADO},
     FECHADO: set(),
     DESCARTADO: {NOVO},
 }
+
+# Os nomes que VOCÊ usa para acompanhar a venda, mapeados nos estados
+# que o funil usa por dentro. O painel fala esta língua; o código fala a
+# outra. Traduzir num lugar só evita renomear onze estados e quebrar o
+# histórico de quem já está no banco.
+COMERCIAIS = [
+    ('prévia pronta', [DEMO_PRONTA, PUBLICADO, RASCUNHO]),
+    ('contatado', [ABORDADO, SEM_RESPOSTA]),
+    ('respondeu', [RESPONDEU, QUER_DEMO]),
+    ('negociando', [NEGOCIANDO]),
+    ('fechado', [FECHADO]),
+    ('perdido', [SEM_INTERESSE, DESCARTADO]),
+]
 
 
 class TransicaoInvalida(ValueError):

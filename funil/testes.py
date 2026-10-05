@@ -2279,6 +2279,276 @@ def _():
 
 
 # ── corrida ─────────────────────────────────────────────────────────
+# ══ PRÉVIA ANTES DA VENDA ═══════════════════════════════════════════
+@teste('planilha: lê ponto e vírgula, BOM do Excel e @ em qualquer formato')
+def _():
+    from nucleo import planilha
+    alvo = TMP / 'excel.csv'
+    # É assim que o Excel em português salva: BOM na frente, ; no meio.
+    alvo.write_bytes('﻿'.encode() + (
+        'nome;tipo;telefone;instagram;tem_site\n'
+        'Bar do Zé;bar;+55 84 98888-7777;https://instagram.com/bardoze?igsh=xx;SIM\n'
+        'Pousada Sol;pousada;;@sol;não\n'
+    ).encode('utf-8'))
+    ls = planilha.le(alvo)
+    igual(len(ls), 2)
+    igual(ls[0].instagram, '@bardoze', 'não entendeu o link do Instagram')
+    igual(ls[0].tem_site, True, '"SIM" não virou sim')
+    igual(ls[1].tem_site, False, '"não" virou sim')
+    igual(ls[1].instagram, '@sol')
+
+
+@teste('planilha: importar a mesma linha duas vezes não duplica o lead')
+def _():
+    from nucleo import planilha
+    alvo = TMP / 'dup.csv'
+    alvo.write_text('nome,tipo,cidade\nCantina da Vó,restaurante,Natal\n',
+                    encoding='utf-8')
+    linha = planilha.le(alvo)[0]
+    with Estado(TMP / 'dup.db') as est:
+        id1, novo1 = est.guarda_lead(**linha.para_lead())
+        id2, novo2 = est.guarda_lead(**planilha.le(alvo)[0].para_lead())
+    igual((novo1, novo2), (True, False), 'a segunda importação criou outro lead')
+    igual(id1, id2)
+
+
+@teste('planilha: o tipo escolhe o modelo, e o desconhecido cai no genérico')
+def _():
+    from nucleo.planilha import Linha
+    for tipo, esperado in (('restaurante', 'restaurante'), ('Lanchonete', 'restaurante'),
+                           ('pizzaria', 'restaurante'), ('POUSADA', 'hotel'),
+                           ('hotel', 'hotel'), ('barbearia', 'negocio'),
+                           ('', 'negocio'), ('oficina mecânica', 'negocio')):
+        igual(Linha(nome='X', tipo=tipo).modelo, esperado, f'tipo {tipo!r}')
+
+
+@teste('prévia: os três modelos preenchem sem sobrar buraco no HTML')
+def _():
+    import re
+    from nucleo.planilha import Linha
+    from nucleo.previa import monta
+    for tipo in ('restaurante', 'pousada', 'barbearia'):
+        l = Linha(nome='Casa & Cia', tipo=tipo, cidade='Natal',
+                  endereco='Rua A, 1', telefone='+55 84 98888-7777',
+                  instagram='@casa', horario='Seg a Sex',
+                  especialidades=['Um', 'Dois'])
+        p = monta(l, TMP / 'previas', autor='Rafael', com_fotos=False)
+        h = p.indice.read_text(encoding='utf-8')
+        igual(re.findall(r'\{\{[^}]*\}\}', h), [], f'sobrou molde em {tipo}')
+        verdade('Casa &amp; Cia' in h, 'o & não foi escapado')
+
+
+@teste('prévia: diz que é prévia no topo E no rodapé, nos três modelos')
+def _():
+    from nucleo.planilha import Linha
+    from nucleo.previa import monta
+    for tipo in ('restaurante', 'hotel', 'loja'):
+        p = monta(Linha(nome='X', tipo=tipo), TMP / 'previas', autor='Rafael',
+                  com_fotos=False)
+        h = p.indice.read_text(encoding='utf-8').lower()
+        verdade('prévia · site de demonstração' in h, f'{tipo}: sem faixa no topo')
+        verdade('não é o site oficial' in h, f'{tipo}: sem aviso no rodapé')
+        verdade('noindex' in h, f'{tipo}: prévia indexável pelo Google')
+
+
+@teste('prévia: o que não está na planilha NÃO é inventado')
+def _():
+    from nucleo.planilha import Linha
+    from nucleo.previa import monta
+    p = monta(Linha(nome='Sem Dados', tipo='restaurante'), TMP / 'previas',
+              autor='Rafael', com_fotos=False)
+    h = p.indice.read_text(encoding='utf-8')
+    verdade('Confirme com a casa' in h, 'horário sumiu em vez de virar pedido')
+    # nada de telefone fabricado, de mapa de endereço nenhum, de preço
+    verdade('wa.me' not in h, 'inventou WhatsApp para quem não tem telefone')
+    verdade('google.com/maps' not in h, 'inventou mapa sem endereço')
+    verdade('R$' not in h, 'apareceu preço que ninguém informou')
+    verdade('horário de funcionamento' in ' '.join(p.pendencias),
+            'não avisou que falta horário')
+
+
+@teste('prévia: a pasta sai no formato que o agente 4 publica')
+def _():
+    from nucleo.a3_estudio import empacota
+    from nucleo.planilha import Linha
+    from nucleo.previa import monta
+    p = monta(Linha(nome='Zip Teste', tipo='hotel'), TMP / 'previas',
+              autor='Rafael', com_fotos=False)
+    z = empacota(p.pasta)
+    with zipfile.ZipFile(z) as f:
+        nomes = f.namelist()
+    verdade('index.html' in nomes, f'index fora da raiz do zip: {nomes}')
+
+
+@teste('prévia: foto só de acervo livre, e o crédito vai junto')
+def _():
+    from nucleo import previa
+    from nucleo.planilha import Linha
+    chamadas = {}
+
+    class FotoFalsa:
+        id, fonte, autor, pagina, url = '7', 'pixabay', 'Fulano', 'p', 'u'
+
+    falso = types.SimpleNamespace(
+        chaves_configuradas=lambda: ['pixabay'],
+        busca=lambda termo, quantas, orientacao: (
+            chamadas.update(termo=termo, orientacao=orientacao),
+            [FotoFalsa()] * quantas)[1],
+        baixa=lambda f, destino: _escreve_foto(destino))
+    previa._acervo = lambda: falso
+    try:
+        p = monta_com_fotos(Linha(nome='Com Foto', tipo='restaurante'))
+    finally:
+        previa._acervo = _acervo_real
+    igual(chamadas['orientacao'], 'landscape',
+          'pediu foto em pé para um site deitado')
+    verdade('restaurant' in chamadas['termo'], 'buscou o termo errado')
+    igual(p.fotos, 3)
+    h = p.indice.read_text(encoding='utf-8')
+    verdade('fotos/pixabay-7.jpg' in h, 'a foto não entrou no HTML')
+    verdade('Fulano (pixabay)' in h, 'o crédito da foto não apareceu')
+
+
+def _escreve_foto(destino: Path) -> Path:
+    destino.mkdir(parents=True, exist_ok=True)
+    alvo = destino / 'pixabay-7.jpg'
+    alvo.write_bytes(b'\xff\xd8\xff')
+    (destino / 'creditos.json').write_text(json.dumps(
+        {'pixabay-7.jpg': {'autor': 'Fulano', 'fonte': 'pixabay', 'pagina': 'p'}}),
+        encoding='utf-8')
+    return alvo
+
+
+def monta_com_fotos(linha):
+    from nucleo.previa import monta
+    return monta(linha, TMP / 'comfoto', autor='Rafael', com_fotos=True)
+
+
+from nucleo.previa import _acervo as _acervo_real      # noqa: E402
+
+
+@teste('prévia: acervo fora do ar não impede a prévia de sair')
+def _():
+    from nucleo import previa
+    from nucleo.planilha import Linha
+    previa._acervo = lambda: types.SimpleNamespace(
+        chaves_configuradas=lambda: ['pixabay'],
+        busca=lambda **k: (_ for _ in ()).throw(RuntimeError('cota estourada')),
+        baixa=lambda *a: None)
+    try:
+        p = monta_com_fotos(Linha(nome='Sem Rede', tipo='hotel'))
+    finally:
+        previa._acervo = _acervo_real
+    igual(p.fotos, 0)
+    verdade(p.indice.exists(), 'ficou sem site porque o acervo caiu')
+
+
+@teste('oferta: a mensagem diz que é demonstração e dá saída')
+def _():
+    from nucleo.oferta import primeira
+    l = Lead(id=1, place_id='manual:x', nome='Cantina', estado=NOVO,
+             categoria='restaurante', dados={'modelo': 'restaurante'})
+    t = primeira(l, 'https://x.netlify.app', 'Rafael')
+    verdade('demonstração' in t, 'não avisou que é demonstração')
+    verdade('https://x.netlify.app' in t, 'esqueceu o link')
+    verdade('Rafael' in t and 'Cantina' in t, 'não personalizou')
+    baixo = t.lower()
+    for proibido in ('garanto', 'só hoje', 'última', 'vai dobrar',
+                     'primeiro lugar no google', 'r$'):
+        verdade(proibido not in baixo, f'prometeu demais: "{proibido}"')
+    verdade('não insisto' in baixo or 'sem problema' in baixo
+            or 'é só falar' in baixo, 'não deu saída fácil')
+
+
+@teste('oferta: o que faltou na planilha vira pergunta no fim da mensagem')
+def _():
+    from nucleo.oferta import primeira
+    l = Lead(id=1, place_id='manual:x', nome='Cantina', estado=NOVO,
+             categoria='restaurante')
+    t = primeira(l, 'u', 'Rafael', pendencias=['horário de funcionamento',
+                                               '3 pratos (para a vitrine)'])
+    verdade('horário de funcionamento e 3 pratos' in t, t[-120:])
+
+
+@teste('seguimento: cinco toques, espaçados, e o último encerra')
+def _():
+    from nucleo.oferta import SEGUIMENTO, seguinte
+    igual(len(SEGUIMENTO), 5)
+    dias = [s['dia'] for s in SEGUIMENTO]
+    igual(dias, sorted(dias), 'os toques não estão em ordem de dia')
+    verdade(dias[0] >= 2, 'o segundo toque é cedo demais — vira perseguição')
+    l = Lead(id=1, place_id='x', nome='Cantina', estado=ABORDADO,
+             categoria='restaurante')
+    ultimo = seguinte(l, 'https://x.app', 5)['texto'].lower()
+    verdade('parar' in ultimo, 'o último toque não encerra a conversa')
+    try:
+        seguinte(l, 'u', 6)
+        raise AssertionError('aceitou um sexto toque')
+    except ValueError:
+        pass
+
+
+@teste('estado: o caminho da prévia existe, e não atropela o caminho frio')
+def _():
+    from nucleo.estado import NEGOCIANDO
+    with Estado(TMP / 'caminho.db') as est:
+        i, _ = est.guarda_lead(place_id='manual:a', nome='A')
+        est.move(i, DEMO_PRONTA, 'previa')          # NOVO -> prévia pronta
+        est.move(i, PUBLICADO, 'a4')
+        est.move(i, RASCUNHO, 'oferta')             # mensagem com o link
+        est.move(i, ABORDADO, 'a2')
+        est.move(i, RESPONDEU, 'você')
+        est.move(i, NEGOCIANDO, 'você')
+        est.move(i, FECHADO, 'você')
+        igual(est.lead(i).estado, FECHADO)
+        # o caminho frio continua inteiro
+        j, _ = est.guarda_lead(place_id='manual:b', nome='B')
+        est.move(j, RASCUNHO, 'a2')
+        est.move(j, ABORDADO, 'a2')
+        est.move(j, RESPONDEU, 'a3')
+        est.move(j, QUER_DEMO, 'a3')
+        igual(est.lead(j).estado, QUER_DEMO)
+
+
+@teste('estado: fechado é ponto final, e pular etapa ainda levanta erro')
+def _():
+    from nucleo.estado import NEGOCIANDO
+    with Estado(TMP / 'final.db') as est:
+        i, _ = est.guarda_lead(place_id='manual:c', nome='C')
+        try:
+            est.move(i, NEGOCIANDO, 'você')
+            raise AssertionError('deixou negociar quem nunca foi contatado')
+        except TransicaoInvalida:
+            pass
+        est.move(i, DEMO_PRONTA, 'previa')
+        est.move(i, PUBLICADO, 'a4')
+        est.move(i, FECHADO, 'você')
+        try:
+            est.move(i, NOVO, 'você')
+            raise AssertionError('ressuscitou um lead fechado')
+        except TransicaoInvalida:
+            pass
+
+
+@teste('painel: o quadro comercial soma os estados certos')
+def _():
+    from nucleo.estado import COMERCIAIS, NEGOCIANDO
+    import painel
+    with Estado(TMP / 'quadro.db') as est:
+        for n, estados in (('A', [DEMO_PRONTA]), ('B', [DEMO_PRONTA, PUBLICADO]),
+                           ('C', [RASCUNHO, ABORDADO]),
+                           ('D', [RASCUNHO, ABORDADO, RESPONDEU, NEGOCIANDO])):
+            i, _ = est.guarda_lead(place_id=f'manual:{n}', nome=n)
+            for e in estados:
+                est.move(i, e, 'teste')
+        cfg = config.Config(banco=TMP / 'quadro.db', saida=TMP, material=TMP)
+        pagina = painel.gera(est, cfg).read_text(encoding='utf-8')
+    for nome, _ in COMERCIAIS:
+        verdade(nome in pagina, f'sumiu a coluna "{nome}" do quadro')
+    verdade('>2<' in pagina, 'as contas do quadro não bateram')
+
+
+
 def main() -> int:
     import contextlib
     import io

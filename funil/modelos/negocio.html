@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>{{nome}} — {{tipo}}{{#cidade}} em {{cidade}}{{/cidade}}</title>
+<meta name="description" content="Prévia de demonstração de site para {{nome}}.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  /* ── MODELO 3 · NEGÓCIO LOCAL (o que não é restaurante nem hotel) ──
+     Barbearia, salão, oficina, pet shop, clínica. Aqui o que vende é
+     CONFIANÇA e facilidade de marcar: então o site é direto, com o
+     contato sempre a um toque e nada de enfeite que atrapalhe.
+     Claro e sóbrio, uma cor só, forte. */
+  :root{
+    --papel:#ffffff; --tinta:#0b1220; --tom:#4f46e5; --tom-2:#eef2ff;
+    --cinza:#5b6472; --linha:#e6e9ef; --raio:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--papel);color:var(--tinta);
+       font:400 17px/1.65 "Plus Jakarta Sans",system-ui,sans-serif;
+       -webkit-font-smoothing:antialiased;overflow-x:hidden}
+  h1,h2,h3{line-height:1.12;letter-spacing:-.025em}
+  a{color:inherit}
+  .env{width:min(100% - 32px,1040px);margin-inline:auto}
+
+  .previa{position:sticky;top:0;z-index:40;background:var(--tinta);color:#fff;
+    font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;
+    text-align:center;padding:8px 14px;font-weight:500}
+
+  /* ── capa ── */
+  header{padding:64px 0 56px;position:relative;isolation:isolate;overflow:hidden}
+  header::before{content:"";position:absolute;inset:0;z-index:-1;
+    background:radial-gradient(760px 380px at 12% -10%,var(--tom-2),transparent 70%)}
+  .selo{display:inline-flex;align-items:center;gap:8px;background:var(--tom-2);
+    color:var(--tom);font-size:13px;font-weight:700;padding:7px 14px;
+    border-radius:999px;margin-bottom:22px}
+  h1{font-size:clamp(2.4rem,9vw,4.2rem);font-weight:800}
+  .sub{margin-top:18px;font-size:clamp(1.02rem,3.6vw,1.22rem);color:var(--cinza);max-width:48ch}
+  .capa{margin-top:36px;border-radius:20px;overflow:hidden;line-height:0;
+    box-shadow:0 24px 60px -24px rgba(11,18,32,.28)}
+  .capa img{width:100%;height:clamp(220px,42vw,380px);object-fit:cover}
+
+  .acoes{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
+  .bt{display:inline-flex;align-items:center;gap:9px;padding:15px 26px;
+    border-radius:999px;text-decoration:none;font-weight:700;font-size:16px;
+    transition:transform .15s ease,box-shadow .2s ease}
+  .bt:active{transform:translateY(1px)}
+  .bt-1{background:var(--tom);color:#fff;box-shadow:0 10px 24px -8px rgba(79,70,229,.6)}
+  .bt-2{border:1.5px solid var(--linha);color:var(--tinta)}
+  .bt-2:hover{border-color:var(--tom);color:var(--tom)}
+
+  section{padding:60px 0}
+  .olho{color:var(--tom);font-size:13px;font-weight:700;letter-spacing:.1em;
+    text-transform:uppercase;margin-bottom:10px}
+  h2{font-size:clamp(1.7rem,6vw,2.4rem);font-weight:800}
+
+  /* ── serviços ── */
+  .grade{list-style:none;display:grid;gap:14px;margin-top:28px}
+  .grade li{border:1px solid var(--linha);border-radius:var(--raio);
+    padding:22px;display:flex;gap:14px;align-items:flex-start;
+    transition:border-color .2s ease,transform .2s ease}
+  .grade li:hover{border-color:var(--tom);transform:translateY(-2px)}
+  .grade li::before{content:"✓";color:var(--tom);font-weight:800;flex:none;
+    width:26px;height:26px;border-radius:50%;background:var(--tom-2);
+    display:grid;place-items:center;font-size:14px}
+  .item{font-weight:700;font-size:1.08rem}
+  .nota{margin-top:16px;font-size:14.5px;color:var(--cinza)}
+
+  .galeria{display:grid;gap:12px;grid-template-columns:1fr;margin-top:26px}
+  .galeria img{width:100%;height:230px;object-fit:cover;border-radius:var(--raio)}
+
+  /* ── visita ── */
+  .cartoes{display:grid;gap:14px;margin-top:26px}
+  .cartao{background:#f8f9fc;border:1px solid var(--linha);
+    border-radius:var(--raio);padding:22px}
+  .cartao h3{font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--cinza);margin-bottom:8px;font-weight:700}
+  .cartao p{font-weight:500}
+  .mapa{margin-top:22px;border:1px solid var(--linha);border-radius:var(--raio);
+    overflow:hidden;line-height:0}
+  .mapa iframe{width:100%;height:300px;border:0}
+
+  .fim{background:var(--tinta);color:#fff;border-radius:24px;
+    padding:50px 30px;text-align:center;margin:12px 0 60px}
+  .fim h2{color:#fff}
+  .fim p{color:#aab3c2;margin-top:12px}
+  .fim .bt-1{margin-top:24px}
+
+  footer{border-top:1px solid var(--linha);padding:34px 0 120px;
+    font-size:13.5px;color:var(--cinza)}
+  footer p + p{margin-top:10px}
+  footer strong{color:var(--tinta)}
+
+  .flutua{position:fixed;right:16px;bottom:16px;z-index:50;background:#25D366;
+    color:#06281a;border-radius:999px;padding:15px 22px;font-weight:700;
+    text-decoration:none;box-shadow:0 10px 28px rgba(11,18,32,.25)}
+
+  @media (min-width:720px){
+    .grade{grid-template-columns:1fr 1fr}
+    .galeria{grid-template-columns:repeat(3,1fr)}
+    .cartoes{grid-template-columns:repeat(3,1fr)}
+    section{padding:80px 0}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<div class="previa">Prévia · site de demonstração</div>
+
+<header class="env">
+  <span class="selo">{{tipo}}{{#cidade}} · {{cidade}}{{/cidade}}</span>
+  <h1>{{nome}}</h1>
+  <p class="sub">{{#tem_telefone}}Atendimento e agendamento pelo WhatsApp, sem complicação.{{/tem_telefone}}{{^tem_telefone}}Tudo o que o cliente precisa saber, numa página só.{{/tem_telefone}}</p>
+  <div class="acoes">
+    {{#tem_telefone}}<a class="bt bt-1" href="{{whats}}">Falar no WhatsApp</a>{{/tem_telefone}}
+    {{#tem_mapa}}<a class="bt bt-2" href="{{mapa_busca}}" target="_blank" rel="noopener">Como chegar</a>{{/tem_mapa}}
+  </div>
+  {{#tem_hero}}<div class="capa"><img src="{{hero}}" alt="Imagem de exemplo"></div>{{/tem_hero}}
+</header>
+
+{{#itens}}
+<section class="env">
+  <p class="olho">Serviços</p>
+  <h2>O que a gente faz</h2>
+  <ul class="grade">
+{{&cardapio_html}}
+  </ul>
+  <p class="nota">Valores e prazos: fale com a gente pelo WhatsApp.</p>
+</section>
+{{/itens}}
+
+{{#tem_galeria}}
+<section class="env">
+  <p class="olho">Trabalhos</p>
+  <h2>Como é por aqui</h2>
+  <div class="galeria">
+{{&galeria_html}}
+  </div>
+  <p class="nota">Imagens de exemplo — entram as fotos do seu trabalho na versão final.</p>
+</section>
+{{/tem_galeria}}
+
+<section class="env">
+  <p class="olho">Contato</p>
+  <h2>Onde e quando</h2>
+  <div class="cartoes">
+    {{#tem_endereco}}<div class="cartao"><h3>Endereço</h3><p>{{endereco}}{{#cidade}}<br>{{cidade}}{{/cidade}}</p></div>{{/tem_endereco}}
+    <div class="cartao"><h3>Horário</h3><p>{{horario}}</p></div>
+    {{#tem_telefone}}<div class="cartao"><h3>Fale com a gente</h3><p><a href="{{tel_link}}">{{telefone}}</a>{{#tem_instagram}}<br><a href="{{instagram_url}}" target="_blank" rel="noopener">{{instagram}}</a>{{/tem_instagram}}</p></div>{{/tem_telefone}}
+  </div>
+  {{#tem_mapa}}
+  <div class="mapa"><iframe src="{{mapa_embed}}" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Mapa de {{nome}}"></iframe></div>
+  <p class="nota"><a href="{{mapa_busca}}" target="_blank" rel="noopener">Abrir no Google Maps</a> — o mapa acima pode não carregar em conexões lentas.</p>
+  {{/tem_mapa}}
+</section>
+
+<div class="env">
+  <div class="fim">
+    <h2>Vamos marcar?</h2>
+    {{#tem_telefone}}<p>Mande uma mensagem e a gente responde.</p>
+    <a class="bt bt-1" href="{{whats}}">Chamar no WhatsApp</a>{{/tem_telefone}}
+    {{^tem_telefone}}<p>Coloque aqui o contato do negócio.</p>{{/tem_telefone}}
+  </div>
+</div>
+
+<footer class="env">
+  <p>{{&aviso}}</p>
+  {{#creditos}}<p>{{creditos}}</p>{{/creditos}}
+</footer>
+
+{{#tem_telefone}}<a class="flutua" href="{{whats}}" aria-label="Falar no WhatsApp">WhatsApp</a>{{/tem_telefone}}
+</body>
+</html>

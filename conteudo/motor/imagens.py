@@ -42,6 +42,15 @@ AGENTE_HTTP = ('conteudo-ebook/1.0 '
 # cortar depois joga fora a parte boa de toda foto.
 ORIENTACAO = 'portrait'
 
+# Cada acervo tem o seu vocabulário para a mesma coisa. Sem esta tabela,
+# "landscape" no Pixabay volta vazio em silêncio — o pior tipo de falha,
+# porque parece que simplesmente não havia foto.
+PALAVRA = {
+    'pexels': {'portrait': 'portrait', 'landscape': 'landscape'},
+    'unsplash': {'portrait': 'portrait', 'landscape': 'landscape'},
+    'pixabay': {'portrait': 'vertical', 'landscape': 'horizontal'},
+}
+
 
 @dataclass
 class Foto:
@@ -92,11 +101,12 @@ def _pede(url: str, cabecalhos: dict, tempo: int = 30) -> dict:
         raise RuntimeError(f'sem internet? ({e.reason})') from e
 
 
-def _pexels(termo: str, quantas: int, chave: str) -> list[Foto]:
+def _pexels(termo: str, quantas: int, chave: str,
+            orientacao: str = ORIENTACAO) -> list[Foto]:
     d = _pede(
         'https://api.pexels.com/v1/search?'
         + urllib.parse.urlencode({'query': termo, 'per_page': quantas,
-                                  'orientation': ORIENTACAO}),
+                                  'orientation': PALAVRA['pexels'][orientacao]}),
         {'Authorization': chave})
     return [Foto(id=str(f['id']), url=f['src']['large2x'],
                  largura=f['width'], altura=f['height'],
@@ -105,10 +115,11 @@ def _pexels(termo: str, quantas: int, chave: str) -> list[Foto]:
             for f in d.get('photos', [])]
 
 
-def _pixabay(termo: str, quantas: int, chave: str) -> list[Foto]:
+def _pixabay(termo: str, quantas: int, chave: str,
+             orientacao: str = ORIENTACAO) -> list[Foto]:
     d = _pede('https://pixabay.com/api/?' + urllib.parse.urlencode({
         'key': chave, 'q': termo, 'per_page': max(3, quantas),
-        'orientation': 'vertical', 'image_type': 'photo',
+        'orientation': PALAVRA['pixabay'][orientacao], 'image_type': 'photo',
         'safesearch': 'true'}), {})
     return [Foto(id=str(f['id']), url=f['largeImageURL'],
                  largura=f['imageWidth'], altura=f['imageHeight'],
@@ -117,11 +128,12 @@ def _pixabay(termo: str, quantas: int, chave: str) -> list[Foto]:
             for f in d.get('hits', [])]
 
 
-def _unsplash(termo: str, quantas: int, chave: str) -> list[Foto]:
+def _unsplash(termo: str, quantas: int, chave: str,
+              orientacao: str = ORIENTACAO) -> list[Foto]:
     d = _pede(
         'https://api.unsplash.com/search/photos?'
         + urllib.parse.urlencode({'query': termo, 'per_page': quantas,
-                                  'orientation': ORIENTACAO}),
+                                  'orientation': PALAVRA['unsplash'][orientacao]}),
         {'Authorization': f'Client-ID {chave}'})
     return [Foto(id=f['id'], url=f['urls']['regular'],
                  largura=f['width'], altura=f['height'],
@@ -139,7 +151,8 @@ def chaves_configuradas() -> list[str]:
     return [nome for nome, (_, var) in ACERVOS.items() if os.environ.get(var)]
 
 
-def busca(termo: str, quantas: int = 6, acervo: str = '') -> list[Foto]:
+def busca(termo: str, quantas: int = 6, acervo: str = '',
+          orientacao: str = ORIENTACAO) -> list[Foto]:
     """
     Procura nos acervos que tiverem chave, na ordem, até juntar o pedido.
 
@@ -163,7 +176,7 @@ def busca(termo: str, quantas: int = 6, acervo: str = '') -> list[Foto]:
         if not chave:
             continue
         try:
-            achadas += faz(termo, quantas - len(achadas), chave)
+            achadas += faz(termo, quantas - len(achadas), chave, orientacao)
         except RuntimeError as e:
             problemas.append(f'{nome}: {e}')
     if not achadas and problemas:
