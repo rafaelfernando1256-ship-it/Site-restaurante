@@ -243,8 +243,12 @@ def testa_fotos() -> tuple[str, str]:
 def confere(cfg, com_rede: bool = True) -> int:
     """Devolve 0 quando dá para trabalhar, 1 quando falta o essencial."""
     print(f'\n  FUNIL — diagnóstico\n')
+    # Groq e OpenRouter saem do config com o modelo vazio de propósito:
+    # quem escolhe é o catálogo, na hora. Imprimir "groq ()" fazia isso
+    # parecer campo que ficou faltando.
+    qual = cfg.modelo_do_cerebro or 'escolhido na hora, pelo catálogo'
     print(f'  Python {sys.version.split()[0]} · cérebro: {cfg.provedor} '
-          f'({cfg.modelo_do_cerebro})', flush=True)
+          f'({qual})', flush=True)
     print(f'  banco de dados: {cfg.banco}', flush=True)
     print(f'  cidade padrão: {cfg.cidade or "(não definida)"}\n', flush=True)
 
