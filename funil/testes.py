@@ -2549,6 +2549,37 @@ def _():
 
 
 
+@teste('oferta: o ângulo da comissão pergunta em vez de afirmar o número')
+def _():
+    from nucleo.oferta import primeira
+    l = Lead(id=1, place_id='manual:x', nome='Pousada Sol', estado=NOVO,
+             cidade='Natal', categoria='pousada', dados={'modelo': 'hotel'})
+    t = primeira(l, 'https://x.app', 'Rafael', angulo='comissao')
+    baixo = t.lower()
+    verdade('quanto' in baixo and '?' in t, 'não fez a pergunta')
+    # afirmar a porcentagem de uma casa que você não conhece é perder a
+    # conversa no primeiro minuto
+    for chute in ('18%', '15%', '16%', 'r$'):
+        verdade(chute not in baixo, f'afirmou um número que não sabe: {chute}')
+    for promessa in ('vai sair da booking', 'garanto', 'dobrar', 'triplicar'):
+        verdade(promessa not in baixo, f'prometeu: {promessa}')
+    verdade('demonstração' in baixo, 'não avisou que a página é demonstração')
+    verdade('não insisto' in baixo, 'não deu saída')
+
+
+@teste('oferta: sem OTA no ramo, o ângulo da comissão não é forçado')
+def _():
+    from nucleo.oferta import primeira
+    l = Lead(id=1, place_id='manual:x', nome='Barbearia', estado=NOVO,
+             categoria='barbearia', dados={'modelo': 'negocio'})
+    t = primeira(l, 'https://x.app', 'Rafael', angulo='comissao')
+    baixo = t.lower()
+    verdade('comissão' not in baixo and 'ifood' not in baixo,
+            'perguntou de comissão a quem não paga comissão nenhuma')
+    verdade('prévia' in baixo or 'demonstração' in baixo, 'caiu em nada')
+
+
+
 def main() -> int:
     import contextlib
     import io

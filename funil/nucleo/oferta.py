@@ -101,10 +101,67 @@ SEGUIMENTO = [
 ]
 
 
+# ── O ÂNGULO DA COMISSÃO ────────────────────────────────────────────
+#
+# A mesma prévia, outra conversa. Em vez de vender "um site", ela abre
+# pelo gasto que o dono já tem e já odeia: a comissão da OTA. Em jul/2026
+# a Booking subiu a taxa do programa Preferencial de 15–16% para 18% com
+# menos de 60 dias de aviso, e cinco entidades do setor entraram no CADE
+# contra. Quem é do ramo recebeu esse e-mail e lembra dele.
+#
+# Por que ela PERGUNTA a porcentagem em vez de afirmar: você não sabe se
+# aquela pousada é Preferencial, nem quanto vem de OTA. Afirmar o número
+# errado é perder a conversa no primeiro minuto — e pergunta sobre o
+# próprio dinheiro é a pergunta que mais recebe resposta.
+#
+# Ela também não promete migração. "Cada reserva direta economiza a
+# comissão" é aritmética; "você vai sair da Booking" é promessa que não
+# se sustenta, porque a OTA traz quem nunca ouviu falar da casa.
+COMISSAO = {
+    'hotel': (
+        'Oi! Tudo bem? Aqui é o {autor}, de {cidade}.\n\n'
+        'Pergunta rápida, de curiosidade mesmo: hoje vocês pagam quanto '
+        'de comissão por reserva na Booking/Airbnb?\n\n'
+        'Pergunto porque montei uma página de reserva direta para o '
+        '{nome} — está no ar, é só abrir:\n{link}\n\n'
+        'É uma demonstração (as fotos são de banco de imagem). A ideia é '
+        'simples: a Booking continua trazendo quem não conhece vocês, e '
+        'essa página pega quem JÁ conhece — hóspede que volta, '
+        'indicação, quem vê no Instagram. Cada reserva que entra por '
+        'aqui é a comissão inteira no bolso de vocês.\n\n'
+        'Faz sentido conversar? Se não for o momento, é só falar que eu '
+        'não insisto.'),
+    'restaurante': (
+        'Oi! Tudo bem? Aqui é o {autor}, de {cidade}.\n\n'
+        'Pergunta rápida: quanto o iFood fica de comissão em cada pedido '
+        'de vocês hoje?\n\n'
+        'Pergunto porque montei uma página de pedido direto do {nome} — '
+        'está no ar, é só abrir:\n{link}\n\n'
+        'É uma demonstração (fotos de banco de imagem). O iFood continua '
+        'trazendo cliente novo; essa página é para quem JÁ pede de '
+        'vocês — o pedido cai no WhatsApp sem comissão nenhuma.\n\n'
+        'Faz sentido conversar? Se não for a hora, me avisa que eu paro '
+        'por aqui.'),
+}
+
+
 def primeira(lead: Lead, link: str, autor: str, modelo: str = '',
-             pendencias: list[str] | None = None) -> str:
-    """A mensagem do primeiro contato, com o link da prévia dentro."""
-    base = PRIMEIRA.get(modelo or _modelo_de(lead), PRIMEIRA['negocio'])
+             pendencias: list[str] | None = None, angulo: str = '') -> str:
+    """
+    A mensagem do primeiro contato, com o link da prévia dentro.
+
+    `angulo='comissao'` troca a conversa de "fiz um site para você" para
+    "quanto você paga de comissão?" — é a mesma prévia servindo a uma
+    venda de outro tamanho. Sem ângulo para aquele tipo de negócio, cai
+    na mensagem padrão em vez de forçar uma pergunta que não existe
+    (barbearia não paga comissão a OTA nenhuma).
+    """
+    modelo = modelo or _modelo_de(lead)
+    if angulo == 'comissao' and modelo in COMISSAO:
+        return COMISSAO[modelo].format(
+            autor=autor, nome=lead.nome, link=link,
+            cidade=lead.cidade or 'aqui da região')
+    base = PRIMEIRA.get(modelo, PRIMEIRA['negocio'])
     texto = base.format(autor=autor, nome=lead.nome, link=link)
     # O que faltou na planilha vira pergunta, não vira buraco no site.
     # Perguntar pelo horário é um pedido de informação, e pedido de

@@ -700,7 +700,8 @@ def cmd_oferta(a, cfg) -> int:
                           especialidades=dados.get('especialidades') or []
                           ).pontua_vazios()
             texto = primeira(l, link, a.autor or cfg.autor,
-                             modelo=dados.get('modelo', ''), pendencias=falta)
+                             modelo=dados.get('modelo', ''), pendencias=falta,
+                             angulo=a.angulo)
             est.guarda_mensagem(l.id, 'abordagem', texto)
             if l.estado != RASCUNHO:
                 est.move(l.id, RASCUNHO, 'oferta', 'mensagem com o link')
@@ -829,6 +830,10 @@ def principal(argv: list[str] | None = None) -> int:
     s.add_argument('--lead', type=int, nargs='*', default=[])
     s.add_argument('--limite', type=int, default=10)
     s.add_argument('--autor', default='')
+    s.add_argument('--angulo', default='', choices=['', 'comissao'],
+                   help='"comissao" abre pela comissão que ele paga à '
+                        'Booking/iFood em vez de pelo site. Serve para '
+                        'hotel e restaurante; nos outros cai no padrão')
 
     s = sub.add_parser('seguir', help='os cinco toques de quem não respondeu')
     s.add_argument('--lead', type=int, required=True)

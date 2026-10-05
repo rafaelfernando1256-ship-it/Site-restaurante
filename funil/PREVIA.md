@@ -144,6 +144,25 @@ python3 funil.py seguir --lead 3            # lista os cinco toques
 python3 funil.py seguir --lead 3 --passo 2  # o texto do toque 2, pronto
 ```
 
+
+### 5b. A mensagem pela comissão (o ticket de R$ 3.000)
+
+```bash
+python3 funil.py oferta --angulo comissao
+```
+
+A mesma prévia, outra conversa: em vez de "fiz um site para você", ela
+abre perguntando **quanto ele paga de comissão** à Booking (hotel) ou ao
+iFood (restaurante). Serve só para esses dois — nos outros tipos ela cai
+na mensagem padrão sozinha, porque barbearia não paga comissão a OTA
+nenhuma.
+
+Ela **pergunta** a porcentagem em vez de afirmar: você não sabe se
+aquela pousada é Preferencial da Booking nem quanto do faturamento vem
+de OTA, e errar o número na primeira mensagem acaba com a conversa.
+Pergunta sobre o próprio dinheiro, por outro lado, é a que mais recebe
+resposta.
+
 ---
 
 ## Os cinco toques (e por que cada um existe)
