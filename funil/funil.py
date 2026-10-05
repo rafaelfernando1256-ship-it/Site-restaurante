@@ -40,6 +40,12 @@ ORDEM = ['novo', 'rascunho', 'abordado', 'sem_resposta', 'respondeu',
          'descartado']
 
 
+
+def diz(*coisas, **resto) -> None:
+    """`print` que ajusta o comando sugerido ao sistema de quem lê."""
+    print(*(config.comando(c) if isinstance(c, str) else c for c in coisas),
+          **resto)
+
 def _estado(cfg) -> Estado:
     return Estado(cfg.banco)
 
@@ -97,25 +103,25 @@ def _painel_json(cfg) -> dict:
 
 def cmd_resumo(a, cfg) -> int:
     if a.json:
-        print(json.dumps(_painel_json(cfg), ensure_ascii=False))
+        diz(json.dumps(_painel_json(cfg), ensure_ascii=False))
         return 0
     if not Path(cfg.banco).exists():
-        print(f'\n  banco ainda não existe — {cfg.banco}')
-        print('  comece com: python3 funil.py cacar --cidade '
+        diz(f'\n  banco ainda não existe — {cfg.banco}')
+        diz('  comece com: python3 funil.py cacar --cidade '
               f'"{cfg.cidade or "Natal, RN"}"\n')
         return 0
     with _estado(cfg) as est:
         r = est.resumo()
         total = sum(r.values())
-        print(f'\n  {total} leads no banco — {cfg.banco}\n')
+        diz(f'\n  {total} leads no banco — {cfg.banco}\n')
         for e in ORDEM:
             n = r.get(e, 0)
             if n:
                 barra = '█' * min(40, n)
-                print(f'  {e:<14} {n:>4}  {barra}')
+                diz(f'  {e:<14} {n:>4}  {barra}')
         if not total:
-            print('  (vazio — comece com: python3 funil.py cacar --cidade "Natal, RN")')
-        print()
+            diz('  (vazio — comece com: python3 funil.py cacar --cidade "Natal, RN")')
+        diz()
     return 0
 
 
@@ -124,14 +130,14 @@ def cmd_cacar(a, cfg) -> int:
     cfg.exige('google_places')
     cidade = a.cidade or cfg.cidade
     if not cidade:
-        print('diga a cidade: --cidade "Natal, RN"', file=sys.stderr)
+        diz('diga a cidade: --cidade "Natal, RN"', file=sys.stderr)
         return 2
     termos = a.termos or (config.RAMOS[a.ramo] if a.ramo else cfg.termos)
     with _estado(cfg) as est:
-        print(f'\nAgente 1 — caçando em {cidade} ({len(termos)} termos)\n')
+        diz(f'\nAgente 1 — caçando em {cidade} ({len(termos)} termos)\n')
         c = a1_cacador.caca(est, cfg.google_places, cidade, termos,
                             paginas=a.paginas, minimo=a.minimo)
-        print(f'\n  {c["achados"]} sem site · {c["novos"]} novos · '
+        diz(f'\n  {c["achados"]} sem site · {c["novos"]} novos · '
               f'{c["atualizados"]} atualizados · {c["fracos"]} fracos demais\n')
     return 0
 
@@ -156,11 +162,11 @@ def cmd_adicionar(a, cfg) -> int:
             categoria=a.categoria, nota=a.nota, avaliacoes=a.avaliacoes,
             presenca=presenca, url_achada=url, pontuacao=a.pontuacao,
             dados={'origem': 'mão'})
-        print(f'\n  {"criado" if novo_lead else "atualizado"}: #{_id} {a.nome}'
+        diz(f'\n  {"criado" if novo_lead else "atualizado"}: #{_id} {a.nome}'
               f' · {presenca}'
               + (f' · @{a.instagram.lstrip("@")}' if a.instagram else '')
               + (f' · {a.telefone}' if a.telefone else ' · SEM TELEFONE'))
-        print('  próximo: python3 funil.py escrever\n')
+        diz('  próximo: python3 funil.py escrever\n')
     return 0
 
 
@@ -168,12 +174,12 @@ def cmd_escrever(a, cfg) -> int:
     from nucleo import a2_abordagem
     cfg.exige_cerebro()
     with _estado(cfg) as est:
-        print(f'\nAgente 2 — escrevendo as abordagens ({cfg.modelo_do_cerebro})\n')
+        diz(f'\nAgente 2 — escrevendo as abordagens ({cfg.modelo_do_cerebro})\n')
         c = a2_abordagem.escreve(est, limite=a.limite, modelo=cfg.modelo_do_cerebro,
                                  cidade=a.cidade or '', provedor=cfg.provedor,
                                  chave=cfg.chave_do_dialeto)
-        print(f'\n  {c["escritos"]} escritas · {c["falhas"]} falhas')
-        print('  revise com: python3 funil.py revisar\n')
+        diz(f'\n  {c["escritos"]} escritas · {c["falhas"]} falhas')
+        diz('  revise com: python3 funil.py revisar\n')
     return 0
 
 
@@ -181,16 +187,16 @@ def cmd_revisar(a, cfg) -> int:
     with _estado(cfg) as est:
         ms = est.mensagens(situacao='rascunho', tipo='abordagem')
         if not ms:
-            print('\n  nada em rascunho.\n')
+            diz('\n  nada em rascunho.\n')
             return 0
-        print(f'\n  {len(ms)} abordagens esperando você\n')
+        diz(f'\n  {len(ms)} abordagens esperando você\n')
         for m in ms:
-            print(f'  ── #{m["id"]} · {m["lead_nome"]} · {m["cidade"]}'
+            diz(f'  ── #{m["id"]} · {m["lead_nome"]} · {m["cidade"]}'
                   + (f' · @{m["instagram"]}' if m['instagram'] else '')
                   + (f' · {m["telefone_e164"]}' if m['telefone_e164'] else ' · SEM TELEFONE'))
-            print(textwrap.indent(m['texto'], '     '))
-            print()
-        print('  aprovar: python3 funil.py aprovar ' + ' '.join(str(m['id']) for m in ms[:3])
+            diz(textwrap.indent(m['texto'], '     '))
+            diz()
+        diz('  aprovar: python3 funil.py aprovar ' + ' '.join(str(m['id']) for m in ms[:3])
               + ('  (ou --todas)' if len(ms) > 1 else '') + '\n')
     return 0
 
@@ -201,11 +207,11 @@ def cmd_aprovar(a, cfg) -> int:
         if a.todas:
             ids = [m['id'] for m in est.mensagens(situacao='rascunho', tipo='abordagem')]
         if not ids:
-            print('diga quais: aprovar 12 13  (ou --todas)', file=sys.stderr)
+            diz('diga quais: aprovar 12 13  (ou --todas)', file=sys.stderr)
             return 2
         for i in ids:
             est.marca_mensagem(int(i), 'aprovada')
-        print(f'\n  {len(ids)} aprovadas. enviar: python3 funil.py enviar\n')
+        diz(f'\n  {len(ids)} aprovadas. enviar: python3 funil.py enviar\n')
     return 0
 
 
@@ -215,22 +221,22 @@ def cmd_enviar(a, cfg) -> int:
     with _estado(cfg) as est:
         c = a2_abordagem.envia(est, canal=canal, limite=a.limite, pausa=a.pausa)
         if canal != 'link':
-            print(f'\n  {c["enviadas"]} enviadas · {c["falhas"]} falhas\n')
+            diz(f'\n  {c["enviadas"]} enviadas · {c["falhas"]} falhas\n')
             return 0
         if not c['links']:
-            print('\n  nada aprovado para enviar.\n')
+            diz('\n  nada aprovado para enviar.\n')
             return 0
 
         if a.abrir:
             return _enfileira(est, c['links'])
 
-        print(f'\n  {len(c["links"])} para mandar. Abra, confira, envie —'
+        diz(f'\n  {len(c["links"])} para mandar. Abra, confira, envie —'
               ' e confirme com o número do fim da linha:\n')
         for x in c['links']:
-            print(f'  {x["lead"]} ({x["cidade"]})')
-            print(f'    {x["url"]}')
-            print(f'    confirmar:  python3 funil.py enviada {x["msg_id"]}\n')
-        print('  dica: "enviar --abrir" abre um por um e já confirma sozinho.\n')
+            diz(f'  {x["lead"]} ({x["cidade"]})')
+            diz(f'    {x["url"]}')
+            diz(f'    confirmar:  python3 funil.py enviada {x["msg_id"]}\n')
+        diz('  dica: "enviar --abrir" abre um por um e já confirma sozinho.\n')
     return 0
 
 
@@ -246,27 +252,27 @@ def _enfileira(est, links: list[dict]) -> int:
     import webbrowser
 
     from nucleo import a2_abordagem
-    print(f'\n  {len(links)} na fila. Para cada um: confira no WhatsApp, envie,'
+    diz(f'\n  {len(links)} na fila. Para cada um: confira no WhatsApp, envie,'
           ' e volte aqui.')
-    print('  [enter] = enviei · [p] = pulo este · [s] = paro por aqui\n')
+    diz('  [enter] = enviei · [p] = pulo este · [s] = paro por aqui\n')
     enviados = 0
     for i, x in enumerate(links, 1):
-        print(f'  ── {i}/{len(links)}  {x["lead"]} ({x["cidade"]})')
+        diz(f'  ── {i}/{len(links)}  {x["lead"]} ({x["cidade"]})')
         webbrowser.open(x['url'])
         try:
             r = input('     enviou? ').strip().lower()
         except (EOFError, KeyboardInterrupt):
-            print()
+            diz()
             break
         if r in ('s', 'sair', 'q'):
             break
         if r in ('p', 'pular'):
-            print('     pulado\n')
+            diz('     pulado\n')
             continue
         a2_abordagem.marca_enviada(est, x['msg_id'], x['lead_id'])
         enviados += 1
-        print('     ✓ marcado como enviado\n')
-    print(f'\n  {enviados} enviados. A vigia cuida do resto:'
+        diz('     ✓ marcado como enviado\n')
+    diz(f'\n  {enviados} enviados. A vigia cuida do resto:'
           ' python3 funil.py vigiar\n')
     return 0
 
@@ -277,10 +283,10 @@ def cmd_enviada(a, cfg) -> int:
         for msg_id in a.ids:
             m = [x for x in est.mensagens() if x['id'] == int(msg_id)]
             if not m:
-                print(f'  mensagem {msg_id} não existe', file=sys.stderr)
+                diz(f'  mensagem {msg_id} não existe', file=sys.stderr)
                 continue
             a2_abordagem.marca_enviada(est, int(msg_id), m[0]['lead_id'])
-            print(f'  ✓ {m[0]["lead_nome"]} marcado como abordado')
+            diz(f'  ✓ {m[0]["lead_nome"]} marcado como abordado')
     return 0
 
 
@@ -288,7 +294,7 @@ def cmd_retorno(a, cfg) -> int:
     from nucleo import a3_estudio
     with _estado(cfg) as est:
         a3_estudio.anota_retorno(est, a.lead_id, a.texto)
-        print('\n  anotado. triar: python3 funil.py triar\n')
+        diz('\n  anotado. triar: python3 funil.py triar\n')
     return 0
 
 
@@ -296,10 +302,10 @@ def cmd_triar(a, cfg) -> int:
     from nucleo import a3_estudio
     cfg.exige_cerebro()
     with _estado(cfg) as est:
-        print('\nAgente 3 — lendo as respostas\n')
+        diz('\nAgente 3 — lendo as respostas\n')
         c = a3_estudio.tria(est, limite=a.limite, modelo=cfg.modelo_do_cerebro,
                             provedor=cfg.provedor, chave=cfg.chave_do_dialeto)
-        print(f'\n  {c["quer"]} querem · {c["nao_quer"]} não · '
+        diz(f'\n  {c["quer"]} querem · {c["nao_quer"]} não · '
               f'{c["duvida"]} em dúvida (decida você) · {c["falhas"]} falhas\n')
     return 0
 
@@ -308,9 +314,9 @@ def cmd_construir(a, cfg) -> int:
     from nucleo import a3_estudio
     cfg.exige_cerebro()
     with _estado(cfg) as est:
-        print('\nAgente 3 — Instagram → Claude Code → site\n')
+        diz('\nAgente 3 — Instagram → Claude Code → site\n')
         c = a3_estudio.roda(est, cfg, limite=a.limite)
-        print(f'\n  {c["prontas"]} prontas · {c["sem_material"]} esperando capturas · '
+        diz(f'\n  {c["prontas"]} prontas · {c["sem_material"]} esperando capturas · '
               f'{c["falhas"]} falhas\n')
     return 0
 
@@ -320,12 +326,12 @@ def cmd_publicar(a, cfg) -> int:
     cfg.exige('netlify')
     cfg.exige_cerebro()
     with _estado(cfg) as est:
-        print(f'\nAgente 4 — publicando na equipe {cfg.equipe_netlify}\n')
+        diz(f'\nAgente 4 — publicando na equipe {cfg.equipe_netlify}\n')
         c = a4_entrega.entrega(est, cfg, limite=a.limite)
         for x in c['links']:
-            print(f'\n  {x["lead"]}: {x["url"]}')
-            print('    mande o link:  python3 funil.py enviar')
-        print(f'\n  {c["publicadas"]} publicadas · {c["falhas"]} falhas\n')
+            diz(f'\n  {x["lead"]}: {x["url"]}')
+            diz('    mande o link:  python3 funil.py enviar')
+        diz(f'\n  {c["publicadas"]} publicadas · {c["falhas"]} falhas\n')
     return 0
 
 
@@ -337,35 +343,35 @@ def cmd_capturar(a, cfg) -> int:
         if a.lead_id:
             alvos = [est.lead(a.lead_id)]
             if not alvos[0]:
-                print(f'lead {a.lead_id} não existe', file=sys.stderr)
+                diz(f'lead {a.lead_id} não existe', file=sys.stderr)
                 return 2
         else:
             alvos = [l for l in est.leads(QUER_DEMO, limite=a.limite)]
         alvos = [l for l in alvos if l and l.instagram]
         if not alvos:
-            print('\n  ninguém com Instagram para capturar.\n')
+            diz('\n  ninguém com Instagram para capturar.\n')
             return 0
 
         olho = Insta(Path(cfg.perfil_instagram
                           or Path(cfg.banco).parent / 'instagram'))
         if not olho.logado():
-            print('\n  Você não está logado no Instagram nesta janela.')
-            print('  Entre na conta na janela que abriu — é uma vez só — e rode de novo.')
-            print('  (sem login o Instagram tapa a tela e a captura sai pela metade)\n')
+            diz('\n  Você não está logado no Instagram nesta janela.')
+            diz('  Entre na conta na janela que abriu — é uma vez só — e rode de novo.')
+            diz('  (sem login o Instagram tapa a tela e a captura sai pela metade)\n')
         try:
             for l in alvos:
                 pasta = material_de(l, cfg.material)
                 if ja_tem_material(pasta) and not a.refazer:
-                    print(f'  {l.nome}: já tem material em {pasta}')
+                    diz(f'  {l.nome}: já tem material em {pasta}')
                     continue
                 try:
                     feitos = olho.captura(l.instagram, pasta, posts=a.posts)
-                    print(f'  ✓ {l.nome}: {len(feitos)} capturas em {pasta}')
+                    diz(f'  ✓ {l.nome}: {len(feitos)} capturas em {pasta}')
                 except Exception as e:
-                    print(f'  ✗ {l.nome}: {e}')
+                    diz(f'  ✗ {l.nome}: {e}')
         finally:
             olho.fecha()
-        print('\n  próximo: python3 funil.py construir\n')
+        diz('\n  próximo: python3 funil.py construir\n')
     return 0
 
 
@@ -377,7 +383,7 @@ def cmd_vigiar(a, cfg) -> int:
     from nucleo.vigia import Vigia
     cfg.exige_cerebro()
     with _estado(cfg) as est:
-        print(f'\nVigia — acompanhando as conversas (a cada {a.intervalo}s)\n')
+        diz(f'\nVigia — acompanhando as conversas (a cada {a.intervalo}s)\n')
         v = Vigia(est, cfg, seco=a.seco)
         return v.roda(intervalo=a.intervalo, voltas_max=a.voltas)
 
@@ -386,28 +392,28 @@ def cmd_lead(a, cfg) -> int:
     with _estado(cfg) as est:
         l = est.lead(a.lead_id)
         if not l:
-            print(f'lead {a.lead_id} não existe', file=sys.stderr)
+            diz(f'lead {a.lead_id} não existe', file=sys.stderr)
             return 2
-        print(f'\n  #{l.id} {l.nome}  [{l.estado}]')
-        print(f'  {l.categoria or "—"} · {l.cidade} · nota {l.nota or "—"} '
+        diz(f'\n  #{l.id} {l.nome}  [{l.estado}]')
+        diz(f'  {l.categoria or "—"} · {l.cidade} · nota {l.nota or "—"} '
               f'({l.avaliacoes} avaliações) · pontuação {l.pontuacao}')
-        print(f'  telefone: {l.telefone or "—"}  ({l.telefone_e164 or "sem e164"})')
-        print(f'  instagram: @{l.instagram}' if l.instagram else '  instagram: —')
-        print(f'  presença: {l.presenca}  {l.url_achada or ""}')
+        diz(f'  telefone: {l.telefone or "—"}  ({l.telefone_e164 or "sem e164"})')
+        diz(f'  instagram: @{l.instagram}' if l.instagram else '  instagram: —')
+        diz(f'  presença: {l.presenca}  {l.url_achada or ""}')
         d = est.demo(l.id)
         if d:
-            print(f'  demo: {d["situacao"]}  {d["url"] or d["zip"] or d["pasta"] or ""}')
+            diz(f'  demo: {d["situacao"]}  {d["url"] or d["zip"] or d["pasta"] or ""}')
             if d['erro']:
-                print(f'        erro: {d["erro"]}')
-        print('\n  histórico:')
+                diz(f'        erro: {d["erro"]}')
+        diz('\n  histórico:')
         for e in est.historico(l.id):
-            print(f'    {e["agente"]:<14} {e["de"] or "—":>12} → {e["para"] or "—":<12} '
+            diz(f'    {e["agente"]:<14} {e["de"] or "—":>12} → {e["para"] or "—":<12} '
                   f'{e["detalhe"] or ""}')
-        print('\n  mensagens:')
+        diz('\n  mensagens:')
         for m in est.mensagens(lead_id=l.id):
-            print(f'    #{m["id"]} {m["tipo"]} [{m["situacao"]}]')
-            print(textwrap.indent(m['texto'], '      '))
-        print()
+            diz(f'    #{m["id"]} {m["tipo"]} [{m["situacao"]}]')
+            diz(textwrap.indent(m['texto'], '      '))
+        diz()
     return 0
 
 
@@ -415,7 +421,7 @@ def cmd_painel(a, cfg) -> int:
     import painel
     with _estado(cfg) as est:
         destino = painel.gera(est, cfg)
-    print(f'\n  {destino}\n  abra no navegador: file://{destino}\n')
+    diz(f'\n  {destino}\n  abra no navegador: file://{destino}\n')
     return 0
 
 
@@ -424,9 +430,9 @@ def cmd_descartar(a, cfg) -> int:
         for i in a.ids:
             try:
                 est.move(int(i), DESCARTADO, 'voce', a.motivo)
-                print(f'  ✓ {i} descartado')
+                diz(f'  ✓ {i} descartado')
             except Exception as e:
-                print(f'  ✗ {i}: {e}', file=sys.stderr)
+                diz(f'  ✗ {i}: {e}', file=sys.stderr)
     return 0
 
 
@@ -456,122 +462,122 @@ def cmd_colonia(a, cfg) -> int:
     try:
         col.confere()
     except ContaErrada as e:
-        print(f'\n  A CONTA NÃO FECHA\n\n  {e}\n')
-        print(f'  o livro-caixa está em {col.caminho}\n')
+        diz(f'\n  A CONTA NÃO FECHA\n\n  {e}\n')
+        diz(f'  o livro-caixa está em {col.caminho}\n')
         return 1
 
     if a.banco is not None:
         try:
             col.declara_banco(a.banco)
         except ContaErrada as e:
-            print(f'\n  {e}\n')
+            diz(f'\n  {e}\n')
             return 1
         col.salva()
         cabem = col.livre // col.semente
-        print(f'\n  banco: {dinheiro(col.banco)} · '
+        diz(f'\n  banco: {dinheiro(col.banco)} · '
               f'envelopes {dinheiro(col.reservado)} · '
               f'livre {dinheiro(col.livre)}')
-        print(f'  cabem mais {cabem} organismo(s) de {dinheiro(col.semente)}\n')
+        diz(f'  cabem mais {cabem} organismo(s) de {dinheiro(col.semente)}\n')
         return 0
 
     if a.recebi:
         ident, centavos = a.recebi[0], int(a.recebi[1])
         if ident not in col.bichos:
-            print(f'\n  não existe organismo "{ident}". Veja: '
+            diz(f'\n  não existe organismo "{ident}". Veja: '
                   'python3 funil.py colonia --extrato\n')
             return 1
         col.recebe(ident, centavos, de='confirmado à mão')
         col.salva()
         o = col.bichos[ident]
-        print(f'\n  {ident} recebeu {dinheiro(centavos)}. '
+        diz(f'\n  {ident} recebeu {dinheiro(centavos)}. '
               f'Envelope: {dinheiro(o.carteira)} · saldo {dinheiro(o.saldo)}')
-        print(f'  banco {dinheiro(col.banco)} · livre {dinheiro(col.livre)}')
+        diz(f'  banco {dinheiro(col.banco)} · livre {dinheiro(col.livre)}')
         if not o.vivo:
-            print('  (ele já estava morto: o dinheiro entrou no banco, '
+            diz('  (ele já estava morto: o dinheiro entrou no banco, '
                   'não no envelope dele)')
         if o.pode_reproduzir:
-            print('  Ele já pode se reproduzir — sai na próxima '
+            diz('  Ele já pode se reproduzir — sai na próxima '
                   '"colonia --viver".')
-        print()
+        diz()
         return 0
 
     if a.matar:
         if a.matar not in col.bichos:
-            print(f'\n  não existe organismo "{a.matar}"\n')
+            diz(f'\n  não existe organismo "{a.matar}"\n')
             return 1
         sobrou = col.bichos[a.matar].carteira
         col.mata(a.matar, 'morto à mão por você')
         col.salva()
-        print(f'\n  † {a.matar} morto. Não há como reviver.')
+        diz(f'\n  † {a.matar} morto. Não há como reviver.')
         if sobrou:
-            print(f'  {dinheiro(sobrou)} do envelope dele voltaram para o livre.')
-        print(f'  livre agora: {dinheiro(col.livre)}\n')
+            diz(f'  {dinheiro(sobrou)} do envelope dele voltaram para o livre.')
+        diz(f'  livre agora: {dinheiro(col.livre)}\n')
         return 0
 
     if a.recarregar:
         ident, quantos = a.recarregar[0], int(a.recarregar[1])
         o = col.bichos.get(ident)
         if not o:
-            print(f'\n  não existe organismo "{ident}"\n')
+            diz(f'\n  não existe organismo "{ident}"\n')
             return 1
         if o.fechados == 0:
             # Recarregar quem nunca fechou é furar a seleção por dentro: a
             # reserva de toques só filtra se acabar de verdade.
-            print(f'\n  {ident} nunca fechou nada. Recarregar toques aí é '
+            diz(f'\n  {ident} nunca fechou nada. Recarregar toques aí é '
                   'pagar para repetir o que não funcionou.\n')
             return 1
         o.toques += max(0, quantos)
         o.recarregados += max(0, quantos)
         col._anota(ident, 'recarregou', 0, f'+{quantos} toques')
         col.salva()
-        print(f'\n  {ident} agora tem {o.toques} toques.\n')
+        diz(f'\n  {ident} agora tem {o.toques} toques.\n')
         return 0
 
     if a.nascer:
         cidade = a.cidade or cfg.cidade
         if not cidade:
-            print('\n  falta a cidade: --cidade "Natal, RN", ou cidade = em '
+            diz('\n  falta a cidade: --cidade "Natal, RN", ou cidade = em '
                   'config.toml\n')
             return 1
         try:
             o = col.nascer(cidade=cidade, termos=cfg.termos, tom=a.tom,
                            preco=a.preco)
         except (ColoniaCheia, SemBanco) as e:
-            print(f'\n  {e}\n')
+            diz(f'\n  {e}\n')
             return 1
         col.salva()
-        print(f'\n  nasceu {o.id} com um envelope de {dinheiro(o.carteira)} '
+        diz(f'\n  nasceu {o.id} com um envelope de {dinheiro(o.carteira)} '
               f'e {o.toques} toques.')
-        print(f'  banco {dinheiro(col.banco)} · '
+        diz(f'  banco {dinheiro(col.banco)} · '
               f'envelopes {dinheiro(col.reservado)} · '
               f'livre {dinheiro(col.livre)}')
-        print(f'  {o.cidade} · tom {o.tom} · cobra {dinheiro(o.preco)}')
-        print('\n  para ele trabalhar: python3 funil.py colonia --viver\n')
+        diz(f'  {o.cidade} · tom {o.tom} · cobra {dinheiro(o.preco)}')
+        diz('\n  para ele trabalhar: python3 funil.py colonia --viver\n')
         return 0
 
     if a.viver:
         from nucleo import vida
         if not col.vivos():
-            print('\n  nenhum organismo vivo. Comece com: '
+            diz('\n  nenhum organismo vivo. Comece com: '
                   'python3 funil.py colonia --nascer\n')
             return 1
         cfg.exige_cerebro()
         cfg.exige('google_places')
-        print(f'\n  COLÔNIA · uma volta com {len(col.vivos())} vivos\n')
+        diz(f'\n  COLÔNIA · uma volta com {len(col.vivos())} vivos\n')
         with _estado(cfg) as est:
             saida = vida.volta(col, est, cfg, paginas=a.paginas, limite=a.limite)
-        print(col.extrato())
+        diz(col.extrato())
         if saida['mortos'] or saida['nasceram']:
-            print(f'  nesta volta: {len(saida["mortos"])} morreram, '
+            diz(f'  nesta volta: {len(saida["mortos"])} morreram, '
                   f'{len(saida["nasceram"])} nasceram\n')
-        print('  as abordagens ficaram em RASCUNHO. Nenhuma saiu sozinha:')
-        print('    python3 funil.py revisar')
-        print('    python3 funil.py enviar --abrir\n')
+        diz('  as abordagens ficaram em RASCUNHO. Nenhuma saiu sozinha:')
+        diz('    python3 funil.py revisar')
+        diz('    python3 funil.py enviar --abrir\n')
         return 0
 
-    print(col.extrato())
+    diz(col.extrato())
     if not col.bichos:
-        print('  colônia vazia. Comece com: python3 funil.py colonia --nascer\n')
+        diz('  colônia vazia. Comece com: python3 funil.py colonia --nascer\n')
     return 0
 
 
@@ -584,43 +590,43 @@ def cmd_planilha(a, cfg) -> int:
     from nucleo.planilha import escreve_modelo
     alvo = a.arquivo or Path('planilha.csv')
     if alvo.exists() and not a.forcar:
-        print(f'\n  {alvo} já existe. Use --forcar para sobrescrever '
+        diz(f'\n  {alvo} já existe. Use --forcar para sobrescrever '
               '(e perder o que estiver lá dentro).\n')
         return 1
     escreve_modelo(alvo)
-    print(f'\n  planilha criada: {alvo}')
-    print('  Abra no Excel ou no Google Planilhas, apague os três exemplos')
-    print('  e ponha os seus. Depois:\n')
-    print(f'    python3 funil.py importar {alvo}\n')
+    diz(f'\n  planilha criada: {alvo}')
+    diz('  Abra no Excel ou no Google Planilhas, apague os três exemplos')
+    diz('  e ponha os seus. Depois:\n')
+    diz(f'    python3 funil.py importar {alvo}\n')
     return 0
 
 
 def cmd_importar(a, cfg) -> int:
     from nucleo.planilha import le
     if not a.arquivo.exists():
-        print(f'\n  não achei {a.arquivo}. Gere o modelo com: '
+        diz(f'\n  não achei {a.arquivo}. Gere o modelo com: '
               'python3 funil.py planilha\n')
         return 1
     linhas = le(a.arquivo)
     if not linhas:
-        print('\n  a planilha não tem nenhuma linha com nome preenchido.\n')
+        diz('\n  a planilha não tem nenhuma linha com nome preenchido.\n')
         return 1
     novos = atualizados = 0
-    print()
+    diz()
     with _estado(cfg) as est:
         for l in linhas:
             _id, era_novo = est.guarda_lead(**l.para_lead())
             novos += era_novo
             atualizados += not era_novo
             falta = l.pontua_vazios()
-            print(f'  {"＋" if era_novo else "↻"} #{_id} {l.nome} · '
+            diz(f'  {"＋" if era_novo else "↻"} #{_id} {l.nome} · '
                   f'{l.modelo} · {l.pontuacao()}/10'
                   + (f'  (falta: {", ".join(x.split("(")[0].strip() for x in falta)})'
                      if falta else ''))
             for p in l.problemas:
-                print(f'      ⚠ {p}')
-    print(f'\n  {novos} novos, {atualizados} atualizados.')
-    print('  próximo: python3 funil.py previa\n')
+                diz(f'      ⚠ {p}')
+    diz(f'\n  {novos} novos, {atualizados} atualizados.')
+    diz('  próximo: python3 funil.py previa\n')
     return 0
 
 
@@ -635,10 +641,10 @@ def cmd_previa(a, cfg) -> int:
         else:
             alvos = est.leads(NOVO, limite=a.limite)
         if not alvos:
-            print('\n  nenhum lead em NOVO. Importe a planilha primeiro:'
+            diz('\n  nenhum lead em NOVO. Importe a planilha primeiro:'
                   '\n    python3 funil.py importar planilha.csv\n')
             return 1
-        print()
+        diz()
         feitos = 0
         for l in alvos:
             d = l.dados or {}
@@ -654,7 +660,7 @@ def cmd_previa(a, cfg) -> int:
                           com_fotos=not a.sem_fotos)
             except Exception as e:
                 est.anota('previa', 'erro', l.id, str(e)[:300])
-                print(f'  ✗ {l.nome}: {e}')
+                diz(f'  ✗ {l.nome}: {e}')
                 continue
             from nucleo.a3_estudio import empacota
             zip_ = empacota(p.pasta)
@@ -664,12 +670,12 @@ def cmd_previa(a, cfg) -> int:
                 est.move(l.id, DEMO_PRONTA, 'previa',
                          f'modelo {p.modelo}, {p.fotos} fotos')
             feitos += 1
-            print(f'  ✓ {l.nome} · modelo {p.modelo} · {p.fotos} fotos'
+            diz(f'  ✓ {l.nome} · modelo {p.modelo} · {p.fotos} fotos'
                   + (f' · falta: {", ".join(x.split("(")[0].strip() for x in p.pendencias)}'
                      if p.pendencias else ''))
-            print(f'      abra para conferir: {p.indice}')
-    print(f'\n  {feitos} prévia(s) prontas.')
-    print('  próximo: python3 funil.py publicar\n')
+            diz(f'      abra para conferir: {p.indice}')
+    diz(f'\n  {feitos} prévia(s) prontas.')
+    diz('  próximo: python3 funil.py publicar\n')
     return 0
 
 
@@ -682,16 +688,16 @@ def cmd_oferta(a, cfg) -> int:
         alvos = ([l for l in (est.lead(i) for i in a.lead) if l] if a.lead
                  else est.leads(PUBLICADO, limite=a.limite))
         if not alvos:
-            print('\n  ninguém publicado esperando mensagem. '
+            diz('\n  ninguém publicado esperando mensagem. '
                   'Rode: python3 funil.py publicar\n')
             return 1
-        print()
+        diz()
         escritas = 0
         for l in alvos:
             d = est.demo(l.id)
             link = (d['url'] if d else '') or ''
             if not link:
-                print(f'  ✗ {l.nome}: sem link publicado ainda')
+                diz(f'  ✗ {l.nome}: sem link publicado ainda')
                 continue
             dados = l.dados or {}
             falta = Linha(nome=l.nome, tipo=l.categoria, endereco=l.endereco,
@@ -706,12 +712,12 @@ def cmd_oferta(a, cfg) -> int:
             if l.estado != RASCUNHO:
                 est.move(l.id, RASCUNHO, 'oferta', 'mensagem com o link')
             escritas += 1
-            print(f'  ✓ {l.nome}\n{_recuado(texto)}\n')
-    print(f'  {escritas} mensagem(ns) em rascunho. Nenhuma saiu sozinha.')
-    print('  você lê, aprova e manda:')
-    print('    python3 funil.py revisar')
-    print('    python3 funil.py aprovar --todas')
-    print('    python3 funil.py enviar --abrir\n')
+            diz(f'  ✓ {l.nome}\n{_recuado(texto)}\n')
+    diz(f'  {escritas} mensagem(ns) em rascunho. Nenhuma saiu sozinha.')
+    diz('  você lê, aprova e manda:')
+    diz('    python3 funil.py revisar')
+    diz('    python3 funil.py aprovar --todas')
+    diz('    python3 funil.py enviar --abrir\n')
     return 0
 
 
@@ -721,22 +727,22 @@ def cmd_seguir(a, cfg) -> int:
     with _estado(cfg) as est:
         l = est.lead(a.lead)
         if not l:
-            print(f'\n  não achei o lead #{a.lead}\n')
+            diz(f'\n  não achei o lead #{a.lead}\n')
             return 1
         d = est.demo(l.id)
         link = (d['url'] if d else '') or '(sem link publicado)'
         if a.passo:
             s = seguinte(l, link, a.passo, (l.dados or {}).get('modelo', ''))
-            print(f'\n  TOQUE {a.passo} · dia {s["dia"]} · {s["nome"]}')
-            print(f'  \033[90m{s["porque"]}\033[0m\n')
-            print(_recuado(s['texto']))
-            print(f'\n  mandar agora: {_link_whats(l, s["texto"])}\n')
+            diz(f'\n  TOQUE {a.passo} · dia {s["dia"]} · {s["nome"]}')
+            diz(f'  \033[90m{s["porque"]}\033[0m\n')
+            diz(_recuado(s['texto']))
+            diz(f'\n  mandar agora: {_link_whats(l, s["texto"])}\n')
             return 0
-        print(f'\n  SEGUIMENTO de {l.nome} — cinco toques, contados do dia '
+        diz(f'\n  SEGUIMENTO de {l.nome} — cinco toques, contados do dia '
               'em que você mandou a primeira:\n')
         for i, s in enumerate(SEGUIMENTO, 1):
-            print(f'  {i}. dia {s["dia"]:>2} · {s["nome"]}')
-        print(f'\n  o texto de um deles: python3 funil.py seguir '
+            diz(f'  {i}. dia {s["dia"]:>2} · {s["nome"]}')
+        diz(f'\n  o texto de um deles: python3 funil.py seguir '
               f'--lead {l.id} --passo 2\n')
     return 0
 
@@ -750,14 +756,14 @@ def cmd_estagio(a, cfg) -> int:
         for i in a.lead:
             l = est.lead(i)
             if not l:
-                print(f'  não achei o lead #{i}')
+                diz(f'  não achei o lead #{i}')
                 continue
             try:
                 est.move(l.id, destino, 'você', a.nota)
-                print(f'  #{l.id} {l.nome}: {l.estado} → {destino}')
+                diz(f'  #{l.id} {l.nome}: {l.estado} → {destino}')
             except Exception as e:
-                print(f'  #{l.id} {l.nome}: {e}')
-    print()
+                diz(f'  #{l.id} {l.nome}: {e}')
+    diz()
     return 0
 
 

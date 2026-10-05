@@ -88,6 +88,8 @@ import random
 import time
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
+
+from .config import comando
 from typing import Any
 
 # ── dinheiro ────────────────────────────────────────────────────────
@@ -316,7 +318,7 @@ class Colonia:
                 f'não dá para declarar {dinheiro(centavos)}: os envelopes dos '
                 f'vivos já somam {dinheiro(self.reservado)}.\n'
                 'Mate um organismo primeiro (o envelope dele volta para o '
-                'livre): python3 funil.py colonia --matar <id>')
+                'livre): ' + comando('python3 funil.py colonia --matar <id>'))
         antes = self.banco
         self.banco = centavos
         self._anota('banco', 'declarado', centavos - antes,
@@ -393,8 +395,8 @@ class Colonia:
                 f'somam {dinheiro(self.reservado)}, então sobram '
                 f'{dinheiro(self.livre)} livres — e um organismo nasce com '
                 f'{dinheiro(self.semente)}.\n'
-                f'Declare mais: python3 funil.py colonia --banco '
-                f'{self.banco + (self.semente - self.livre)}')
+                + comando('Declare mais: python3 funil.py colonia --banco ')
+                + f'{self.banco + (self.semente - self.livre)}')
         o = Organismo(id=self._id(geracao), cidade=cidade, termos=list(termos),
                       tom=tom, preco=int(preco), carteira=self.semente,
                       toques=self.toques_iniciais,

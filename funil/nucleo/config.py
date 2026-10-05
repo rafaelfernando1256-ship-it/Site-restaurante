@@ -47,6 +47,19 @@ TERMOS_HOSPEDAGEM = [
 RAMOS = {'comida': TERMOS, 'hospedagem': TERMOS_HOSPEDAGEM}
 
 
+def comando(texto: str) -> str:
+    """
+    Traduz o comando sugerido para a língua do sistema de quem está lendo.
+
+    No Windows não existe `python3`: o que existe é um atalho da loja da
+    Microsoft com esse nome, que ABRE A LOJA em vez de rodar o programa.
+    Um guia que manda digitar `python3` ali é um guia que não funciona —
+    e o custo disso cai todo em quem está começando, que não tem como
+    saber que o errado é a instrução, não ele.
+    """
+    return texto.replace('python3 ', 'python ') if os.name == 'nt' else texto
+
+
 def _carrega_env(arquivo: Path | None = None) -> None:
     """Lê o `.env` sem dependência, sem sobrescrever o que já está no ambiente."""
     arquivo = arquivo or (RAIZ / '.env')

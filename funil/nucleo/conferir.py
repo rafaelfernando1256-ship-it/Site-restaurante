@@ -28,6 +28,8 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
+from .config import comando
+
 from .modelo import AGENTE_HTTP
 
 VERDE = '\033[32m'
@@ -37,21 +39,26 @@ CINZA = '\033[90m'
 FIM = '\033[0m'
 
 
+def diz(*coisas, **resto) -> None:
+    """`print` que ajusta o comando sugerido ao sistema de quem lê."""
+    print(*(comando(c) if isinstance(c, str) else c for c in coisas), **resto)
+
+
 def _linha(estado: str, nome: str, detalhe: str = '') -> None:
     marca = {'ok': f'{VERDE}✓{FIM}', 'ruim': f'{VERMELHO}✗{FIM}',
              'talvez': f'{AMARELO}–{FIM}'}[estado]
-    print(f'  {marca} {nome}' + (f'  {CINZA}{detalhe}{FIM}' if detalhe else ''),
+    diz(f'  {marca} {nome}' + (f'  {CINZA}{detalhe}{FIM}' if detalhe else ''),
           flush=True)
 
 
 def _testando(o_que: str) -> None:
     if sys.stdout.isatty():
-        print(f'  {CINZA}… testando {o_que}{FIM}', end='\r', flush=True)
+        diz(f'  {CINZA}… testando {o_que}{FIM}', end='\r', flush=True)
 
 
 def _limpa_linha() -> None:
     if sys.stdout.isatty():
-        print(' ' * 60, end='\r')
+        diz(' ' * 60, end='\r')
 
 
 # ── Places ──────────────────────────────────────────────────────────
@@ -242,15 +249,15 @@ def testa_fotos() -> tuple[str, str]:
 
 def confere(cfg, com_rede: bool = True) -> int:
     """Devolve 0 quando dá para trabalhar, 1 quando falta o essencial."""
-    print(f'\n  FUNIL — diagnóstico\n')
+    diz(f'\n  FUNIL — diagnóstico\n')
     # Groq e OpenRouter saem do config com o modelo vazio de propósito:
     # quem escolhe é o catálogo, na hora. Imprimir "groq ()" fazia isso
     # parecer campo que ficou faltando.
     qual = cfg.modelo_do_cerebro or 'escolhido na hora, pelo catálogo'
-    print(f'  Python {sys.version.split()[0]} · cérebro: {cfg.provedor} '
+    diz(f'  Python {sys.version.split()[0]} · cérebro: {cfg.provedor} '
           f'({qual})', flush=True)
-    print(f'  banco de dados: {cfg.banco}', flush=True)
-    print(f'  cidade padrão: {cfg.cidade or "(não definida)"}\n', flush=True)
+    diz(f'  banco de dados: {cfg.banco}', flush=True)
+    diz(f'  cidade padrão: {cfg.cidade or "(não definida)"}\n', flush=True)
 
     if not com_rede:
         chave_cerebro = {'gemini': cfg.gemini, 'openrouter': cfg.openrouter,
@@ -269,7 +276,7 @@ def confere(cfg, com_rede: bool = True) -> int:
         # pergunta é se existe chave, não se o site responde.
         estado, detalhe = testa_fotos()
         _linha(estado, 'acervo de fotos (capa da prévia)', detalhe)
-        print('\n  (modo --seco: só olhei se está preenchido. Sem --seco eu '
+        diz('\n  (modo --seco: só olhei se está preenchido. Sem --seco eu '
               'testo as chaves de verdade.)\n')
         return 0
 
@@ -312,20 +319,20 @@ def confere(cfg, com_rede: bool = True) -> int:
         _linha('ok', 'chaves de reserva', ', '.join(guardadas)
                + ' — se o seu provedor cair, troque em config.toml')
 
-    print()
+    diz()
     if essencial_falhou:
-        print(f'  {VERMELHO}Falta o essencial.{FIM} Resolva as linhas com ✗ '
+        diz(f'  {VERMELHO}Falta o essencial.{FIM} Resolva as linhas com ✗ '
               'acima e rode de novo.\n')
         return 1
     if publicar_falhou:
-        print(f'  {AMARELO}Dá para trabalhar até construir o site; publicar '
+        diz(f'  {AMARELO}Dá para trabalhar até construir o site; publicar '
               f'ainda não.{FIM}')
-        print('  Os agentes 1, 2 e 3 estão prontos.\n')
+        diz('  Os agentes 1, 2 e 3 estão prontos.\n')
         return 0
-    print(f'  {VERDE}Tudo pronto.{FIM} O ciclo inteiro roda:\n')
-    print('    python3 funil.py cacar --cidade "'
+    diz(f'  {VERDE}Tudo pronto.{FIM} O ciclo inteiro roda:\n')
+    diz('    python3 funil.py cacar --cidade "'
           + (cfg.cidade or 'Natal, RN') + '"')
-    print('    python3 funil.py escrever')
-    print('    python3 funil.py revisar')
-    print('    python3 funil.py enviar --abrir\n')
+    diz('    python3 funil.py escrever')
+    diz('    python3 funil.py revisar')
+    diz('    python3 funil.py enviar --abrir\n')
     return 0

@@ -16,6 +16,7 @@ import time
 import urllib.parse
 from pathlib import Path
 
+from nucleo.config import comando
 from nucleo.estado import Estado
 
 ORDEM = ['rascunho', 'novo', 'abordado', 'respondeu', 'quer_demo', 'demo_pronta',
@@ -242,5 +243,8 @@ rode o comando que aparece embaixo do botão para o funil andar.</p>
 </div></body></html>"""
 
     destino = Path(cfg.banco).parent / 'painel.html'
-    destino.write_text(pagina, encoding='utf-8')
+    # Traduzido num ponto só, no fim: o painel é lido no celular de quem
+    # vai digitar o comando no PRÓPRIO computador, e mandar ele digitar
+    # `python3` no Windows é mandar abrir a loja da Microsoft.
+    destino.write_text(comando(pagina), encoding='utf-8')
     return destino

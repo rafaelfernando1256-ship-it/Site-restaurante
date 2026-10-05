@@ -2259,7 +2259,8 @@ def _():
     verdade('Cantina da Vó Zuleica' in t, 'o nome aparece com acento')
     verdade('noindex' in t, 'painel local não vai para busca')
     verdade('Nada daqui dispara sozinho' in t)
-    verdade('python3 funil.py aprovar' in t, 'diz o próximo passo')
+    from nucleo.config import comando
+    verdade(comando('python3 funil.py aprovar') in t, 'diz o próximo passo')
     verdade('wa.me' not in t, 'rascunho não aprovado não ganha botão de envio')
 
 
@@ -2577,6 +2578,25 @@ def _():
     verdade('comissão' not in baixo and 'ifood' not in baixo,
             'perguntou de comissão a quem não paga comissão nenhuma')
     verdade('prévia' in baixo or 'demonstração' in baixo, 'caiu em nada')
+
+
+
+@teste('dica: no Windows o comando sugerido é "python", não "python3"')
+def _():
+    import os
+    from nucleo.config import comando
+    frase = '  próximo: python3 funil.py previa'
+    igual(comando(frase), frase, 'mexeu onde python3 existe')
+    real = os.name
+    os.name = 'nt'
+    try:
+        igual(comando(frase), '  próximo: python funil.py previa',
+              'mandou digitar python3 no Windows — lá isso abre a loja '
+              'da Microsoft em vez de rodar')
+        # o que não é comando fica como está
+        igual(comando('rode com python3'), 'rode com python3')
+    finally:
+        os.name = real
 
 
 
