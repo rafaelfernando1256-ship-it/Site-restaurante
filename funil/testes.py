@@ -2600,6 +2600,99 @@ def _():
 
 
 
+# ══ O CAMINHO DO PROMPT ═════════════════════════════════════════════
+@teste('prompt: leva TODOS os dados e proíbe inventar o que falta')
+def _():
+    from nucleo.planilha import Linha
+    from nucleo.prompt import monta
+    l = Linha(nome='Cantina da Vó', tipo='restaurante', cidade='Natal',
+              endereco='Rua A, 1', telefone='+55 84 98888-7777',
+              instagram='@cantina', especialidades=['Lasanha', 'Feijoada'])
+    t = monta(l, 'Rafael', ['fotos/a.jpg'])
+    for dado in ('Cantina da Vó', 'Natal', 'Rua A, 1', '+55 84 98888-7777',
+                 '5584988887777', '@cantina', 'Lasanha', 'Feijoada',
+                 'fotos/a.jpg', 'Rafael'):
+        verdade(dado in t, f'o prompt não levou: {dado}')
+    baixo = t.lower()
+    for regra in ('não pode', 'inventar preço', 'noindex',
+                  'não é o site oficial', 'prévia'):
+        verdade(regra in baixo, f'o prompt não trouxe a regra: {regra}')
+    # faltou horário: tem que pedir "a combinar", não um horário bonito
+    verdade('horário de funcionamento' in baixo, 'não listou o que falta')
+
+
+@teste('prompt: sem telefone, manda NÃO pôr botão de WhatsApp')
+def _():
+    from nucleo.planilha import Linha
+    from nucleo.prompt import monta
+    t = monta(Linha(nome='Sem Fone', tipo='barbearia'), 'Rafael')
+    verdade('NÃO inclua' in t, 'ia pedir botão de WhatsApp sem telefone')
+    verdade('Sem endereço' in t, 'ia pedir mapa sem endereço')
+    verdade('capa com CSS' in t, 'sem foto, não ofereceu o plano B')
+
+
+@teste('prompt: o endereço do mapa vai codificado para URL')
+def _():
+    from nucleo.planilha import Linha
+    from nucleo.prompt import monta
+    t = monta(Linha(nome='X', endereco='Rua das Flores, 120', cidade='Natal'),
+              'Rafael')
+    verdade('Rua+das+Flores' in t, 'endereço cru na URL do mapa quebraria')
+
+
+@teste('site: tira a crase e o "aqui está" que o modelo põe antes do HTML')
+def _():
+    from nucleo.prompt import limpa
+    for cru in ('```html\n<!doctype html><html></html>\n```',
+                'Aqui está o site:\n\n<!doctype html><html></html>',
+                '<!doctype html><html></html>'):
+        igual(limpa(cru), '<!doctype html><html></html>', repr(cru[:20]))
+
+
+@teste('site: o que não pode cair é consertado em código, não pedido')
+def _():
+    from nucleo.planilha import Linha
+    from nucleo.prompt import confere
+    l = Linha(nome='Cantina', tipo='restaurante')
+    cru = '<!doctype html><html><head></head><body><h1>Oi</h1></body></html>'
+    html, consertos, _ = confere(cru, l, 'Rafael')
+    baixo = html.lower()
+    verdade('demonstração' in baixo, 'ficou sem a faixa de prévia')
+    verdade('não é o site oficial' in baixo, 'ficou sem o aviso do rodapé')
+    verdade('noindex' in baixo, 'ficou sem o noindex')
+    igual(len(consertos), 3)
+    # o que já estava certo não é mexido duas vezes
+    _, de_novo, _ = confere(html, l, 'Rafael')
+    igual(de_novo, [])
+
+
+@teste('site: preço e horário que ninguém informou viram aviso para você')
+def _():
+    from nucleo.planilha import Linha
+    from nucleo.prompt import confere
+    l = Linha(nome='Cantina', tipo='restaurante', telefone='+55 84 98888-7777')
+    cru = ('<!doctype html><html><head></head><body>'
+           '<p>Almoço R$ 29,90 · Seg a Sex 11h às 15h</p>'
+           '<p>Lorem ipsum dolor</p></body></html>')
+    _, _, avisos = confere(cru, l, 'Rafael')
+    juntos = ' | '.join(avisos).lower()
+    verdade('preço' in juntos, 'não avisou do preço inventado')
+    verdade('horário' in juntos, 'não avisou do horário inventado')
+    verdade('lorem ipsum' in juntos, 'não avisou do lorem ipsum')
+    verdade('telefone' in juntos, 'não avisou que o telefone sumiu')
+
+
+@teste('site: lixo no lugar de HTML não vira site publicável em silêncio')
+def _():
+    from nucleo.planilha import Linha
+    from nucleo.prompt import confere
+    _, consertos, avisos = confere('desculpe, não posso ajudar com isso',
+                                   Linha(nome='X'), 'Rafael')
+    igual(consertos, [])
+    verdade(avisos and 'não parece um HTML' in avisos[0], avisos)
+
+
+
 def main() -> int:
     import contextlib
     import io

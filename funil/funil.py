@@ -666,9 +666,8 @@ def cmd_previa(a, cfg) -> int:
             zip_ = empacota(p.pasta)
             est.guarda_demo(l.id, pasta=str(p.pasta), zip=str(zip_),
                             situacao='pronta')
-            if l.estado != DEMO_PRONTA:
-                est.move(l.id, DEMO_PRONTA, 'previa',
-                         f'modelo {p.modelo}, {p.fotos} fotos')
+            _marca_pronta(est, l, 'previa',
+                          f'modelo {p.modelo}, {p.fotos} fotos')
             feitos += 1
             diz(f'  ✓ {l.nome} · modelo {p.modelo} · {p.fotos} fotos'
                   + (f' · falta: {", ".join(x.split("(")[0].strip() for x in p.pendencias)}'
@@ -677,6 +676,125 @@ def cmd_previa(a, cfg) -> int:
     diz(f'\n  {feitos} prévia(s) prontas.')
     diz('  próximo: python3 funil.py publicar\n')
     return 0
+
+
+def _marca_pronta(est, l, agente: str, detalhe: str) -> None:
+    """
+    Põe o lead em DEMO_PRONTA, e não perde o site se o estado não deixar.
+
+    O arquivo já está gravado quando esta função roda. Deixar uma
+    transição inválida virar traceback faria você achar que o site não
+    saiu — quando ele saiu, e está lá.
+    """
+    from nucleo.estado import DEMO_PRONTA, TransicaoInvalida
+    if l.estado == DEMO_PRONTA:
+        return
+    try:
+        est.move(l.id, DEMO_PRONTA, agente, detalhe)
+    except TransicaoInvalida as e:
+        diz(f'      \033[33m·\033[0m o site está gravado, mas o lead '
+            f'continua em "{l.estado}": {e}')
+
+
+def _linha_do_lead(l):
+    """O lead do banco de volta no formato que a planilha usa."""
+    from nucleo.planilha import Linha
+    d = l.dados or {}
+    return Linha(nome=l.nome, tipo=l.categoria, endereco=l.endereco,
+                 telefone=l.telefone, instagram=l.instagram,
+                 tem_site=(l.presenca == 'tem_site'), cidade=l.cidade,
+                 horario=d.get('horario', ''),
+                 especialidades=d.get('especialidades') or [],
+                 observacao=d.get('observacao', ''))
+
+
+def cmd_prompt(a, cfg) -> int:
+    """
+    Escreve o briefing para você colar no ChatGPT / Claude Code.
+
+    O caminho longo do site: em vez de preencher um dos três modelos, o
+    funil entrega o pedido inteiro e quem desenha é o modelo. Vale
+    quando o negócio merece um site pensado — e custa o seu tempo de ir
+    lá, colar e trazer de volta.
+    """
+    from nucleo.estado import NOVO
+    from nucleo.previa import baixa_fotos
+    from nucleo.prompt import monta, para_clipboard
+    with _estado(cfg) as est:
+        alvos = ([l for l in (est.lead(i) for i in a.lead) if l] if a.lead
+                 else est.leads(NOVO, limite=a.limite))
+        if not alvos:
+            diz('\n  nenhum lead. Importe a planilha primeiro:'
+                '\n    python3 funil.py importar planilha.csv\n')
+            return 1
+        diz()
+        for l in alvos:
+            linha = _linha_do_lead(l)
+            pasta = cfg.saida / 'previas' / linha.place_id.replace('manual:', '')
+            publico = pasta / 'publico'
+            publico.mkdir(parents=True, exist_ok=True)
+            # As fotos vão antes: o prompt precisa citar o caminho exato
+            # delas, senão volta um <img src="foto.jpg"> que não existe.
+            fotos = [] if a.sem_fotos else baixa_fotos(linha.modelo, publico)
+            texto = monta(linha, a.autor or cfg.autor, fotos)
+            alvo = pasta / 'PROMPT.txt'
+            alvo.write_text(texto, encoding='utf-8')
+            diz(f'  ✓ #{l.id} {l.nome} · {len(fotos)} fotos baixadas')
+            diz(f'      {alvo}')
+            if a.mostrar:
+                diz('\n' + texto + '\n')
+        if len(alvos) == 1 and para_clipboard(texto):
+            diz('\n  o prompt está no seu ctrl+V. Cole no ChatGPT ou no '
+                'Claude Code.')
+        else:
+            diz('\n  abra o PROMPT.txt e copie. (Com um lead só, eu copio '
+                'para o ctrl+V sozinho.)')
+    diz('\n  depois, traga o HTML de volta:')
+    diz('    python3 funil.py site --lead N site.html\n')
+    return 0
+
+
+def cmd_site(a, cfg) -> int:
+    """
+    Recebe o HTML que o modelo devolveu e põe no lugar certo do funil.
+
+    Confere as três regras que não podem cair — faixa de prévia, aviso
+    no rodapé, noindex — e conserta sozinho o que faltar. O resto vira
+    aviso para você olhar: eu não sei se aquele preço é inventado, você
+    sabe.
+    """
+    from nucleo.a3_estudio import empacota
+    from nucleo.estado import DEMO_PRONTA
+    from nucleo.prompt import confere, limpa
+    if not a.arquivo.exists():
+        diz(f'\n  não achei {a.arquivo}\n')
+        return 1
+    with _estado(cfg) as est:
+        l = est.lead(a.lead)
+        if not l:
+            diz(f'\n  não achei o lead #{a.lead}\n')
+            return 1
+        linha = _linha_do_lead(l)
+        html = limpa(a.arquivo.read_text(encoding='utf-8', errors='replace'))
+        html, consertos, avisos = confere(html, linha, a.autor or cfg.autor)
+
+        pasta = cfg.saida / 'previas' / linha.place_id.replace('manual:', '')
+        publico = pasta / 'publico'
+        publico.mkdir(parents=True, exist_ok=True)
+        (publico / 'index.html').write_text(html, encoding='utf-8')
+        zip_ = empacota(pasta)
+        est.guarda_demo(l.id, pasta=str(pasta), zip=str(zip_), situacao='pronta')
+        _marca_pronta(est, l, 'site', f'HTML trazido de {a.arquivo.name}')
+
+        diz(f'\n  ✓ {l.nome}')
+        for c in consertos:
+            diz(f'      \033[33m·\033[0m {c}')
+        for v in avisos:
+            diz(f'      \033[31m⚠\033[0m {v}')
+        diz(f'      abra para conferir: {publico / "index.html"}')
+    diz('\n  próximo: python3 funil.py publicar\n')
+    return 0
+
 
 
 def cmd_oferta(a, cfg) -> int:
@@ -835,6 +953,21 @@ def principal(argv: list[str] | None = None) -> int:
                         'tem um plano B de CSS)')
     s.add_argument('--autor', default='', help='seu nome na mensagem e no aviso')
 
+    s = sub.add_parser('prompt', help='escreve o briefing para você colar no '
+                                      'ChatGPT / Claude Code')
+    s.add_argument('--lead', type=int, nargs='*', default=[])
+    s.add_argument('--limite', type=int, default=5)
+    s.add_argument('--autor', default='')
+    s.add_argument('--sem-fotos', action='store_true')
+    s.add_argument('--mostrar', action='store_true',
+                   help='imprime o prompt inteiro na tela')
+
+    s = sub.add_parser('site', help='traz de volta o HTML que o modelo '
+                                    'devolveu e põe no funil')
+    s.add_argument('arquivo', type=Path, help='o .html que você salvou')
+    s.add_argument('--lead', type=int, required=True)
+    s.add_argument('--autor', default='')
+
     s = sub.add_parser('oferta', help='escreve a mensagem COM o link da prévia')
     s.add_argument('--lead', type=int, nargs='*', default=[])
     s.add_argument('--limite', type=int, default=10)
@@ -950,6 +1083,7 @@ def principal(argv: list[str] | None = None) -> int:
         'capturar': cmd_capturar, 'colonia': cmd_colonia,
         'planilha': cmd_planilha, 'importar': cmd_importar,
         'previa': cmd_previa, 'oferta': cmd_oferta, 'seguir': cmd_seguir,
+        'prompt': cmd_prompt, 'site': cmd_site,
         'negociando': cmd_estagio, 'fechado': cmd_estagio,
         'perdido': cmd_estagio,
     }[a.cmd](a, cfg)

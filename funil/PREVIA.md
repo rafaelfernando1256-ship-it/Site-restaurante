@@ -101,6 +101,35 @@ python3 funil.py previa --sem-fotos     # mais rápido ainda
 Abra o `index.html` que ele imprime **antes de publicar**. Trinta
 segundos olhando evitam mandar um site com o nome errado.
 
+
+### 3b. Ou: o site feito sob medida pelo modelo
+
+Em vez de preencher um dos três modelos, o funil escreve **o briefing** e
+quem desenha é o ChatGPT (ou o Claude Code):
+
+```bash
+python3 funil.py prompt --lead 3        # com um lead só, já vai pro ctrl+V
+# cole no ChatGPT, copie o HTML que voltar, salve como site.html
+python3 funil.py site --lead 3 site.html
+```
+
+O prompt carrega **todos** os dados da planilha, o caminho exato das
+fotos que ele já baixou, e as regras que não podem cair. Quando o HTML
+volta, `site` tira a crase que o modelo põe, **confere as regras e
+conserta o que faltar** — faixa de prévia, aviso no rodapé, `noindex` —
+e avisa o que ele não pode consertar sozinho: preço que apareceu do
+nada, horário que ninguém informou, lorem ipsum, telefone que sumiu.
+
+Instrução no prompt é pedido; o que não pode cair é checado em código.
+Modelo esquece.
+
+| | modelo preenchido (`previa`) | sob medida (`prompt` + `site`) |
+|---|---|---|
+| tempo | segundos, em lote | uns minutos, um por um |
+| custo | zero | a sua conta do ChatGPT |
+| resultado | igual toda vez | diferente toda vez, às vezes melhor |
+| quando | os cinco da semana | o negócio que vale o seu tempo |
+
 ### 4. Publicar
 
 ```bash

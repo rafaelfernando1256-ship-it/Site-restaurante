@@ -95,7 +95,12 @@ TRANSICOES: dict[str, set[str]] = {
     SEM_INTERESSE: {DESCARTADO, RESPONDEU},
     QUER_DEMO: {DEMO_PRONTA, DESCARTADO},
     DEMO_PRONTA: {PUBLICADO, QUER_DEMO, DESCARTADO},
-    PUBLICADO: {RASCUNHO, NEGOCIANDO, FECHADO, SEM_INTERESSE, DESCARTADO},
+    # DEMO_PRONTA de volta: refazer o site de quem já está no ar é
+    # trabalho normal — você publicou a prévia de modelo e depois trouxe
+    # uma feita sob medida. Barrar isso obrigaria a descartar o lead e
+    # recriar, perdendo o histórico da conversa.
+    PUBLICADO: {RASCUNHO, DEMO_PRONTA, NEGOCIANDO, FECHADO, SEM_INTERESSE,
+                DESCARTADO},
     NEGOCIANDO: {FECHADO, SEM_INTERESSE, SEM_RESPOSTA, DESCARTADO},
     FECHADO: set(),
     DESCARTADO: {NOVO},
