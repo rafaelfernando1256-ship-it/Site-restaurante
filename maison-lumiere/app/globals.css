@@ -1,0 +1,130 @@
+@import 'tailwindcss';
+
+/* ═══════════════════════════════════════════════════════════════
+   OS TOKENS
+   Três cores, duas famílias de fonte, uma curva de animação. Tudo
+   o que o site usa sai daqui — se você trocar o dourado nesta
+   linha, ele troca no site inteiro.
+   ═══════════════════════════════════════════════════════════════ */
+@theme {
+  --color-areia: #f5efe8;
+  --color-areia-fundo: #faf7f3;
+  --color-areia-escura: #e8ddd0;
+  --color-dourado: #c9a97c;
+  --color-dourado-claro: #dcc4a0;
+  --color-dourado-escuro: #a8884f;
+  --color-grafite: #1c1c1c;
+  --color-grafite-claro: #3a3a3a;
+  --color-grafite-suave: #6b6560;
+
+  --font-display: var(--fonte-display), 'Cormorant Garamond', Georgia, serif;
+  --font-sans: var(--fonte-sans), 'Inter', system-ui, sans-serif;
+
+  --ease-maison: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --breakpoint-xs: 26rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   O BÁSICO
+   ═══════════════════════════════════════════════════════════════ */
+@layer base {
+  html {
+    /* No desktop quem suaviza a rolagem é o Lenis, e ele chama
+       preventDefault nos links de âncora — então os dois não brigam.
+       Abaixo de 1024px o Lenis não é carregado, e é este
+       scroll-behavior que faz os links do menu deslizarem em vez de
+       pularem. Para quem pediu menos movimento, o bloco lá embaixo
+       devolve isto para 'auto'. */
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-areia-fundo);
+    color: var(--color-grafite);
+    font-family: var(--font-sans);
+    font-synthesis-weight: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-weight: 300;
+    letter-spacing: -0.015em;
+    line-height: 1.04;
+  }
+
+  /* Âncora não pode parar embaixo do cabeçalho fixo. */
+  :target {
+    scroll-margin-top: 6rem;
+  }
+
+  /* O foco tem que aparecer — e combinar. Removê-lo é tirar o site
+     de quem navega por teclado. */
+  :focus-visible {
+    outline: 2px solid var(--color-dourado-escuro);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  ::selection {
+    background: var(--color-dourado);
+    color: #fff;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PEÇAS QUE SE REPETEM
+   ═══════════════════════════════════════════════════════════════ */
+@layer components {
+  .sobretitulo {
+    font-size: 0.6875rem;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--color-dourado-escuro);
+    font-weight: 500;
+  }
+
+  .regua {
+    display: block;
+    height: 1px;
+    width: 3rem;
+    background: var(--color-dourado);
+  }
+
+  /* O grão. Uma textura levíssima por cima do fundo liso, que é o
+     que separa "bege de template" de "papel". */
+  .grao::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='r'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23r)'/%3E%3C/svg%3E");
+    mix-blend-mode: multiply;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   QUEM PEDIU MENOS MOVIMENTO
+   Esta é a rede embaixo de tudo. Cada componente também checa o
+   prefers-reduced-motion por conta própria (para não montar o
+   canvas 3D, por exemplo), mas se algum passar, aqui ele para.
+   ═══════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
