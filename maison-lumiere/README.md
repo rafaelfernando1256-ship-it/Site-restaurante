@@ -24,6 +24,25 @@ Abre em http://localhost:3000.
 npm run build && npm start   # o build de produção, que é o que vai para o ar
 ```
 
+### Versão estática, para hospedar em qualquer lugar
+
+```bash
+SITE_ESTATICO=1 npm run build   # sai em out/
+```
+
+Gera o site inteiro como arquivos, com caminhos relativos — dá para
+abrir de uma pasta, de um FTP, de um bucket, de onde for.
+
+**Para a Vercel você NÃO usa isto.** Lá o build normal é melhor, porque
+mantém a otimização de imagem do `next/image`. O modo estático existe
+para hospedagem burra, e foi o que usei para te mandar o link de
+visualização.
+
+Um detalhe se for servir a partir de uma SUBPASTA (`.../meu-site/`): o
+link do favicon sai absoluto (`/icon.svg`), que é o correto na raiz de
+um domínio e quebra numa subpasta. Se for o seu caso, troque para
+`./icon.svg` no `out/index.html` depois de gerar.
+
 ---
 
 ## Mudar o conteúdo — um arquivo só
