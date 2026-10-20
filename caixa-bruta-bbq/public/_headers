@@ -1,0 +1,9 @@
+# Cabeçalhos da Netlify. Os arquivos de _next/static têm o nome mudado a
+# cada build, então podem ficar em cache para sempre; o resto, não.
+/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()

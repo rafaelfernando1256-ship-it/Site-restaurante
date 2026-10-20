@@ -1,0 +1,7 @@
+node_modules/
+.next/
+out/
+*.zip
+.taste-skill/inspect/
+next-env.d.ts
+*.tsbuildinfo
