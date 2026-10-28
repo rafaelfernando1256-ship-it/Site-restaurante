@@ -3098,6 +3098,8 @@ def _():
     verdade(dois[dois.index('--model') + 1] == 'claude-opus-5-5'
             and dois[dois.index('--effort') + 1] == 'high', dois)
     verdade('PROMPT_MASTER.md' in cc.chamadas[1]['pedido'])
+    verdade('abra TODOS os prints' in cc.chamadas[1]['pedido'],
+            'o Opus tem que olhar os prints, não só ler o prompt mestre')
     pasta = cfg.saida / l.slug
     verdade((pasta / 'publico' / 'fotos' / '01-capa.png').exists(), 'as fotos vão junto')
     verdade('Não invente nada' in (pasta / 'DADOS.md').read_text(encoding='utf-8'))

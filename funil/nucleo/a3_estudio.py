@@ -405,6 +405,10 @@ Não construa o site. Só os dois arquivos."""
 PEDE_SITE = """Leia `PROMPT_MASTER.md` nesta pasta e construa o site \
 exatamente como ele pede.
 
+- Antes de escrever qualquer código, abra TODOS os prints do Instagram em \
+`fotos/` (um por um, com a ferramenta Read) e olhe com os seus olhos: o \
+prompt mestre diz o que fazer, os prints mostram como o negócio é de verdade. \
+Se os dois discordarem num texto ou num preço, vale o que está no print.
 - As imagens já estão copiadas em `publico/fotos/`. Os prints têm a \
 interface do Instagram em volta: recorte por CSS (um contêiner com \
 `overflow:hidden` e a imagem posicionada em porcentagem), sem ferramenta \
