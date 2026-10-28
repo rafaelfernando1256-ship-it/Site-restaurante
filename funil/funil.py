@@ -13,6 +13,10 @@ O FUNIL — quatro agentes, um banco, uma linha de comando.
     python3 funil.py painel
     python3 funil.py lead 7
 
+    python3 funil.py central                (o botão: liga tudo, numa página)
+    python3 funil.py preco "barbearia" --fazer 1200 --manutencao 100
+    python3 funil.py cliente "Pizzaria X" --telefone "11 91234-5678" --pasta ...
+
 A vigia faz o resto: lê quem respondeu, tria, responde, constrói a
 demonstração e entrega o link. O único passo que continua seu é o
 primeiro contato — "enviar" abre o WhatsApp com a mensagem pronta e
@@ -299,14 +303,60 @@ def cmd_retorno(a, cfg) -> int:
 
 
 def cmd_triar(a, cfg) -> int:
-    from nucleo import a3_estudio
+    """O atendente lê quem escreveu e decide: demo, preço, fechar, alteração..."""
+    from nucleo.atendente import atende
     cfg.exige_cerebro()
     with _estado(cfg) as est:
-        diz('\nAgente 3 — lendo as respostas\n')
-        c = a3_estudio.tria(est, limite=a.limite, modelo=cfg.modelo_do_cerebro,
-                            provedor=cfg.provedor, chave=cfg.chave_do_dialeto)
-        diz(f'\n  {c["quer"]} querem · {c["nao_quer"]} não · '
-              f'{c["duvida"]} em dúvida (decida você) · {c["falhas"]} falhas\n')
+        diz('\nAtendente — lendo quem escreveu\n')
+        c = atende(est, cfg, limite=a.limite)
+        feitos = ' · '.join(f'{k}: {v}' for k, v in c.items() if v)
+        diz(f'\n  {feitos or "ninguém esperando resposta"}')
+        diz('  as respostas ficam em rascunho; quem manda é a vigia (ou a central)\n')
+    return 0
+
+
+def cmd_central(a, cfg) -> int:
+    import central
+    return central.principal(porta=a.porta, abrir=not a.sem_navegador, ligar=a.ligar,
+                             cfg=cfg)
+
+
+def cmd_preco(a, cfg) -> int:
+    """Define (ou mostra) o preço de um nicho, sem abrir a central."""
+    from nucleo.precos import FAZER_E_MANUTENCAO, SO_MENSALIDADE, Precos
+    precos = Precos(Path(cfg.banco).parent / 'precos.json')
+    if a.nicho and (a.fazer or a.manutencao or a.mensalidade):
+        modo = SO_MENSALIDADE if a.mensalidade and not a.fazer else FAZER_E_MANUTENCAO
+        try:
+            precos.define(a.nicho, modo, fazer=a.fazer, manutencao=a.manutencao,
+                          mensalidade=a.mensalidade)
+        except ValueError as e:
+            diz(f'  {e}', file=sys.stderr)
+            return 2
+        from nucleo.atendente import libera_sem_preco
+        with _estado(cfg) as est:
+            libera_sem_preco(est)
+    diz()
+    for nicho in ([a.nicho] if a.nicho else list(precos.dados)):
+        diz(f'  {nicho}: {precos.texto(nicho) or "(sem preço)"}')
+    if not precos.dados and not a.nicho:
+        diz('  nenhum preço. Ex.: funil.py preco "barbearia" --fazer 1200 --manutencao 100')
+    diz()
+    return 0
+
+
+def cmd_cliente(a, cfg) -> int:
+    """Cadastra um cliente que já tem site, para os pedidos dele virarem alteração."""
+    from nucleo.clientes import cadastra
+    with _estado(cfg) as est:
+        try:
+            i = cadastra(est, cfg, nome=a.nome, telefone=a.telefone, nicho=a.nicho,
+                         pasta=a.pasta, url=a.url, site_id=a.site_id)
+        except ValueError as e:
+            diz(f'  {e}', file=sys.stderr)
+            return 2
+        diz(f'\n  cliente #{i} {a.nome} cadastrado. Os pedidos dele no WhatsApp '
+            'agora viram alteração no site.\n')
     return 0
 
 
@@ -877,7 +927,13 @@ def cmd_estagio(a, cfg) -> int:
                 diz(f'  não achei o lead #{i}')
                 continue
             try:
-                est.move(l.id, destino, 'você', a.nota)
+                if destino == FECHADO:
+                    # Virar cliente é mais que mudar de estado: daqui em
+                    # diante os pedidos dele no WhatsApp viram alteração.
+                    from nucleo.clientes import fecha
+                    fecha(est, l.id)
+                else:
+                    est.move(l.id, destino, 'você', a.nota)
                 diz(f'  #{l.id} {l.nome}: {l.estado} → {destino}')
             except Exception as e:
                 diz(f'  #{l.id} {l.nome}: {e}')
@@ -1012,7 +1068,7 @@ def principal(argv: list[str] | None = None) -> int:
     s.add_argument('lead_id', type=int)
     s.add_argument('texto')
 
-    s = sub.add_parser('triar', help='AGENTE 3 — quem quer ver a demonstração')
+    s = sub.add_parser('triar', help='ATENDENTE — lê quem escreveu e decide o que fazer')
     s.add_argument('--limite', type=int, default=20)
 
     s = sub.add_parser('construir', help='AGENTE 3 — Instagram → Claude Code → site')
@@ -1033,6 +1089,26 @@ def principal(argv: list[str] | None = None) -> int:
     s.add_argument('--voltas', type=int, default=0, help='0 = sem fim')
     s.add_argument('--seco', action='store_true',
                    help='mostra o que faria, sem enviar nada')
+
+    s = sub.add_parser('central', help='A CENTRAL — um botão liga todos os agentes')
+    s.add_argument('--porta', type=int, default=8765)
+    s.add_argument('--sem-navegador', action='store_true', help='não abre o navegador')
+    s.add_argument('--ligar', action='store_true', help='já liga os agentes ao abrir')
+
+    s = sub.add_parser('preco', help='o preço de um nicho (o atendente usa)')
+    s.add_argument('nicho', nargs='?', default='')
+    s.add_argument('--fazer', type=float, default=0, help='valor para fazer o site')
+    s.add_argument('--manutencao', type=float, default=0, help='manutenção por mês')
+    s.add_argument('--mensalidade', type=float, default=0,
+                   help='só a mensalidade (só para nicho de comida)')
+
+    s = sub.add_parser('cliente', help='cadastra um cliente que já tem site')
+    s.add_argument('nome')
+    s.add_argument('--telefone', required=True)
+    s.add_argument('--nicho', default='')
+    s.add_argument('--pasta', default='', help='pasta do site neste computador')
+    s.add_argument('--url', default='')
+    s.add_argument('--site-id', default='', help='ID do site na Netlify')
 
     s = sub.add_parser('lead', help='tudo sobre um lead')
     s.add_argument('lead_id', type=int)
@@ -1084,6 +1160,7 @@ def principal(argv: list[str] | None = None) -> int:
         'planilha': cmd_planilha, 'importar': cmd_importar,
         'previa': cmd_previa, 'oferta': cmd_oferta, 'seguir': cmd_seguir,
         'prompt': cmd_prompt, 'site': cmd_site,
+        'central': cmd_central, 'preco': cmd_preco, 'cliente': cmd_cliente,
         'negociando': cmd_estagio, 'fechado': cmd_estagio,
         'perdido': cmd_estagio,
     }[a.cmd](a, cfg)

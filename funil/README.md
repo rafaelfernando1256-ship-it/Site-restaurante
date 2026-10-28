@@ -22,6 +22,19 @@ Instagram da casa, e o quarto publica na sua Netlify e entrega o link.
 
 ---
 
+## O jeito mais fácil: a Central
+
+**Dois cliques em `CENTRAL.bat`** (ou `python funil.py central`) e um
+botão — **Ligar os agentes**. Daí em diante eles caçam, conversam,
+respondem preço, constroem a demonstração (Sonnet escreve o prompt mestre
+a partir dos prints do Instagram, Opus 5.5 constrói), publicam e fazem as
+alterações que os clientes pedem no WhatsApp. Na página ficam os preços
+por nicho e os primeiros contatos esperando a sua aprovação.
+
+Tudo explicado em **[CENTRAL.md](CENTRAL.md)**.
+
+---
+
 ## O que faz disto um sistema multiagente
 
 Não é um agente conversando com outro. É **um estado compartilhado com
@@ -93,10 +106,11 @@ O passo a passo completo, do zero ao primeiro site publicado, está em
 
 ```bash
 cd funil
-python -m pip install -r requirements.txt     # anthropic, google-genai e pydantic
+python -m pip install -r requirements.txt     # anthropic, google-genai, pydantic, playwright
+python -m playwright install chromium          # o navegador do WhatsApp Web
 cp .env.exemplo .env                # e preencha as chaves
 cp config.exemplo.toml config.toml  # opcional
-python3 testes.py                   # 49 testes, nenhum toca a rede
+python3 testes.py                   # 175 testes, nenhum toca a rede
 ```
 
 ### Duas chaves, e só uma delas é obrigatória para começar
@@ -531,7 +545,7 @@ sumido) está verificada; o que não dá para verificar daqui é a rede.
 
 ## O que foi verificado
 
-**111 testes, 111 passando** (`python3 testes.py`). Nenhum toca a rede: o
+**175 testes, 175 passando** (`python3 testes.py`). Nenhum toca a rede: o
 cliente do modelo, a Places API, a API da Netlify e o Claude Code entram
 como dublê, porque o que precisa de teste é a lógica.
 

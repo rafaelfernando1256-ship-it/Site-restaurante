@@ -25,10 +25,26 @@ Se quiser colar texto — bio, cardápio, horário —, escreva em
 `material/<slug>/notas.txt` e isso entra na leitura junto das imagens.
 
 QUEM CONSTRÓI O SITE
-O Claude Code, em modo não interativo (`claude -p`), rodando dentro da
-pasta da demonstração com o briefing que este agente escreveu. O
-briefing carrega as regras de honestidade inteiras — é o que impede o
-site de nascer com preço inventado e depoimento falso.
+O Claude Code, em modo não interativo (`claude -p`), em DUAS etapas:
+
+  1. o Sonnet, em esforço alto, olha os prints do Instagram e escreve o
+     PROMPT MESTRE (`PROMPT_MASTER.md`): identidade, cores, seções,
+     textos e cardápio exatamente como estão nos prints, e as regras;
+  2. o Opus 5.5, em esforço alto, lê o prompt mestre e as fotos e
+     constrói o site em `publico/`.
+
+Separar as duas coisas não é enfeite: quem olha vinte prints e decide o
+que importa é um trabalho; quem escreve três mil linhas de HTML bem
+feito é outro. E o prompt mestre fica na pasta — quando o site sai
+estranho, dá para ler o que foi pedido e ver em qual etapa errou.
+
+Usa a SUA conta do Claude Code (a assinatura), não a chave de API do
+cérebro: funciona com Groq, Gemini ou qualquer outro provedor no resto
+do funil. Os modelos e o esforço de cada etapa estão em `config.toml`,
+seção `[estudio]`.
+
+Sem Claude Code instalado, o próprio cérebro lê os prints e escreve uma
+página única (`nucleo/construtor.py`).
 """
 from __future__ import annotations
 
@@ -45,7 +61,7 @@ from pydantic import BaseModel, Field
 
 from .modelo import pede_json
 from .estado import (Estado, Lead, ABORDADO, RESPONDEU, QUER_DEMO, DEMO_PRONTA,
-                     SEM_INTERESSE)
+                     SEM_INTERESSE, SEM_RESPOSTA)
 
 AGENTE = 'a3_estudio'
 IMAGENS = ('.png', '.jpg', '.jpeg', '.webp')
@@ -109,7 +125,7 @@ def anota_retorno(est: Estado, lead_id: int, texto: str) -> None:
     """Você cola a resposta do dono. O lead vai para RESPONDEU."""
     est.guarda_mensagem(lead_id, 'retorno', texto.strip())
     l = est.lead(lead_id)
-    if l and l.estado == ABORDADO:
+    if l and l.estado in (ABORDADO, SEM_RESPOSTA):
         est.move(lead_id, RESPONDEU, AGENTE, 'respondeu no WhatsApp')
 
 
@@ -191,7 +207,7 @@ class Leitura(BaseModel):
 
 
 LEITURA_INSTRUCAO = """Você está olhando capturas de tela do Instagram de um \
-restaurante para montar o site dele.
+pequeno negócio para montar o site dele.
 
 Extraia SÓ o que está visível. Esta é a regra que vale mais que todas as outras: \
 o que você não vê, você NÃO PREENCHE — vai para `nao_sei`.
@@ -237,7 +253,7 @@ def le(lead: Lead, imagens: Sequence[Path], notas: str = '',
 
 
 # ── O briefing que vai para o Claude Code ───────────────────────────
-REGRAS = """## Regras que não se negociam
+HONESTIDADE = """## Regras que não se negociam
 
 Este site é uma DEMONSTRAÇÃO, feita de fora, sem a casa ter contratado nada.
 
@@ -258,9 +274,9 @@ Este site é uma DEMONSTRAÇÃO, feita de fora, sem a casa ter contratado nada.
    roubar busca do negócio de verdade.
 6. **As fotos são as dele.** Use as imagens que estão em `fotos/`. Nenhuma
    foto de banco de imagem fingindo ser a comida dele.
-7. **Só a marca dele.** Nenhuma marca, logo ou nome de terceiro.
+7. **Só a marca dele.** Nenhuma marca, logo ou nome de terceiro."""
 
-## Qualidade
+QUALIDADE_GERADOR = """## Qualidade
 
 Padrão igual ao de `grao-dourado/` e `mega-express/` neste mesmo repositório —
 leia um deles antes de começar, é o molde:
@@ -274,6 +290,23 @@ leia um deles antes de começar, é o molde:
 - CSS e JS em arquivo próprio, sem framework;
 - um `README.md` que diga o que é demonstração, o que foi deixado em branco e
   onde se troca cada coisa."""
+
+REGRAS = HONESTIDADE + '\n\n' + QUALIDADE_GERADOR
+
+# A demonstração das duas etapas sai ESTÁTICA, direto em `publico/`: vai
+# por WhatsApp para alguém decidir em trinta segundos, e as alterações que
+# o cliente pedir depois são feitas no mesmo arquivo, sem build no meio.
+QUALIDADE_ESTATICO = """## Qualidade
+
+- site estático direto em `publico/`: `index.html` na raiz, CSS e JS em
+  arquivo próprio (`publico/estilo.css`, `publico/site.js`), sem framework e
+  sem build;
+- mobile primeiro, funcionando em 360px; sem rolagem lateral;
+- contraste WCAG AA em todo texto;
+- `alt` em toda imagem, `<h1>` único, hierarquia de heading sem salto;
+- `publico/robots.txt` com `Disallow: /`;
+- um `README.md` na pasta (fora de `publico/`) dizendo o que é demonstração,
+  o que ficou em branco e onde se troca cada coisa."""
 
 
 def briefing(lead: Lead, leitura: Leitura, fotos: list[str]) -> str:
@@ -336,54 +369,159 @@ Rode `node construir.mjs` e confira que `publico/` abre sem erro de console.
 """
 
 
-# ── A construção ────────────────────────────────────────────────────
-def constroi(lead: Lead, leitura: Leitura, imagens: Sequence[Path], saida: Path,
-             referencia: Path, modelo: str | None = None,
-             tempo_limite: int = 3600) -> tuple[Path, str]:
-    """
-    Monta a pasta, chama o Claude Code e devolve (pasta, saida_do_cli).
-    O zip é separado: se o build falhar, a pasta fica para você olhar.
-    """
-    pasta = saida / lead.slug
-    fotos = pasta / 'fotos'
-    fotos.mkdir(parents=True, exist_ok=True)
-    nomes = []
-    for p in imagens:
-        destino = fotos / p.name
-        if not destino.exists():
-            shutil.copy2(p, destino)
-        nomes.append(p.name)
+# ── A construção: Sonnet escreve o prompt mestre, Opus constrói ────
+PEDE_PROMPT_MASTER = """Você é o diretor de criação de um estúdio que faz \
+sites para pequenos negócios. Nesta pasta estão:
 
-    texto = briefing(lead, leitura, nomes)
-    (pasta / 'BRIEFING.md').write_text(texto, encoding='utf-8')
-    (pasta / 'leitura.json').write_text(
-        leitura.model_dump_json(indent=2), encoding='utf-8')
+- `DADOS.md` — o que se sabe do negócio e as regras que não se negociam;
+- `fotos/` — prints do Instagram dele.
 
-    comando = [
-        'claude', '-p',
-        'Leia BRIEFING.md nesta pasta e construa o site exatamente como ele pede. '
-        f'Use {referencia} como molde de estrutura e de qualidade. '
-        'Quando terminar, rode o build e diga em uma linha o que ficou pendente.',
-        '--permission-mode', 'acceptEdits',
-        '--output-format', 'json',
-        '--add-dir', str(referencia),
-    ]
+Abra TODAS as imagens de `fotos/` (uma por uma, com a ferramenta Read) e \
+leia com atenção: bio, destaques, posts, cardápio, preços escritos, cores, \
+o clima das fotos.
+
+Depois escreva DOIS arquivos, e mais nada:
+
+1. `PROMPT_MASTER.md` — o prompt mestre para o Claude Code (Opus 5.5, \
+esforço alto) construir o site de demonstração deste negócio. Ele precisa \
+ser completo o bastante para quem nunca viu os prints:
+   - identidade visual tirada das fotos: paleta em hex, clima, tipografia \
+sugerida (Google Fonts), o que torna ESTE negócio diferente dos outros;
+   - as seções, em ordem, e o que vai em cada uma;
+   - os textos reais copiados dos prints (bio, nome dos pratos ou \
+serviços, descrições) — EXATAMENTE como estão escritos; preço só se \
+estiver escrito;
+   - quais arquivos de `fotos/` usar em cada lugar, e em que região de \
+cada print está a foto boa (os prints têm a interface do Instagram em \
+volta: diga onde recortar, em porcentagem da imagem);
+   - as regras de `DADOS.md`, copiadas inteiras no fim.
+2. `leitura.json` — exatamente neste formato:
+   {{"nome_exibido": "...", "uma_linha": "...", "nao_sei": ["...", "..."]}}
+   Em `nao_sei`, tudo que NÃO está nos prints e por isso não pode ser \
+inventado: preço, horário, endereço, telefone, formas de pagamento...
+
+Não construa o site. Só os dois arquivos."""
+
+PEDE_SITE = """Leia `PROMPT_MASTER.md` nesta pasta e construa o site \
+exatamente como ele pede.
+
+- As imagens já estão copiadas em `publico/fotos/`. Os prints têm a \
+interface do Instagram em volta: recorte por CSS (um contêiner com \
+`overflow:hidden` e a imagem posicionada em porcentagem), sem ferramenta \
+externa.
+- O site fica em `publico/`, com `index.html` na raiz.
+- `{referencia}` é um site deste estúdio que serve de régua de qualidade: \
+olhe antes de começar.
+- Quando terminar, confira o HTML e responda em UMA linha o que ficou \
+pendente para o dono preencher."""
+
+FERRAMENTAS = 'Read,Write,Edit,Glob,Grep'
+
+
+def dados_md(lead: Lead, notas: str, fotos: list[str]) -> str:
+    from .precos import nicho_do_lead
+    return f"""# {lead.nome}
+
+- **Cidade:** {lead.cidade or '(não sei)'}
+- **Instagram:** @{lead.instagram or '(não sei)'}
+- **Nicho:** {nicho_do_lead(lead) or lead.categoria or '(não sei)'}
+- **Telefone/WhatsApp público:** {lead.telefone or '(não sei — use placeholder)'}
+- **Endereço:** {lead.endereco or '(não sei — deixe em branco)'}
+
+## Prints do Instagram (em `fotos/`)
+
+{chr(10).join(f'- {f}' for f in fotos) or '- (nenhum)'}
+""" + (f"""
+## Notas colhidas à mão
+
+{notas.strip()}
+""" if notas.strip() else '') + f"""
+{HONESTIDADE}
+
+{QUALIDADE_ESTATICO}
+"""
+
+
+def claude_code(pedido: str, pasta: Path, modelo: str, esforco: str,
+                tempo_limite: int, extra: Sequence[str] = (),
+                executor: Any = None, ferramentas: str = FERRAMENTAS) -> str:
+    """
+    Uma chamada ao Claude Code. Devolve o que ele disse; levanta se falhou.
+
+    O pedido vai pela ENTRADA, não como argumento. No Windows o Claude Code
+    instalado pelo npm é `claude.cmd`: o Python só o acha com o caminho
+    inteiro (daí o `which`), e o cmd.exe corta argumento com quebra de
+    linha — o prompt chegaria pela metade, sem erro nenhum.
+    """
+    from shutil import which
+    comando = [which('claude') or 'claude', '-p',
+               '--permission-mode', 'acceptEdits',
+               '--allowedTools', ferramentas,
+               '--output-format', 'json']
     if modelo:
         comando += ['--model', modelo]
-
-    r = subprocess.run(comando, cwd=pasta, capture_output=True, text=True,
-                       timeout=tempo_limite,
-                       env={**os.environ, 'CLAUDE_CODE_MAX_OUTPUT_TOKENS': '32000'})
-    relato = r.stdout.strip() or r.stderr.strip()
+    if esforco:
+        comando += ['--effort', esforco]
+    comando += list(extra)
+    r = (executor or subprocess.run)(
+        comando, input=pedido, cwd=pasta, capture_output=True, text=True,
+        timeout=tempo_limite, encoding='utf-8', errors='replace',
+        env={**os.environ, 'CLAUDE_CODE_MAX_OUTPUT_TOKENS': '32000'})
+    relato = (r.stdout or '').strip() or (r.stderr or '').strip()
     try:
         relato = json.loads(relato).get('result', relato)
     except Exception:
         pass
     if r.returncode != 0:
-        raise RuntimeError(f'o Claude Code saiu com código {r.returncode}: {relato[:500]}')
-    if not (pasta / 'publico').exists():
-        raise RuntimeError('o build não gerou a pasta publico/. '
+        raise RuntimeError(f'o Claude Code ({modelo or "padrão"}) saiu com código '
+                           f'{r.returncode}: {str(relato)[:500]}')
+    return str(relato)
+
+
+def constroi(lead: Lead, imagens: Sequence[Path], notas: str, saida: Path,
+             referencia: Path, cfg, executor: Any = None) -> tuple[Path, str]:
+    """
+    As duas etapas. Devolve (pasta, o que o Opus disse que ficou pendente).
+    O zip é separado: se a construção falhar, a pasta fica para você olhar.
+    """
+    pasta = saida / lead.slug
+    fotos = pasta / 'fotos'
+    publico_fotos = pasta / 'publico' / 'fotos'
+    fotos.mkdir(parents=True, exist_ok=True)
+    publico_fotos.mkdir(parents=True, exist_ok=True)
+    nomes = []
+    for p in imagens:
+        for destino in (fotos / p.name, publico_fotos / p.name):
+            if not destino.exists():
+                shutil.copy2(p, destino)
+        nomes.append(p.name)
+    (pasta / 'DADOS.md').write_text(dados_md(lead, notas, nomes), encoding='utf-8')
+
+    print(f'  1/2 {cfg.estudio_modelo_prompt} ({cfg.estudio_esforco_prompt}) '
+          'lendo os prints e escrevendo o prompt mestre...')
+    claude_code(PEDE_PROMPT_MASTER, pasta, cfg.estudio_modelo_prompt,
+                cfg.estudio_esforco_prompt, tempo_limite=1800, executor=executor)
+    if not (pasta / 'PROMPT_MASTER.md').exists():
+        raise RuntimeError('a etapa 1 terminou sem escrever PROMPT_MASTER.md')
+
+    print(f'  2/2 {cfg.estudio_modelo_site} ({cfg.estudio_esforco_site}) '
+          'construindo o site... (isto demora minutos)')
+    relato = claude_code(PEDE_SITE.format(referencia=referencia), pasta,
+                         cfg.estudio_modelo_site, cfg.estudio_esforco_site,
+                         tempo_limite=3600, extra=['--add-dir', str(referencia)],
+                         executor=executor)
+    if not (pasta / 'publico' / 'index.html').exists():
+        raise RuntimeError('a etapa 2 terminou sem publico/index.html. '
                            f'O Claude Code disse: {relato[:500]}')
+    robots = pasta / 'publico' / 'robots.txt'
+    if not robots.exists():
+        robots.write_text('User-agent: *\nDisallow: /\n', encoding='utf-8')
+    if not (pasta / 'leitura.json').exists():
+        # A entrega lê `nao_sei` daqui. Sem ele, a mensagem só não lista
+        # o que ficou em branco — não é motivo para jogar o site fora.
+        (pasta / 'leitura.json').write_text(
+            json.dumps({'nome_exibido': lead.nome, 'nao_sei': []}, ensure_ascii=False),
+            encoding='utf-8')
     return pasta, relato
 
 
@@ -425,8 +563,12 @@ def constroi_rapido(lead: Lead, leitura: Leitura, imagens: Sequence[Path],
     return pasta, f'página única escrita pelo {cfg.modelo_do_cerebro}'
 
 
-def roda(est: Estado, cfg, limite: int = 3, cli: Any = None) -> dict[str, int]:
-    """Pega quem disse que quer, lê o Instagram e constrói."""
+def roda(est: Estado, cfg, limite: int = 3, cli: Any = None,
+         executor: Any = None, leads: list[Lead] | None = None) -> dict[str, int]:
+    """
+    Pega quem disse que quer, lê o Instagram e constrói. Com `leads`, constrói
+    para esses — é o fluxo da prévia, em que o site vem ANTES da conversa.
+    """
     conta = {'prontas': 0, 'sem_material': 0, 'falhas': 0}
     # O molde é um site pronto deste repositório, não cfg.saida — que o
     # usuário pode ter apontado para qualquer lugar.
@@ -435,7 +577,7 @@ def roda(est: Estado, cfg, limite: int = 3, cli: Any = None) -> dict[str, int]:
     if not referencia.exists():
         referencia = _cfg.RAIZ.parent
     olho = None          # o navegador das capturas, aberto só se precisar
-    for l in est.leads(QUER_DEMO, limite=limite):
+    for l in (leads if leads is not None else est.leads(QUER_DEMO, limite=limite)):
         pasta_material = material_de(l, cfg.material)
         imagens, notas = reune(pasta_material)
 
@@ -461,15 +603,15 @@ def roda(est: Estado, cfg, limite: int = 3, cli: Any = None) -> dict[str, int]:
                   + (f' (@{l.instagram})' if l.instagram else ''))
             continue
         try:
-            print(f'  lendo o Instagram de {l.nome} ({len(imagens)} imagens)...')
-            leitura = le(l, imagens, notas, modelo=cfg.modelo_do_cerebro,
-                         cli=cli or (cfg.chave_do_dialeto or None),
-                         provedor=cfg.provedor)
-            if tem_claude_code() and cfg.provedor == 'claude':
-                print(f'  construindo o site de {l.nome} com o Claude Code... '
-                      '(isto demora minutos)')
-                pasta, relato = constroi(l, leitura, imagens, cfg.saida, referencia)
+            if cfg.estudio_claude_code and (executor or tem_claude_code()):
+                print(f'  {l.nome}: {len(imagens)} prints → Claude Code')
+                pasta, relato = constroi(l, imagens, notas, cfg.saida, referencia,
+                                         cfg, executor=executor)
             else:
+                print(f'  lendo o Instagram de {l.nome} ({len(imagens)} imagens)...')
+                leitura = le(l, imagens, notas, modelo=cfg.modelo_do_cerebro,
+                             cli=cli or (cfg.chave_do_dialeto or None),
+                             provedor=cfg.provedor)
                 print(f'  escrevendo o site de {l.nome}...')
                 pasta, relato = constroi_rapido(l, leitura, imagens, cfg.saida, cfg)
             zip_ = empacota(pasta)

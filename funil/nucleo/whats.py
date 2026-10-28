@@ -51,6 +51,14 @@ CAIU = ['Conectar aparelho', 'Link a device', 'Sua conta foi banida',
         'Your account was banned', 'Não foi possível conectar']
 
 
+# O aviso de número sem WhatsApp aparece numa janela por cima da página.
+# Procurar a frase no corpo inteiro dava falso alarme: bastava a prévia de
+# uma conversa qualquer no painel lateral dizer "inválido".
+NAO_TEM = re.compile(r'inválido|invalid|não está no WhatsApp|isn\'t on WhatsApp', re.I)
+AVISO = ['div[role="dialog"]', 'div[data-animate-modal-popup="true"]',
+         'div[data-testid="popup-contents"]']
+
+
 class NaoLogado(RuntimeError):
     pass
 
@@ -151,6 +159,14 @@ class Whats:
                 continue
         return False
 
+    def logado(self) -> bool:
+        """A lista de conversas está na tela? (Falso = falta ler o QR.)"""
+        try:
+            return (self.pagina is not None and not self.pagina.is_closed()
+                    and self._espera_lista(3000))
+        except Exception:
+            return False
+
     def vivo(self) -> bool:
         """A sessão ainda está de pé? Falso = parar tudo."""
         try:
@@ -183,9 +199,7 @@ class Whats:
         p.goto(alvo, wait_until='domcontentloaded', timeout=60000)
         time.sleep(random.uniform(2.5, 5.0))
 
-        corpo = p.inner_text('body')[:2000]
-        if re.search(r'inválido|invalid|não está no WhatsApp|isn\'t on WhatsApp',
-                     corpo, re.I):
+        if NAO_TEM.search(self._aviso()):
             raise NumeroInvalido(f'{e164} não tem WhatsApp')
 
         campo = None
@@ -204,6 +218,17 @@ class Whats:
         p.keyboard.press('Enter')
         time.sleep(random.uniform(1.5, 3.0))
         return texto
+
+    def _aviso(self) -> str:
+        """O texto da janela de aviso aberta, se houver. Vazio se não há."""
+        for s in AVISO:
+            try:
+                loc = self.pagina.locator(s).first
+                if loc.count() and loc.is_visible():
+                    return loc.inner_text(timeout=2000)[:500]
+            except Exception:
+                continue
+        return ''
 
     # ── ler ─────────────────────────────────────────────────────────
     def conversas(self, quantas: int = 40) -> list[dict]:
@@ -251,10 +276,18 @@ class Whats:
             const rows = document.querySelectorAll('div.message-in, div.message-out');
             return [...rows].slice(-n).map(r => {
               const pre = r.querySelector('[data-pre-plain-text]');
+              const foto = r.querySelector('img[src^="blob:"], video, '
+                + '[data-icon="audio-play"], [data-icon="document"]');
+              // O texto vem do bloco copiável, não da linha inteira: a linha
+              // inclui a hora e as reações, e reação nova mudaria a
+              // assinatura de uma mensagem antiga — que seria lida de novo.
+              const corpo = ((pre ? pre.innerText : (foto ? '' : r.innerText)) || '')
+                .replace(/\\n+/g, ' ').trim().slice(0, 600);
               return {
                 meta: pre ? pre.getAttribute('data-pre-plain-text') : '',
-                texto: (r.innerText || '').replace(/\\n+/g, ' ').trim().slice(0, 600),
-                minha: r.className.includes('message-out')
+                texto: foto ? (corpo + ' [mídia]').trim() : corpo,
+                minha: r.className.includes('message-out'),
+                midia: !!foto
               };
             }).filter(m => m.texto);
         }""", quantas)
@@ -262,18 +295,39 @@ class Whats:
         for m in cru:
             quando, autor = quebra_meta(m.get('meta', ''))
             saida.append({'quando': quando, 'autor': autor, 'texto': m['texto'],
-                          'minha': bool(m.get('minha'))})
+                          'minha': bool(m.get('minha')),
+                          'midia': bool(m.get('midia')),
+                          'chave': assinatura(m.get('meta', ''), m['texto'])})
         return saida
+
+
+def assinatura(meta: str, texto: str) -> str:
+    """
+    A identidade de uma mensagem, para saber se já foi lida.
+
+    O carimbo do WhatsApp tem precisão de MINUTO. Marcar "li até 20:31"
+    perdia a segunda mensagem do mesmo minuto quando ela chegava depois da
+    leitura — e, quando o carimbo não vinha (foto sem legenda, relógio em
+    formato de 12h), nenhuma resposta era lida, em silêncio.
+    """
+    import hashlib
+    return hashlib.sha1(f'{meta}\x1f{texto}'.encode('utf-8')).hexdigest()[:16]
 
 
 def quebra_meta(meta: str) -> tuple[int, str]:
     """'[20:31, 02/10/2026] Fulano: ' → (timestamp, 'Fulano')."""
-    m = re.match(r'\[(\d{1,2}):(\d{2}),\s*(\d{1,2})/(\d{1,2})/(\d{4})\]\s*(.*?):\s*$',
-                 meta or '')
+    m = re.match(r'\[(\d{1,2}):(\d{2})\s*([AaPp]\.?\s*[Mm]\.?)?,\s*'
+                 r'(\d{1,2})/(\d{1,2})/(\d{4})\]\s*(.*?):\s*$', meta or '')
     if not m:
         return 0, ''
-    h, mi, d, mes, ano, autor = m.groups()
+    h, mi, ampm, d, mes, ano, autor = m.groups()
+    h = int(h)
+    if ampm:
+        # Relógio de 12h vem com a data no formato americano (mês/dia).
+        d, mes = mes, d
+        tarde = ampm.lower().startswith('p')
+        h = (h % 12) + (12 if tarde else 0)
     try:
-        return int(datetime(int(ano), int(mes), int(d), int(h), int(mi)).timestamp()), autor
+        return int(datetime(int(ano), int(mes), int(d), h, int(mi)).timestamp()), autor
     except ValueError:
         return 0, autor

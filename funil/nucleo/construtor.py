@@ -31,7 +31,8 @@ from typing import Any, Sequence
 from .modelo import pede_texto
 
 INSTRUCAO = """Você escreve o HTML completo de um site de uma página para um \
-restaurante, a partir dos dados que vou te dar.
+pequeno negócio (restaurante, clínica, barbearia, hotel...), a partir \
+dos dados que vou te dar.
 
 FORMATO DA SUA RESPOSTA
 Só o HTML. Comece com <!doctype html> e termine com </html>. Sem crase, \

@@ -44,8 +44,10 @@ class Abordagem(BaseModel):
 
 
 INSTRUCAO = """Você escreve a primeira mensagem de WhatsApp de um desenvolvedor solo \
-brasileiro que faz site para restaurante. Ele manda a mensagem para o dono, \
-na mão, uma por vez.
+brasileiro que faz site para pequenos negócios (restaurante, clínica, barbearia, \
+hotel...). Ele manda a mensagem para o dono, uma por vez. Fale do negócio \
+como ele é: clínica é clínica, barbearia é barbearia — nunca chame de restaurante \
+o que não é.
 
 O QUE NÃO PODE, de jeito nenhum:
 - Nada de "Olá, tudo bem? Me chamo..." — é a abertura que mais faz bloquear.
@@ -94,6 +96,9 @@ def _contexto(l: Lead) -> str:
     notas = [f'Nome: {l.nome}', f'Cidade: {l.cidade}']
     if l.categoria:
         notas.append(f'Tipo: {l.categoria}')
+    nicho = (l.dados or {}).get('nicho')
+    if nicho:
+        notas.append(f'Nicho: {nicho}')
     if l.avaliacoes:
         notas.append(f'Avaliações no Google: {l.avaliacoes}'
                      + (f' · nota {l.nota:.1f}' if l.nota else ''))
@@ -135,7 +140,7 @@ def escreve(est: Estado, limite: int = 20, modelo: str | None = None,
         try:
             r: Abordagem = pede_json(
                 instrucao=instrucao_com_tom(tom),
-                conteudo=f'Dados do restaurante:\n\n{_contexto(l)}',
+                conteudo=f'Dados do negócio:\n\n{_contexto(l)}',
                 esquema=Abordagem,
                 modelo=modelo,
                 cli=cli or (chave or None),

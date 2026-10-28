@@ -109,6 +109,17 @@ class Config:
     intervalo_segundos: list = field(default_factory=lambda: [20, 60])
     max_por_dia: int = 60
 
+    # ── o estúdio (Claude Code) ─────────────────────────────────────
+    # Demonstração: o Sonnet lê os prints e escreve o prompt mestre; o
+    # Opus constrói. Alteração pedida pelo cliente: uma etapa só.
+    estudio_claude_code: bool = True     # false = o cérebro escreve página única
+    estudio_modelo_prompt: str = 'sonnet'
+    estudio_esforco_prompt: str = 'high'
+    estudio_modelo_site: str = 'claude-opus-5-5'
+    estudio_esforco_site: str = 'high'
+    estudio_modelo_alteracao: str = 'claude-opus-5-5'
+    estudio_esforco_alteracao: str = 'high'
+
     # ── a colônia ───────────────────────────────────────────────────
     # Os tetos. Você pode BAIXAR daqui; furar o teto de código não.
     # Veja o topo de nucleo/colonia.py para o porquê de cada um.
@@ -243,6 +254,12 @@ def carrega(caminho: Path | None = None) -> Config:
         for campo in ('capturar_sozinho', 'posts_por_perfil', 'perfil_instagram'):
             if campo in insta:
                 setattr(c, campo, insta[campo])
+
+        estudio = t.get('estudio', {})
+        for campo in ('claude_code', 'modelo_prompt', 'esforco_prompt', 'modelo_site',
+                      'esforco_site', 'modelo_alteracao', 'esforco_alteracao'):
+            if campo in estudio:
+                setattr(c, f'estudio_{campo}', estudio[campo])
 
         vigia = t.get('vigia', {})
         for campo in ('responder_sozinho', 'varredura_a_cada', 'perfil_whatsapp',

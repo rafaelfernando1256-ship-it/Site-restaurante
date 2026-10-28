@@ -3,10 +3,12 @@ A VIGIA — o funil rodando sozinho DEPOIS do primeiro contato
 
 Um comando, um laço. A cada volta ele:
 
-  1. olha quem respondeu, lê a resposta e passa para a triagem;
-  2. responde quem escreveu para você;
+  1. olha quem escreveu — prospecto, quem já recebeu o link, cliente —
+     e passa para o atendente (nucleo/atendente.py);
+  2. responde quem escreveu para você: interesse, preço, fechamento;
   3. constrói a demonstração de quem disse que quer, se houver material;
-  4. publica e manda o link para quem pediu.
+  4. publica e manda o link para quem pediu;
+  5. faz as alterações que os clientes pediram, republica e avisa.
 
 O QUE ELE NÃO FAZ
 
@@ -42,9 +44,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from .estado import (ABORDADO, DEMO_PRONTA, Estado, PUBLICADO, QUER_DEMO,
-                     RESPONDEU, SEM_RESPOSTA)
-from .whats import NaoLogado, NumeroInvalido, Ritmo, Whats
+from .atendente import CONVERSANDO
+from .estado import DEMO_PRONTA, Estado, QUER_DEMO
+from .whats import NaoLogado, NumeroInvalido, Ritmo, Whats, assinatura
 
 AGENTE = 'vigia'
 
@@ -62,70 +64,116 @@ class Vigia:
         self.erros_seguidos = 0
         self.voltas = 0
 
-    # ── 2. ver quem respondeu ───────────────────────────────────────
+    # ── 1. ver quem escreveu ────────────────────────────────────────
     def colhe_respostas(self, varredura: bool = False) -> int:
+        """
+        Lê quem escreveu. Antes só olhava quem tinha recebido a primeira
+        mensagem; quem já tinha o link (e respondia "quanto fica?") e quem
+        já era cliente (e pedia uma alteração) ficavam sem leitura nenhuma.
+        """
         from .a3_estudio import anota_retorno
-        esperando = self.est.leads([ABORDADO, SEM_RESPOSTA], limite=200)
+        esperando = [l for l in self.est.leads(CONVERSANDO, limite=500)
+                     if l.telefone_e164]
         if not esperando:
             return 0
 
         if varredura:
             alvos = esperando
         else:
-            # Caminho rápido: só quem aparece com não lida no painel.
-            digitos = {self._so_digitos(l.telefone_e164): l for l in esperando
-                       if l.telefone_e164}
+            # Caminho rápido: só quem aparece com não lida no painel. O
+            # contato salvo aparece pelo NOME, não pelo número — por isso
+            # o nome também casa.
             alvos = []
             try:
                 for c in self.whats.conversas():
                     if not c['nao_lidas']:
                         continue
-                    chave = self._so_digitos(c['nome'])
-                    for d, lead in digitos.items():
-                        if chave and (chave.endswith(d[-8:]) or d.endswith(chave[-8:])):
-                            alvos.append(lead)
-                            break
+                    lead = casa_conversa(c['nome'], esperando)
+                    if lead and lead not in alvos:
+                        alvos.append(lead)
             except Exception as e:
                 self._diz(f'não consegui ler o painel ({e}); varrendo um a um')
                 alvos = esperando
 
         novas = 0
         for l in alvos:
-            if not l.telefone_e164:
-                continue
             try:
                 if not self.whats.abre_conversa(l.telefone_e164):
                     continue
                 msgs = self.whats.mensagens(20)
+                for m in msgs:
+                    m.setdefault('chave', assinatura(str(m.get('quando', '')), m['texto']))
             except NaoLogado:
                 raise
             except Exception as e:
                 self.est.anota(AGENTE, 'erro_leitura', l.id, str(e)[:200])
                 continue
 
-            desde = self.marcas.ultima(l.id)
-            dele = [m for m in msgs if not m['minha'] and m['quando'] > desde]
+            dele = self.novas_dele(l, msgs)
+            self.marcas.marca(l.id, msgs)
             if not dele:
                 continue
             texto = ' '.join(m['texto'] for m in dele)[:2000]
             anota_retorno(self.est, l.id, texto)
-            self.marcas.marca(l.id, max(m['quando'] for m in dele))
             novas += 1
-            self._diz(f'↩ {l.nome} respondeu: "{texto[:90]}"')
+            self._diz(f'↩ {l.nome} escreveu: "{texto[:90]}"')
             if not self.seco:
                 time.sleep(2)
         return novas
 
-    # ── 3. triar e responder ────────────────────────────────────────
+    def novas_dele(self, lead, msgs: list[dict]) -> list[dict]:
+        """
+        As mensagens dele que ainda não foram lidas.
+
+        A identidade de cada mensagem é a assinatura (carimbo + texto), não
+        o carimbo: ele tem precisão de minuto e às vezes nem vem. Marcar
+        "li até 20:31" perdia a mensagem que chegava no mesmo minuto, e
+        ignorava toda resposta sem carimbo.
+
+        Na PRIMEIRA leitura de uma conversa ainda não há assinatura
+        guardada, e aí vale o corte pelo tempo — só o que chegou depois da
+        sua última mensagem para ele —, para o histórico antigo de um
+        cliente não virar pedido de alteração.
+        """
+        vistas = self.marcas.vistas(lead.id)
+        dele = [m for m in msgs if not m['minha']]
+        if vistas:
+            return [m for m in dele if m.get('chave') not in vistas]
+        desde = self.marcas.ultima(lead.id) or self._linha_de_corte(lead)
+        if not desde:
+            return dele
+        # Sem carimbo na primeira leitura não dá para saber se é antiga:
+        # melhor perder uma do que reprocessar o histórico inteiro.
+        return [m for m in dele if m['quando'] and m['quando'] >= desde]
+
+    def _linha_de_corte(self, lead) -> int:
+        """Desde quando vale ler: a sua última mensagem enviada a ele."""
+        enviados = [m['enviado_em'] for m in self.est.mensagens(lead_id=lead.id)
+                    if m['situacao'] == 'enviada' and m['enviado_em']]
+        cliente_desde = int((lead.dados or {}).get('cliente_desde', 0) or 0)
+        # Um minuto de folga: o carimbo do WhatsApp é truncado no minuto.
+        return max([cliente_desde, *(e - 60 for e in enviados)], default=0)
+
+    # ── 2. atender e responder ──────────────────────────────────────
     def tria_e_responde(self) -> dict[str, int]:
-        from .a3_estudio import tria
-        conta = tria(self.est, limite=20, modelo=self.cfg.modelo_do_cerebro,
-                     provedor=self.cfg.provedor)
+        from .atendente import atende
+        conta = atende(self.est, self.cfg, limite=20)
         if not self.cfg.responder_sozinho:
             return conta
+        self.manda_rascunhos('resposta', '→ respondi')
+        return conta
 
-        for m in self.est.mensagens(situacao='rascunho', tipo='resposta'):
+    def manda_rascunhos(self, tipo: str, rotulo: str) -> int:
+        """Manda as mensagens deste tipo que estão prontas, no ritmo."""
+        mandadas = 0
+        for m in self.est.mensagens(situacao='rascunho', tipo=tipo):
             if not m['telefone_e164']:
+                continue
+            if tipo != 'resposta' and (self.est.lead(m['lead_id']).dados or {}).get(
+                    'nao_contatar'):
+                # Pediu para parar: a resposta àquilo que ELE escreveu ainda
+                # sai; link, entrega e aviso, não.
+                self.est.marca_mensagem(m['id'], 'recusada', 'web', 'pediu para não contatar')
                 continue
             pode, por_que = self.ritmo.pode_agora()
             if not pode:
@@ -133,17 +181,21 @@ class Vigia:
                 break
             try:
                 if self.seco:
-                    self._diz(f'[seco] responderia {m["lead_nome"]}: {m["texto"][:70]}')
-                else:
-                    time.sleep(self.ritmo.espera() / 3)   # resposta vem mais rápido
-                    self.whats.envia(m['telefone_e164'], m['texto'])
+                    # seco é seco: nada sai e nada é marcado como enviado
+                    self._diz(f'[seco] mandaria a {m["lead_nome"]}: {m["texto"][:70]}')
+                    continue
+                time.sleep(self.ritmo.espera() / 3)   # resposta vem mais rápido
+                self.whats.envia(m['telefone_e164'], m['texto'])
                 self.est.marca_mensagem(m['id'], 'enviada', 'web')
                 self.ritmo.contou()
-                self._diz(f'→ respondi {m["lead_nome"]}')
+                mandadas += 1
+                self._diz(f'{rotulo} {m["lead_nome"]}')
             except Exception as e:
                 self.est.marca_mensagem(m['id'], 'aprovada', 'web', str(e)[:200])
-                self._diz(f'✗ não respondi {m["lead_nome"]}: {e}')
-        return conta
+                self.est.avisa('envio', f'não consegui mandar a mensagem ({tipo}): '
+                               f'"{m["texto"][:120]}" — {str(e)[:120]}', m['lead_id'])
+                self._diz(f'✗ não mandei para {m["lead_nome"]}: {e}')
+        return mandadas
 
     # ── 4 e 5. construir, publicar, entregar ────────────────────────
     def constroi_e_entrega(self) -> dict[str, int]:
@@ -167,9 +219,14 @@ class Vigia:
             from .a4_entrega import entrega
             c = entrega(self.est, self.cfg, limite=5)
             feito['publicadas'] = c.get('publicadas', 0)
-            # a entrega deixa a mensagem com o link em rascunho; manda.
+            # a entrega deixa a mensagem com o link em rascunho; manda —
+            # mas só para quem pediu. Prévia de quem nunca falou com você
+            # é PRIMEIRO CONTATO, e primeiro contato passa por você.
             for m in self.est.mensagens(situacao='rascunho', tipo='entrega'):
                 if not m['telefone_e164']:
+                    continue
+                if not self.ja_conversou(m['lead_id']):
+                    self.vira_primeiro_contato(m)
                     continue
                 try:
                     if self.seco:
@@ -184,15 +241,59 @@ class Vigia:
             self._diz(f'{len(prontas)} demo(s) pronta(s), mas falta NETLIFY_TOKEN')
         return feito
 
+    def ja_conversou(self, lead_id: int) -> bool:
+        """Ele já escreveu para você alguma vez?"""
+        return bool(self.est.mensagens(tipo='retorno', lead_id=lead_id))
+
+    def vira_primeiro_contato(self, m) -> None:
+        """
+        A entrega de quem nunca pediu nada vira abordagem em rascunho, com
+        o texto de prévia (que diz que é demonstração e dá saída), e espera
+        a sua aprovação na central como qualquer primeiro contato.
+        """
+        from .a4_entrega import _pendencias
+        from .estado import RASCUNHO
+        from .precos import nicho_do_lead
+        l = self.est.lead(m['lead_id'])
+        d = self.est.demo(l.id)
+        pendencias = _pendencias(Path(d['pasta'])) if d and d['pasta'] else []
+        texto = texto_previa(self.cfg.autor, l.nome, nicho_do_lead(l),
+                             d['url'] if d else '', pendencias)
+        self.est.marca_mensagem(m['id'], 'recusada', '',
+                                'primeiro contato: virou abordagem para você aprovar')
+        self.est.guarda_mensagem(l.id, 'abordagem', texto)
+        if l.estado != RASCUNHO:
+            self.est.move(l.id, RASCUNHO, AGENTE, 'prévia pronta, esperando aprovação')
+        self._diz(f'✉ prévia de {l.nome} pronta — aprove o primeiro contato na central')
+
+    # ── 6. as alterações que os clientes pediram ───────────────────
+    def faz_alteracoes(self) -> dict[str, int]:
+        if not self.est.pedidos('novo'):
+            return {}
+        if self.seco:
+            for p in self.est.pedidos('novo'):
+                self._diz(f'[seco] faria o pedido #{p["id"]} de {p["lead_nome"]}: '
+                          f'{p["texto"][:70]}')
+            return {}
+        from .alteracoes import faz
+        c = faz(self.est, self.cfg, limite=3)
+        if self.cfg.responder_sozinho:
+            c['avisados'] = self.manda_rascunhos('alteracao', '✎ avisei')
+        return c
+
     # ── o laço ──────────────────────────────────────────────────────
     def volta(self) -> dict[str, Any]:
         self.voltas += 1
         varredura = self.voltas % max(1, self.cfg.varredura_a_cada) == 0
         r: dict[str, Any] = {'respostas': 0}
         r['respostas'] = self.colhe_respostas(varredura=varredura)
-        if r['respostas']:
-            r.update(self.tria_e_responde())
+        # Sempre, e não só quando chegou mensagem nova: a pergunta de preço
+        # que esperava você configurar o nicho volta para a fila sem
+        # mensagem nova nenhuma, e a resposta que ficou fora do horário
+        # precisa sair na volta seguinte. Sem pendência, não chama o modelo.
+        r.update(self.tria_e_responde())
         r.update(self.constroi_e_entrega())
+        r.update(self.faz_alteracoes())
         return r
 
     def roda(self, intervalo: int = 90, voltas_max: int = 0) -> int:
@@ -236,8 +337,34 @@ class Vigia:
         print(f'  [{datetime.now():%H:%M:%S}] {texto}', flush=True)
 
 
+def texto_previa(autor: str, nome: str, nicho: str, link: str,
+                 pendencias: list[str]) -> str:
+    """O primeiro contato de quem recebe a prévia feita do Instagram dele."""
+    texto = (f'Oi! Tudo bem? Aqui é o {autor}.\n\n'
+             f'Eu faço site para {nicho or "negócio local"} e montei uma prévia do '
+             f'site do {nome} a partir do Instagram de vocês — está no ar aqui:\n'
+             f'{link}\n\n'
+             'É uma demonstração, sem compromisso: não aparece no Google e dá '
+             'para mudar tudo. O que achou? Se não tiver interesse, me avisa que '
+             'eu não insisto.')
+    if pendencias:
+        curtas = [p.split('(')[0].strip() for p in pendencias[:3]]
+        texto += '\n\nAh: me passa ' + (', '.join(curtas[:-1]) + ' e ' + curtas[-1]
+                                         if len(curtas) > 1 else curtas[0]) \
+                 + ' que eu já coloco no site.'
+    return texto
+
+
 class Marcas:
-    """Até onde cada conversa já foi lida. Arquivo simples, legível."""
+    """
+    Até onde cada conversa já foi lida: o último carimbo e as assinaturas
+    das mensagens vistas. Arquivo simples, legível.
+
+    O formato antigo guardava só o carimbo (`{"7": 1790000000}`); ele
+    ainda é lido, e vira o novo na primeira gravação.
+    """
+
+    GUARDA = 60          # assinaturas por conversa — a janela lida é de 20
 
     def __init__(self, caminho: Path):
         self.caminho = Path(caminho)
@@ -246,10 +373,50 @@ class Marcas:
         except Exception:
             self.dados = {}
 
-    def ultima(self, lead_id: int) -> int:
-        return int(self.dados.get(str(lead_id), 0))
+    def _de(self, lead_id: int) -> dict:
+        v = self.dados.get(str(lead_id), {})
+        return {'t': int(v), 'vistas': []} if isinstance(v, (int, float)) else v
 
-    def marca(self, lead_id: int, quando: int) -> None:
-        self.dados[str(lead_id)] = int(quando)
+    def ultima(self, lead_id: int) -> int:
+        return int(self._de(lead_id).get('t', 0))
+
+    def vistas(self, lead_id: int) -> set[str]:
+        return set(self._de(lead_id).get('vistas', []))
+
+    def marca(self, lead_id: int, msgs: list[dict]) -> None:
+        if not msgs:
+            return
+        atual = self._de(lead_id)
+        vistas = [*atual.get('vistas', []),
+                  *(m['chave'] for m in msgs if m.get('chave'))]
+        # sem repetir, mantendo a ordem, só as mais novas
+        unicas = list(dict.fromkeys(vistas))[-self.GUARDA:]
+        quando = max([atual.get('t', 0), *(m['quando'] for m in msgs)])
+        self.dados[str(lead_id)] = {'t': int(quando), 'vistas': unicas}
         self.caminho.parent.mkdir(parents=True, exist_ok=True)
         self.caminho.write_text(json.dumps(self.dados, indent=1), encoding='utf-8')
+
+
+def casa_conversa(nome_no_painel: str, leads: list) -> Any:
+    """
+    A conversa do painel é de qual lead? Pelo número (contato não salvo)
+    ou pelo nome (contato salvo com o nome do negócio).
+    """
+    import re
+    import unicodedata
+
+    def simples(t):
+        t = unicodedata.normalize('NFKD', t or '').encode('ascii', 'ignore').decode()
+        return re.sub(r'[^a-z0-9]+', ' ', t.lower()).strip()
+
+    digitos = re.sub(r'\D', '', nome_no_painel or '')
+    nome = simples(nome_no_painel)
+    for l in leads:
+        d = re.sub(r'\D', '', l.telefone_e164 or '')
+        if len(digitos) >= 8 and d and (digitos.endswith(d[-8:]) or d.endswith(digitos[-8:])):
+            return l
+    for l in leads:
+        alvo = simples(l.nome)
+        if nome and alvo and len(nome) >= 4 and (nome == alvo or nome in alvo or alvo in nome):
+            return l
+    return None

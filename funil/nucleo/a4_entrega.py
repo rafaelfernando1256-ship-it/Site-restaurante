@@ -146,7 +146,7 @@ class Entrega(BaseModel):
 
 
 ENTREGA_INSTRUCAO = """Você escreve a mensagem que entrega um site de exemplo \
-pronto, no WhatsApp, para o dono do restaurante que pediu para ver.
+pronto, no WhatsApp, para o dono do negócio que pediu para ver.
 
 Regras:
 - Mande o link primeiro ou logo na primeira linha. É o que ele quer.

@@ -221,6 +221,34 @@ CREATE TABLE IF NOT EXISTS eventos (
   quando     INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_ev_lead ON eventos(lead_id);
+
+-- Pedidos de alteração: o cliente pede no WhatsApp ("tira a lasanha do
+-- cardápio"), o atendente anota aqui, o estúdio faz e republica. Fica em
+-- tabela própria porque um site recebe dezenas de pedidos na vida, e cada
+-- um precisa de começo, fim e o que foi feito — não cabe num campo do lead.
+CREATE TABLE IF NOT EXISTS pedidos (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  lead_id     INTEGER NOT NULL REFERENCES leads(id),
+  texto       TEXT NOT NULL,
+  situacao    TEXT NOT NULL DEFAULT 'novo',  -- novo | fazendo | feito | falhou | esperando
+  resultado   TEXT DEFAULT '',
+  criado_em   INTEGER NOT NULL,
+  mexido_em   INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_ped_situacao ON pedidos(situacao);
+
+-- O que precisa de VOCÊ: dúvida que o atendente não quis decidir, preço
+-- que não está configurado, cliente querendo fechar, alteração que falhou.
+-- É a caixa de entrada da central; o resto anda sozinho.
+CREATE TABLE IF NOT EXISTS avisos (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  lead_id     INTEGER,
+  tipo        TEXT NOT NULL,
+  texto       TEXT NOT NULL,
+  resolvido   INTEGER NOT NULL DEFAULT 0,
+  criado_em   INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_avisos_aberto ON avisos(resolvido);
 """
 
 
@@ -265,6 +293,13 @@ class Estado:
         ) if c in campos]
         with self._tx() as cx:
             if com:
+                # `dados` é SOMADO, não trocado: a caça que reencontra o
+                # lead não pode apagar o nicho, o "não contatar" ou a data
+                # em que ele virou cliente.
+                antes = cx.execute('SELECT dados FROM leads WHERE id=?',
+                                   (com['id'],)).fetchone()['dados']
+                dados = json.dumps({**json.loads(antes or '{}'), **json.loads(dados)},
+                                   ensure_ascii=False)
                 sets = ', '.join(f'{c}=?' for c in colunas)
                 cx.execute(
                     f'UPDATE leads SET {sets}, dados=?, mexido_em=? WHERE id=?',
@@ -397,6 +432,72 @@ class Estado:
         return self._cx.execute(
             'SELECT * FROM demos WHERE lead_id=? ORDER BY id DESC LIMIT 1', (lead_id,)
         ).fetchone()
+
+    # ── pedidos de alteração ────────────────────────────────────────
+    def guarda_pedido(self, lead_id: int, texto: str, situacao: str = 'novo') -> int:
+        agora = int(time.time())
+        with self._tx() as cx:
+            cur = cx.execute(
+                'INSERT INTO pedidos (lead_id,texto,situacao,criado_em,mexido_em) '
+                'VALUES (?,?,?,?,?)', (lead_id, texto.strip(), situacao, agora, agora))
+            return cur.lastrowid
+
+    def pedidos(self, situacao: str | list[str] | None = None,
+                lead_id: int | None = None) -> list[sqlite3.Row]:
+        onde, args = [], []
+        if situacao:
+            sit = [situacao] if isinstance(situacao, str) else situacao
+            onde.append(f"p.situacao IN ({','.join('?' * len(sit))})")
+            args += sit
+        if lead_id is not None:
+            onde.append('p.lead_id=?')
+            args.append(lead_id)
+        sql = ('SELECT p.*, l.nome AS lead_nome, l.telefone_e164 '
+               'FROM pedidos p JOIN leads l ON l.id=p.lead_id')
+        if onde:
+            sql += ' WHERE ' + ' AND '.join(onde)
+        return list(self._cx.execute(sql + ' ORDER BY p.id', args))
+
+    def marca_pedido(self, pedido_id: int, situacao: str, resultado: str = '') -> None:
+        with self._tx() as cx:
+            cx.execute('UPDATE pedidos SET situacao=?, resultado=?, mexido_em=? WHERE id=?',
+                       (situacao, resultado, int(time.time()), pedido_id))
+
+    # ── avisos para você ────────────────────────────────────────────
+    def avisa(self, tipo: str, texto: str, lead_id: int | None = None) -> int:
+        """Um aviso aberto por (lead, tipo): repetir não empilha cópia."""
+        com = self._cx.execute(
+            'SELECT id FROM avisos WHERE resolvido=0 AND tipo=? AND lead_id IS ?',
+            (tipo, lead_id)).fetchone()
+        with self._tx() as cx:
+            if com:
+                cx.execute('UPDATE avisos SET texto=?, criado_em=? WHERE id=?',
+                           (texto, int(time.time()), com['id']))
+                return com['id']
+            cur = cx.execute(
+                'INSERT INTO avisos (lead_id,tipo,texto,criado_em) VALUES (?,?,?,?)',
+                (lead_id, tipo, texto, int(time.time())))
+            return cur.lastrowid
+
+    def avisos(self, abertos: bool = True) -> list[sqlite3.Row]:
+        return list(self._cx.execute(
+            'SELECT a.*, l.nome AS lead_nome, l.telefone_e164 FROM avisos a '
+            'LEFT JOIN leads l ON l.id=a.lead_id WHERE a.resolvido=? ORDER BY a.id DESC',
+            (0 if abertos else 1,)))
+
+    def resolve_aviso(self, aviso_id: int) -> None:
+        with self._tx() as cx:
+            cx.execute('UPDATE avisos SET resolvido=1 WHERE id=?', (aviso_id,))
+
+    def muda_dados(self, lead_id: int, **campos) -> None:
+        """Acrescenta campos em `dados` sem apagar os que já estão lá."""
+        l = self.lead(lead_id)
+        if not l:
+            raise ValueError(f'lead {lead_id} não existe')
+        dados = {**(l.dados or {}), **campos}
+        with self._tx() as cx:
+            cx.execute('UPDATE leads SET dados=?, mexido_em=? WHERE id=?',
+                       (json.dumps(dados, ensure_ascii=False), int(time.time()), lead_id))
 
     # ── leitura ─────────────────────────────────────────────────────
     def resumo(self) -> dict[str, int]:

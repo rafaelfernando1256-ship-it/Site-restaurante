@@ -43,6 +43,21 @@ capturar_sozinho = true       # false = você manda os prints do celular
 posts_por_perfil = 3          # cardápio e preço moram nos posts
 perfil_instagram = ""         # vazio = dados/funil.instagram (login uma vez)
 
+[estudio]
+# Quem constrói os sites, pelo Claude Code da SUA conta (a assinatura,
+# não a chave de API). Vale com qualquer provedor no [geral].
+#   demonstração: o Sonnet olha os prints do Instagram e escreve o prompt
+#   mestre; o Opus lê o prompt e as fotos e constrói o site.
+#   alteração que o cliente pediu no WhatsApp: o Opus faz, numa etapa só.
+# Esforço: low, medium, high, xhigh ou max.
+claude_code = true                  # false = o cérebro escreve uma página única
+modelo_prompt = "sonnet"
+esforco_prompt = "high"
+modelo_site = "claude-opus-5-5"
+esforco_site = "high"
+modelo_alteracao = "claude-opus-5-5"
+esforco_alteracao = "high"
+
 [vigia]
 # O acompanhamento automático das conversas JÁ EM ANDAMENTO: ler quem
 # respondeu, triar, responder, construir e entregar.

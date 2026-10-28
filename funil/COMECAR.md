@@ -19,11 +19,21 @@ cd "$env:USERPROFILE\Documents\Site-restaurante"
 git pull origin claude/tempero-familia-website-nzqgb4
 cd funil
 python -m pip install -r requirements.txt
+python -m playwright install chromium
 ```
 
 **Confirme:** `python funil.py conferir --seco` tem de imprimir o
 diagnóstico. Se der erro de comando, você está na pasta errada.
 
+
+---
+
+## Depois de configurar: a Central
+
+Com o cérebro (passo 2) configurado, **dois cliques em `CENTRAL.bat`**
+abrem a central no navegador. Um botão liga todos os agentes. Leia
+**[CENTRAL.md](CENTRAL.md)** — e configure os **preços por nicho** lá
+antes de ligar, senão quem perguntar preço fica esperando você.
 
 ---
 

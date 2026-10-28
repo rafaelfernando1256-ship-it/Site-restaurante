@@ -2693,6 +2693,629 @@ def _():
 
 
 
+# ── Preços por nicho ────────────────────────────────────────────────
+@teste('preços: "bar" não pega "barbearia", e loja de açaí é açaí')
+def _():
+    from nucleo.precos import nicho_de
+    igual(nicho_de('Barbearia do Zé'), 'barbearia')
+    igual(nicho_de('Bar do Zé'), 'bar e petiscaria')
+    igual(nicho_de('Loja de Açaí'), 'açaí e sorveteria')
+    igual(nicho_de('Clínica de Estética'), 'clínica de estética')
+    igual(nicho_de('Pousada'), 'hotel e pousada')
+    igual(nicho_de('Escola de inglês'), 'Escola de inglês', 'nicho novo fica como veio')
+
+
+@teste('preços: "só a mensalidade" existe só para comida')
+def _():
+    from nucleo.precos import Precos, SO_MENSALIDADE, FAZER_E_MANUTENCAO, nichos
+    pr = Precos(TMP / 'precos-a.json')
+    pr.define('restaurante', SO_MENSALIDADE, mensalidade=150)
+    verdade('150' in pr.texto('restaurante') and 'sem custo' in pr.texto('restaurante'))
+    try:
+        pr.define('barbearia', SO_MENSALIDADE, mensalidade=99)
+        raise AssertionError('aceitou só mensalidade para barbearia')
+    except ValueError:
+        pass
+    pr.define('barbearia', FAZER_E_MANUTENCAO, fazer=1200, manutencao=100)
+    igual(pr.texto('Barbearia'), 'R$ 1.200 para fazer o site, e depois R$ 100 por mês '
+          'de manutenção (hospedagem e alterações)')
+    comida = {n['nome']: n['comida'] for n in nichos()}
+    verdade(comida['pizzaria'] and not comida['clínica de estética'])
+
+
+@teste('preços: trocar de modo não apaga os valores do outro')
+def _():
+    from nucleo.precos import Precos, SO_MENSALIDADE, FAZER_E_MANUTENCAO
+    pr = Precos(TMP / 'precos-b.json')
+    pr.define('pizzaria', FAZER_E_MANUTENCAO, fazer=900, manutencao=90)
+    pr.define('pizzaria', SO_MENSALIDADE, mensalidade=149)
+    igual(Precos(TMP / 'precos-b.json').de('pizzaria'),
+          {'modo': SO_MENSALIDADE, 'fazer': 900, 'manutencao': 90, 'mensalidade': 149})
+
+
+@teste('preços: fazer + manutenção exige os dois valores')
+def _():
+    from nucleo.precos import Precos
+    try:
+        Precos(TMP / 'precos-c.json').define('hotel e pousada', fazer=2000)
+        raise AssertionError('aceitou sem manutenção')
+    except ValueError as e:
+        verdade('manutenção' in str(e))
+
+
+@teste('preços: o valor digitado do jeito brasileiro vira número certo')
+def _():
+    from nucleo.precos import valor, reais
+    igual(valor('1.500'), 1500.0)
+    igual(valor('1.500,50'), 1500.5)
+    igual(valor('89.90'), 89.9)
+    igual(valor('R$ 2.000'), 2000.0)
+    igual(reais(89.9), 'R$ 89,90')
+
+
+# ── O atendente ─────────────────────────────────────────────────────
+def conversa_com(est, estado_final, retorno, com_site=False, **extra):
+    """Um lead que já recebeu algo seu e acabou de escrever."""
+    l = lead_exemplo(est, **extra)
+    caminho = {
+        ABORDADO: [RASCUNHO, ABORDADO],
+        PUBLICADO: [DEMO_PRONTA, PUBLICADO],
+        FECHADO: [DEMO_PRONTA, PUBLICADO, FECHADO],
+    }[estado_final]
+    for e in caminho:
+        est.move(l.id, e, 't')
+    if com_site:
+        pasta = TMP / f'site-{l.id}-{len(list(TMP.iterdir()))}'
+        (pasta / 'publico').mkdir(parents=True)
+        (pasta / 'publico' / 'index.html').write_text('<h1>X-Tudo R$ 25</h1>', encoding='utf-8')
+        est.guarda_demo(l.id, pasta=str(pasta), url='https://cantina-abc123.netlify.app',
+                        site_id='s1', situacao='publicado')
+    m = est.guarda_mensagem(l.id, 'abordagem' if estado_final == ABORDADO else 'entrega', 'oi')
+    est.marca_mensagem(m, 'enviada', 'web')
+    a3.anota_retorno(est, l.id, retorno)
+    return est.lead(l.id)
+
+
+def cfg_atende(est, **extra):
+    return cfg_falso(banco=est.caminho, **extra)
+
+
+def precifica(est, nicho='restaurante', **valores):
+    from nucleo.precos import Precos, SO_MENSALIDADE, FAZER_E_MANUTENCAO
+    modo = SO_MENSALIDADE if 'mensalidade' in valores else FAZER_E_MANUTENCAO
+    Precos(Path(est.caminho).parent / 'precos.json').define(nicho, modo, **valores)
+
+
+@teste('atendente: pergunta de preço responde com O SEU preço do nicho')
+def _():
+    from nucleo.atendente import atende
+    est = banco('preco')
+    precifica(est, 'restaurante', mensalidade=150)
+    l = conversa_com(est, PUBLICADO, 'gostei! quanto fica?', com_site=True)
+    c = atende(est, cfg_atende(est), cli=duble(
+        intencao='pergunta_preco', certeza=0.95, leitura='quer saber o preço',
+        resposta='Fica R$ 150 por mês, sem custo para fazer. Bora?'))
+    igual(c['pergunta_preco'], 1)
+    r = est.mensagens(tipo='resposta', lead_id=l.id)
+    igual(len(r), 1)
+    verdade('R$ 150' in r[0]['texto'])
+    igual(est.lead(l.id).estado, 'negociando')
+
+
+@teste('atendente: R$ inventado pelo modelo NUNCA sai — vira o seu preço')
+def _():
+    from nucleo.atendente import atende
+    est = banco('preco2')
+    precifica(est, 'restaurante', fazer=900, manutencao=90)
+    l = conversa_com(est, PUBLICADO, 'quanto custa?', com_site=True)
+    atende(est, cfg_atende(est), cli=duble(
+        intencao='pergunta_preco', certeza=0.95, leitura='preço',
+        resposta='Pra você faço por R$ 500 à vista. Fechamos?'))
+    texto = est.mensagens(tipo='resposta', lead_id=l.id)[0]['texto']
+    verdade('R$ 500' not in texto, texto)
+    verdade('R$ 900' in texto and 'R$ 90' in texto, texto)
+
+
+@teste('atendente: nicho sem preço não inventa — vira aviso e espera você')
+def _():
+    from nucleo.atendente import atende, libera_sem_preco
+    est = banco('sempreco')
+    l = conversa_com(est, PUBLICADO, 'qual o valor?', com_site=True, categoria='Barbearia')
+    atende(est, cfg_atende(est), cli=duble(
+        intencao='pergunta_preco', certeza=0.95, leitura='preço', resposta='Fica R$ 99'))
+    igual(est.mensagens(tipo='resposta', lead_id=l.id), [], 'respondeu sem preço configurado')
+    avisos = est.avisos()
+    verdade(avisos and avisos[0]['tipo'] == 'sem_preco' and 'barbearia' in avisos[0]['texto'])
+    igual(libera_sem_preco(est), 1, 'a pergunta volta para a fila quando o preço chega')
+    igual(est.avisos(), [])
+
+
+@teste('atendente: quem já tem o link e diz "quero" NÃO ganha site de novo')
+def _():
+    from nucleo.atendente import atende
+    est = banco('jatem')
+    l = conversa_com(est, PUBLICADO, 'gostei muito, quero sim', com_site=True)
+    atende(est, cfg_atende(est), cli=duble(
+        intencao='quer_demo', certeza=0.9, leitura='gostou', resposta='Que bom!'))
+    verdade(est.lead(l.id).estado != QUER_DEMO, 'mandou construir de novo')
+
+
+@teste('atendente: quem não tem site e quer ver vai para o estúdio')
+def _():
+    from nucleo.atendente import atende
+    est = banco('querver')
+    l = conversa_com(est, ABORDADO, 'pode mandar')
+    atende(est, cfg_atende(est), cli=duble(
+        intencao='quer_demo', certeza=0.95, leitura='aceitou',
+        resposta='Fechado, vou montar e te mando!'))
+    igual(est.lead(l.id).estado, QUER_DEMO)
+
+
+@teste('atendente: pedido de alteração de cliente vira pedido para o estúdio')
+def _():
+    from nucleo.atendente import atende
+    est = banco('alt')
+    l = conversa_com(est, FECHADO, 'muda o X-Tudo para R$ 28', com_site=True)
+    atende(est, cfg_atende(est), cli=duble(
+        intencao='alteracao', certeza=0.95, leitura='mudar preço',
+        resposta='Deixa comigo, te aviso quando estiver no ar!',
+        pedido='Trocar o preço do X-Tudo de R$ 25 para R$ 28', pedido_completo=True))
+    ps = est.pedidos('novo')
+    igual(len(ps), 1)
+    verdade('R$ 28' in ps[0]['texto'])
+    igual(est.lead(l.id).estado, FECHADO, 'cliente continua cliente')
+
+
+@teste('atendente: pedido vago pergunta antes, sem criar pedido')
+def _():
+    from nucleo.atendente import atende
+    est = banco('altvago')
+    l = conversa_com(est, FECHADO, 'quero mudar o cardápio', com_site=True)
+    atende(est, cfg_atende(est), cli=duble(
+        intencao='alteracao', certeza=0.9, leitura='quer mudar algo',
+        resposta='Claro! O que você quer mudar?', pedido='', pedido_completo=False))
+    igual(est.pedidos(), [])
+    igual(est.mensagens(tipo='resposta', lead_id=l.id)[0]['texto'],
+          'Claro! O que você quer mudar?')
+
+
+@teste('atendente: link que não é o do site dele derruba a frase')
+def _():
+    from nucleo.atendente import confere_resposta
+    texto, tirado = confere_resposta(
+        'Olha um exemplo: https://exemplo-falso.com. Está no ar: https://meu.netlify.app/',
+        '', 'https://meu.netlify.app')
+    verdade('exemplo-falso' not in texto and 'meu.netlify.app' in texto, texto)
+    igual(len(tirado), 1)
+
+
+@teste('atendente: dúvida não responde — avisa você')
+def _():
+    from nucleo.atendente import atende
+    est = banco('duv')
+    l = conversa_com(est, ABORDADO, 'quem é?')
+    c = atende(est, cfg_atende(est), cli=duble(
+        intencao='outro', certeza=0.3, leitura='não sei', resposta='Oi!'))
+    igual(c['duvida'], 1)
+    igual(est.mensagens(tipo='resposta', lead_id=l.id), [])
+    igual(est.avisos()[0]['tipo'], 'duvida')
+    igual(atende(est, cfg_atende(est), cli=duble(
+        intencao='outro', certeza=0.3, leitura='x', resposta='x'))['duvida'], 0,
+        'perguntou de novo ao modelo a mesma dúvida')
+
+
+@teste('atendente: mensagem já respondida não é atendida de novo')
+def _():
+    from nucleo.atendente import pendentes
+    est = banco('velha')
+    l = conversa_com(est, ABORDADO, 'pode mandar')
+    m = est.guarda_mensagem(l.id, 'resposta', 'beleza')
+    est.marca_mensagem(m, 'enviada', 'web')
+    igual(pendentes(est, l.id), [], 'retorno antigo voltou para a fila')
+
+
+# ── A vigia lê todo mundo, não só quem acabou de receber a 1ª mensagem ─
+@teste('vigia: lê quem já recebeu o link (antes ficava surdo depois da entrega)')
+def _():
+    import time as _t
+    est = banco()
+    l = conversa_com(est, PUBLICADO, '', com_site=True)
+    est._cx.execute("DELETE FROM mensagens WHERE tipo='retorno'"); est._cx.commit()
+    w = FalsoWhats(
+        conversas=[{'nome': '+55 84 98888-7777', 'texto': 'x', 'nao_lidas': 1}],
+        mensagens=[{'quando': int(_t.time()) + 120, 'autor': 'M',
+                    'texto': 'gostei, quanto fica?', 'minha': False}])
+    v = monta_vigia(est, whats=w, seco=True)
+    igual(v.colhe_respostas(), 1)
+    igual(est.mensagens(tipo='retorno', lead_id=l.id)[-1]['texto'], 'gostei, quanto fica?')
+
+
+@teste('vigia: mensagem no MESMO minuto da última lida não se perde')
+def _():
+    est = banco()
+    l = lead_exemplo(est)
+    est.move(l.id, RASCUNHO, 't'); est.move(l.id, ABORDADO, 't')
+    minuto = 1_790_000_000
+    w = FalsoWhats(conversas=[{'nome': '5584988887777', 'texto': 'x', 'nao_lidas': 1}],
+                   mensagens=[{'quando': minuto, 'autor': 'M', 'texto': 'oi', 'minha': False}])
+    v = monta_vigia(est, whats=w, seco=True)
+    igual(v.colhe_respostas(), 1)
+    w._mensagens.append({'quando': minuto, 'autor': 'M', 'texto': 'pode mandar',
+                         'minha': False})
+    igual(v.colhe_respostas(), 1, 'a segunda mensagem do mesmo minuto sumiu')
+    igual(est.mensagens(tipo='retorno', lead_id=l.id)[-1]['texto'], 'pode mandar')
+
+
+@teste('vigia: resposta sem carimbo de hora é lida (antes sumia em silêncio)')
+def _():
+    est = banco()
+    l = lead_exemplo(est)
+    est.move(l.id, RASCUNHO, 't'); est.move(l.id, ABORDADO, 't')
+    w = FalsoWhats(conversas=[{'nome': '5584988887777', 'texto': 'x', 'nao_lidas': 1}],
+                   mensagens=[{'quando': 1_790_000_000, 'autor': 'M', 'texto': 'oi',
+                               'minha': False}])
+    v = monta_vigia(est, whats=w, seco=True)
+    v.colhe_respostas()
+    w._mensagens.append({'quando': 0, 'autor': '', 'texto': '[mídia]', 'minha': False})
+    igual(v.colhe_respostas(), 1)
+
+
+@teste('vigia: o histórico antigo de um cliente não vira pedido')
+def _():
+    import time as _t
+    from nucleo.clientes import cadastra
+    est = banco()
+    site = TMP / 'cliente-antigo'
+    site.mkdir()
+    (site / 'index.html').write_text('<h1>oi</h1>', encoding='utf-8')
+    cfg = cfg_falso(banco=est.caminho)
+    i = cadastra(est, cfg, 'Pizzaria Velha', '84 98888-7777', 'pizzaria', pasta=str(site))
+    agora = int(_t.time())
+    w = FalsoWhats(conversas=[{'nome': 'Pizzaria Velha', 'texto': 'x', 'nao_lidas': 1}],
+                   mensagens=[{'quando': agora - 86400 * 90, 'autor': 'D',
+                               'texto': 'muda o preço da calabresa', 'minha': False},
+                              {'quando': agora + 60, 'autor': 'D',
+                               'texto': 'tira a portuguesa do cardápio', 'minha': False}])
+    v = monta_vigia(est, cfg=cfg, whats=w, seco=True)
+    igual(v.colhe_respostas(), 1)
+    retornos = est.mensagens(tipo='retorno', lead_id=i)
+    igual([r['texto'] for r in retornos], ['tira a portuguesa do cardápio'])
+
+
+@teste('vigia: contato salvo pelo nome também é achado no painel')
+def _():
+    from nucleo.vigia import casa_conversa
+    est = banco()
+    l = lead_exemplo(est)
+    igual(casa_conversa('Cantina da Vó Zuleica', [l]).id, l.id)
+    igual(casa_conversa('+55 84 98888-7777', [l]).id, l.id)
+    igual(casa_conversa('Mãe', [l]), None)
+
+
+@teste('vigia: marcas no formato antigo ainda são lidas')
+def _():
+    from nucleo.vigia import Marcas
+    arq = TMP / 'marcas-antigas.json'
+    arq.write_text('{"7": 1790000000}', encoding='utf-8')
+    m = Marcas(arq)
+    igual(m.ultima(7), 1790000000)
+    igual(m.vistas(7), set())
+    m.marca(7, [{'quando': 1790000100, 'chave': 'abc'}])
+    igual(Marcas(arq).vistas(7), {'abc'})
+
+
+@teste('vigia: prévia de quem nunca falou com você NÃO é enviada sozinha')
+def _():
+    est = banco()
+    l = lead_exemplo(est)
+    est.move(l.id, DEMO_PRONTA, 't')
+    cfg = cfg_falso(banco=est.caminho)
+    w = FalsoWhats()
+    v = monta_vigia(est, cfg=cfg, whats=w)
+    from nucleo import a4_entrega
+    original = a4_entrega.entrega
+
+    def entrega_falsa(est_, cfg_, limite=5):
+        # o que a entrega de verdade faz: publica, escreve, vai para publicado
+        est_.guarda_demo(l.id, url='https://cantina.netlify.app', situacao='publicado')
+        est_.guarda_mensagem(l.id, 'entrega', 'olha o seu site')
+        est_.move(l.id, PUBLICADO, 't')
+        return {'publicadas': 1}
+    a4_entrega.entrega = entrega_falsa
+    try:
+        v.constroi_e_entrega()
+    finally:
+        a4_entrega.entrega = original
+    igual(w.enviadas, [], 'mandou prévia para quem nunca pediu')
+    abordagens = est.mensagens(tipo='abordagem', lead_id=l.id)
+    igual(len(abordagens), 1)
+    verdade('https://cantina.netlify.app' in abordagens[0]['texto'])
+    igual(abordagens[0]['situacao'], 'rascunho', 'tem que esperar a sua aprovação')
+    igual(est.lead(l.id).estado, RASCUNHO)
+
+
+@teste('whats: carimbo de 12h (AM/PM) também é entendido')
+def _():
+    from nucleo.whats import quebra_meta
+    igual(quebra_meta('[8:31 PM, 10/2/2026] Fulano: ')[0],
+          quebra_meta('[20:31, 02/10/2026] Fulano: ')[0])
+
+
+@teste('estado: a caça que reencontra o lead não apaga o que já se sabia')
+def _():
+    est = banco()
+    l = lead_exemplo(est)
+    est.muda_dados(l.id, nicho='pizzaria', nao_contatar=True)
+    est.guarda_lead(place_id='p1', nome=l.nome, dados={'termo': 'pizzaria'})
+    d = est.lead(l.id).dados
+    verdade(d.get('nao_contatar') and d.get('nicho') == 'pizzaria' and d.get('termo'), d)
+
+
+# ── O estúdio: Sonnet escreve o prompt mestre, Opus constrói ─────────
+class FalsoClaudeCode:
+    """Imita o `claude -p`: registra o pedido e escreve o que ele escreveria."""
+
+    def __init__(self, falha_na=0):
+        self.chamadas = []
+        self.falha_na = falha_na
+
+    def __call__(self, comando, input='', cwd=None, **kw):
+        self.chamadas.append({'comando': comando, 'pedido': input, 'cwd': Path(cwd)})
+        pasta = Path(cwd)
+        if self.falha_na == len(self.chamadas):
+            return types.SimpleNamespace(returncode=1, stdout='', stderr='quebrou')
+        if 'PROMPT_MASTER.md' in input and 'Não construa' in input:
+            (pasta / 'PROMPT_MASTER.md').write_text('# prompt mestre', encoding='utf-8')
+            (pasta / 'leitura.json').write_text('{"nao_sei": ["horário"]}', encoding='utf-8')
+        elif 'PEDIDO DO CLIENTE' in input:
+            idx = pasta / 'publico' / 'index.html'
+            idx.write_text(idx.read_text(encoding='utf-8').replace('R$ 25', 'R$ 28'),
+                           encoding='utf-8')
+        else:
+            (pasta / 'publico').mkdir(exist_ok=True)
+            (pasta / 'publico' / 'index.html').write_text('<h1>site</h1>', encoding='utf-8')
+        return types.SimpleNamespace(returncode=0, stdout=json.dumps(
+            {'result': 'Feito. Ficou pendente: horário'}), stderr='')
+
+
+@teste('estúdio: Sonnet em esforço alto escreve o prompt, Opus 5.5 em alto constrói')
+def _():
+    est = banco()
+    l = lead_exemplo(est)
+    est.move(l.id, RASCUNHO, 't'); est.move(l.id, ABORDADO, 't')
+    est.move(l.id, RESPONDEU, 't'); est.move(l.id, QUER_DEMO, 't')
+    cfg = cfg_falso(banco=est.caminho, saida=TMP / 'saida-estudio',
+                    material=TMP / 'material-estudio', capturar_sozinho=False)
+    prints = cfg.material / l.slug
+    prints.mkdir(parents=True)
+    (prints / '01-capa.png').write_bytes(b'\x89PNG')
+    cc = FalsoClaudeCode()
+    c = a3.roda(est, cfg, executor=cc)
+    igual(c['prontas'], 1)
+    igual(len(cc.chamadas), 2)
+    um, dois = (x['comando'] for x in cc.chamadas)
+    verdade(um[um.index('--model') + 1] == 'sonnet' and um[um.index('--effort') + 1] == 'high', um)
+    verdade(dois[dois.index('--model') + 1] == 'claude-opus-5-5'
+            and dois[dois.index('--effort') + 1] == 'high', dois)
+    verdade('PROMPT_MASTER.md' in cc.chamadas[1]['pedido'])
+    pasta = cfg.saida / l.slug
+    verdade((pasta / 'publico' / 'fotos' / '01-capa.png').exists(), 'as fotos vão junto')
+    verdade('Não invente nada' in (pasta / 'DADOS.md').read_text(encoding='utf-8'))
+    verdade((pasta / 'site.zip').exists())
+    igual(est.lead(l.id).estado, DEMO_PRONTA)
+
+
+@teste('estúdio: o pedido vai pela entrada, não como argumento (Windows corta)')
+def _():
+    cc = FalsoClaudeCode()
+    a3.claude_code('linha 1\nlinha 2', TMP, 'sonnet', 'high', 60, executor=cc)
+    verdade('linha 1\nlinha 2' not in cc.chamadas[0]['comando'])
+    igual(cc.chamadas[0]['pedido'], 'linha 1\nlinha 2')
+
+
+@teste('estúdio: sem prompt mestre a etapa 2 nem começa')
+def _():
+    est = banco()
+    l = lead_exemplo(est)
+    cfg = cfg_falso(banco=est.caminho, saida=TMP / 'saida-sem-prompt')
+
+    class Mudo(FalsoClaudeCode):
+        def __call__(self, comando, input='', cwd=None, **kw):
+            self.chamadas.append(1)
+            return types.SimpleNamespace(returncode=0, stdout='{}', stderr='')
+    cc = Mudo()
+    try:
+        a3.constroi(l, [], '', cfg.saida, TMP, cfg, executor=cc)
+        raise AssertionError('seguiu sem PROMPT_MASTER.md')
+    except RuntimeError as e:
+        verdade('PROMPT_MASTER' in str(e))
+    igual(len(cc.chamadas), 1)
+
+
+# ── As alterações ───────────────────────────────────────────────────
+@teste('alteração: faz, republica no MESMO site e avisa o cliente com o link')
+def _():
+    from nucleo.alteracoes import faz
+    est = banco()
+    l = conversa_com(est, FECHADO, 'x', com_site=True)
+    pid = est.guarda_pedido(l.id, 'Trocar o X-Tudo de R$ 25 para R$ 28')
+    cfg = cfg_falso(banco=est.caminho)
+    publicados = []
+
+    def publica(token, lead, zip_, site_id):
+        publicados.append(site_id)
+        return 'https://cantina-abc123.netlify.app', site_id
+    c = faz(est, cfg, executor=FalsoClaudeCode(), publica=publica)
+    igual(c['feitos'], 1)
+    igual(publicados, ['s1'], 'publicou em outro site')
+    pasta = Path(est.demo(l.id)['pasta'])
+    verdade('R$ 28' in (pasta / 'publico' / 'index.html').read_text(encoding='utf-8'))
+    verdade(any((pasta / 'versoes').iterdir()), 'não guardou a versão de antes')
+    igual(est.pedidos()[0]['situacao'], 'feito')
+    aviso = est.mensagens(tipo='alteracao', lead_id=l.id)
+    verdade(aviso and 'https://cantina-abc123.netlify.app' in aviso[0]['texto'])
+
+
+@teste('alteração: se falha, o site volta como estava e você é avisado')
+def _():
+    from nucleo.alteracoes import faz
+    est = banco()
+    l = conversa_com(est, FECHADO, 'x', com_site=True)
+    est.guarda_pedido(l.id, 'Trocar o X-Tudo para R$ 28')
+    cfg = cfg_falso(banco=est.caminho)
+    c = faz(est, cfg, executor=FalsoClaudeCode(falha_na=1),
+            publica=lambda *a: ('u', 's1'))
+    igual(c['falhas'], 1)
+    pasta = Path(est.demo(l.id)['pasta'])
+    verdade('R$ 25' in (pasta / 'publico' / 'index.html').read_text(encoding='utf-8'))
+    igual(est.pedidos()[0]['situacao'], 'falhou')
+    verdade(any(a['tipo'] == 'alteracao' for a in est.avisos()))
+    igual(est.mensagens(tipo='alteracao', lead_id=l.id), [], 'avisou "pronto" sem estar')
+
+
+@teste('alteração: cliente sem pasta do site espera, avisando o porquê')
+def _():
+    from nucleo.alteracoes import faz
+    est = banco()
+    l = conversa_com(est, FECHADO, 'x')
+    est.guarda_pedido(l.id, 'muda a cor')
+    c = faz(est, cfg_falso(banco=est.caminho), executor=FalsoClaudeCode())
+    igual(c['esperando'], 1)
+    igual(est.pedidos()[0]['situacao'], 'esperando')
+
+
+# ── Clientes ────────────────────────────────────────────────────────
+@teste('cliente: cadastro com index na raiz vira pasta que o estúdio entende')
+def _():
+    from nucleo.clientes import cadastra
+    est = banco()
+    site = TMP / 'site-solto'
+    site.mkdir()
+    (site / 'index.html').write_text('<h1>oi</h1>', encoding='utf-8')
+    cfg = cfg_falso(banco=est.caminho, saida=TMP / 'saida-clientes')
+    i = cadastra(est, cfg, 'Barbearia do Zé', '(11) 91234-5678', 'barbearia',
+                 pasta=str(site), url='https://ze.netlify.app', site_id='abc')
+    l = est.lead(i)
+    igual(l.estado, FECHADO)
+    igual(l.telefone_e164, '5511912345678', 'faltou o 55')
+    verdade((l.dados or {}).get('cliente_desde'))
+    d = est.demo(i)
+    verdade((Path(d['pasta']) / 'publico' / 'index.html').exists())
+    igual(d['site_id'], 'abc')
+
+
+@teste('cliente: "fechou" leva o lead até cliente sem pular etapa')
+def _():
+    from nucleo.clientes import fecha
+    est = banco()
+    l = conversa_com(est, ABORDADO, 'fechado, como pago?')
+    fecha(est, l.id)
+    igual(est.lead(l.id).estado, FECHADO)
+    verdade(any(e['para'] == 'negociando' for e in est.historico(l.id)))
+
+
+# ── O motor e a central ─────────────────────────────────────────────
+@teste('motor: o primeiro contato só sai o que você APROVOU, e dentro do teto')
+def _():
+    from nucleo.motor import Motor
+    est = banco()
+    ids = []
+    for n in range(3):
+        l = lead_exemplo(est, n=n + 10, nome=f'Casa {n}', telefone_e164=f'558499999000{n}')
+        m = est.guarda_mensagem(l.id, 'abordagem', f'oi {n}')
+        est.move(l.id, RASCUNHO, 't')
+        ids.append(m)
+    est.marca_mensagem(ids[0], 'aprovada')
+    est.marca_mensagem(ids[1], 'aprovada')
+    cfg = cfg_falso(banco=est.caminho, horario=[0, 24])
+    w = FalsoWhats()
+    mo = Motor(cfg, whats=w)
+    mo.ajustes.grava(primeiros_por_dia=1)
+    v = monta_vigia(est, cfg=cfg, whats=w)
+    v.ritmo.espera = lambda: 0
+    mo.envia_aprovados(est, v)
+    igual(len(w.enviadas), 1, 'passou do teto do dia')
+    igual(w.enviadas[0][1], 'oi 0')
+    verdade(all(t != 'oi 2' for _, t in w.enviadas), 'mandou o que não foi aprovado')
+    igual(est.lead(est.mensagens(tipo='abordagem')[0]['lead_id']).estado, ABORDADO)
+
+
+@teste('motor: escrever a primeira mensagem não envia nada')
+def _():
+    from nucleo.motor import Motor
+    from nucleo import a2_abordagem
+    est = banco()
+    lead_exemplo(est)
+    cfg = cfg_falso(banco=est.caminho)
+    w = FalsoWhats()
+    original = a2_abordagem.escreve
+
+    def escreve(est_, **kw):
+        return original(est_, cli=duble(gancho='g', mensagem='Oi!', porque='p'),
+                        limite=kw.get('limite', 1))
+    a2_abordagem.escreve = escreve
+    try:
+        Motor(cfg, whats=w).escreve(est, {'novos_por_dia': 5})
+    finally:
+        a2_abordagem.escreve = original
+    igual(w.enviadas, [])
+    igual(est.mensagens(tipo='abordagem')[0]['situacao'], 'rascunho')
+
+
+@teste('central: preço salvo pela página chega ao atendente')
+def _():
+    import central as C
+    est = banco()
+    cfg = cfg_falso(banco=est.caminho)
+    ce = C.Central(cfg)
+    ce.faz('preco', {'nicho': 'restaurante', 'modo': 'so_mensalidade', 'mensalidade': '149,90'})
+    ce.faz('preco', {'nicho': 'clínica de estética', 'fazer': '2.500', 'manutencao': '180'})
+    e = ce.estado()
+    igual(e['precos']['restaurante']['mensalidade'], 149.9)
+    igual(e['precos']['clínica de estética']['fazer'], 2500.0)
+    try:
+        ce.faz('preco', {'nicho': 'barbearia', 'modo': 'so_mensalidade', 'mensalidade': '99'})
+        raise AssertionError('aceitou só mensalidade fora de comida')
+    except ValueError:
+        pass
+
+
+@teste('central: pedido sem o código da página é recusado (outro site não dispara nada)')
+def _():
+    import threading
+    import urllib.request
+    import urllib.error
+    import central as C
+    est = banco()
+    srv = C.servidor(C.Central(cfg_falso(banco=est.caminho)), 0)
+    porta = srv.server_address[1]
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    try:
+        def post(cabecalhos):
+            req = urllib.request.Request(f'http://127.0.0.1:{porta}/api/ligar', data=b'{}',
+                                         method='POST',
+                                         headers={'User-Agent': M.AGENTE_HTTP, **cabecalhos})
+            try:
+                return urllib.request.urlopen(req, timeout=5).status
+            except urllib.error.HTTPError as e:
+                return e.code
+        igual(post({'Content-Type': 'application/json'}), 403)
+        igual(post({'X-Central': 'chutado'}), 403)
+        req = urllib.request.Request(f'http://127.0.0.1:{porta}/api/estado',
+                                     headers={'X-Central': C.TOKEN,
+                                              'User-Agent': M.AGENTE_HTTP})
+        dados = json.loads(urllib.request.urlopen(req, timeout=5).read())
+        verdade('motor' in dados and 'precos' in dados)
+        req = urllib.request.Request(f'http://127.0.0.1:{porta}/',
+                                     headers={'User-Agent': M.AGENTE_HTTP})
+        pagina = urllib.request.urlopen(req, timeout=5).read().decode()
+        verdade('Valor somente da mensalidade/manutenção' in pagina)
+        verdade('Valor para fazer + manutenção' in pagina)
+    finally:
+        srv.shutdown()
+
+
+
 def main() -> int:
     import contextlib
     import io
