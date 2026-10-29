@@ -46,7 +46,6 @@ import { confereDesign, emTexto } from './conferente.mjs';
 import { normalizaItens, porCategoria } from './cardapio.mjs';
 import { fotografaInstagram } from './instagram.mjs';
 import { escreveFicha } from './ficha-maps.mjs';
-import { achaInstagram } from './acha-instagram.mjs';
 
 export { conferePronto };
 
@@ -545,15 +544,10 @@ export async function fazSite(lead, opcoes = {}) {
     await rm(join(pasta, '_maps'), { recursive: true, force: true });
     await rm(join(pasta, 'PROMPT-MASTER.md'), { force: true });
     ficha = await escreveFicha(lead, pasta, { pede: opcoes.pedePlaces, diz });
-    // Sem o @ salvo, o estúdio procura sozinho: você só aperta o botão.
-    let perfil = lead?.instagram || '';
-    if (!perfil) {
-      const achado = await achaInstagram(lead, { websiteDoGoogle: ficha.website, baixar: opcoes.baixarPagina, diz });
-      perfil = achado.instagram;
-      diz(perfil ? `  · ${lead?.nome}: Instagram ${perfil} — ${achado.como}`
-        : `  · ${lead?.nome}: Instagram não achado (${achado.como}); o site sai com a ficha do Maps`);
-      await opcoes.aoProcurarInstagram?.(perfil, achado.como);
-    }
+    // O Instagram vem do caçador (agente 1), salvo no cliente. O estúdio
+    // não procura: sem ele, o site sai com a ficha do Maps, sem os prints.
+    const perfil = lead?.instagram || '';
+    if (!perfil) diz(`  · ${lead?.nome}: sem Instagram salvo pelo caçador; o site sai com a ficha do Maps`);
     if (perfil) instagram = await fotografaInstagram(perfil, pasta, { diz, prepara: opcoes.prepararInstagram }).catch(() => null);
 
     // Etapa 1 · o Sonnet. O pedido vai pela entrada padrão: pela linha de

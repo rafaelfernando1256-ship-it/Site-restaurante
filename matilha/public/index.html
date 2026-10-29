@@ -71,6 +71,7 @@
       <span class="nav-sinal" id="nav-sinal-zap" hidden></span></a>
     <a class="nav-item" href="#clientes" data-tela="clientes"><svg class="ic"><use href="#i-clientes"/></svg>Clientes</a>
     <a class="nav-item" href="#estudio" data-tela="estudio"><svg class="ic"><use href="#i-escrever"/></svg>Estúdio</a>
+    <a class="nav-item" href="#demos" data-tela="demos"><svg class="ic"><use href="#i-janela"/></svg>Demonstrações</a>
     <a class="nav-item" href="#rede" data-tela="rede"><svg class="ic"><use href="#i-rede"/></svg>Rede de agentes</a>
     <a class="nav-item" href="#financeiro" data-tela="financeiro"><svg class="ic"><use href="#i-financeiro"/></svg>Financeiro</a>
     <a class="nav-item" href="#ofertas" data-tela="ofertas"><svg class="ic"><use href="#i-ofertas"/></svg>Ofertas
@@ -502,8 +503,8 @@
       <p class="titulo-sub" id="estudio-sub">—</p>
     </div>
   </div>
-  <p class="nota estudio-como">É só apertar o botão: o estúdio junta a ficha do Google Maps, procura o Instagram
-    sozinho (quando o cliente ainda não tem) e tira os prints. A ficha e os prints vão para o Claude Code com o
+  <p class="nota estudio-como">É só apertar o botão. O caçador já entregou cada cliente com o site, o telefone e o
+    Instagram; o estúdio junta a ficha do Google Maps e tira os prints do Instagram. A ficha e os prints vão para o Claude Code com o
     <b>Sonnet, esforço alto</b>, que escreve o prompt master; o prompt master e os prints vão para o
     <b>Opus 5.5, esforço alto</b>, que faz o site. Depois o publicador põe no ar. O automático continua:
     quem topa ver a demonstração na conversa ganha o site sozinho.</p>
@@ -512,8 +513,8 @@
       aria-label="Procurar cliente no estúdio">
     <select id="estudio-filtro" aria-label="Mostrar">
       <option value="todos">Todos</option>
-      <option value="sem">Sem site</option>
-      <option value="com">Com site no ar</option>
+      <option value="sem">Sem demonstração</option>
+      <option value="com">Demonstração no ar</option>
       <option value="andando">Sendo feitos</option>
       <option value="falhou">Que falharam</option>
     </select>
@@ -521,6 +522,25 @@
   </div>
   <div id="estudio-lista" class="clientes" role="list"></div>
   <p class="vazio vazio-grande" id="estudio-vazio" hidden>Nenhum cliente ainda. Solte a matilha em Hoje, ou ponha um à mão em Clientes.</p>
+</section>
+
+<!-- ══ AS DEMONSTRAÇÕES ═════════════════════════════════════════════
+     Todo site de demonstração que o estúdio fez, para abrir: no ar (o link
+     que vai para o cliente) e a cópia que ficou no computador. -->
+<section class="tela" id="tela-demos" hidden aria-labelledby="h-demos">
+  <div class="titulo-linha">
+    <div>
+      <h1 id="h-demos">Demonstrações</h1>
+      <p class="titulo-sub" id="demos-sub">—</p>
+    </div>
+  </div>
+  <div class="ferramentas">
+    <input id="demos-busca" type="search" placeholder="Procurar por nome, ramo ou cidade" autocomplete="off"
+      aria-label="Procurar demonstração">
+    <span class="contagem num" id="demos-total"></span>
+  </div>
+  <div id="demos-lista" class="demos" role="list"></div>
+  <p class="vazio vazio-grande" id="demos-vazio" hidden>Nenhum site de demonstração ainda. Faça o primeiro na tela Estúdio.</p>
 </section>
 
 <!-- ══ OFERTAS INTELIGENTES: o AGENTE 4, OFFER ARCHITECT ═══════════
@@ -1015,6 +1035,7 @@
   <a href="#whatsapp" data-tela="whatsapp"><svg class="ic"><use href="#i-whatsapp"/></svg>WhatsApp</a>
   <a href="#clientes" data-tela="clientes"><svg class="ic"><use href="#i-clientes"/></svg>Clientes</a>
   <a href="#estudio" data-tela="estudio"><svg class="ic"><use href="#i-escrever"/></svg>Estúdio</a>
+  <a href="#demos" data-tela="demos"><svg class="ic"><use href="#i-janela"/></svg>Demos</a>
   <a href="#ofertas" data-tela="ofertas"><svg class="ic"><use href="#i-ofertas"/></svg>Ofertas</a>
   <a href="#valor" data-tela="valor"><svg class="ic"><use href="#i-valor"/></svg>Valor</a>
   <a href="#rede" data-tela="rede"><svg class="ic"><use href="#i-rede"/></svg>Rede</a>

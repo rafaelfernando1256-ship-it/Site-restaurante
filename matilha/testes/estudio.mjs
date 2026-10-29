@@ -301,17 +301,15 @@ test('instagram: a regra do nome — o nome próprio, nunca o ramo nem a cidade'
   assert.ok(perfilCombina('ganem.beauty', 'Salão Mônika Ganem', 'Mônika Ganem (@ganem.beauty) • Instagram'));
 });
 
-test('fazSite: sem @ salvo, procura sozinho e avisa quem guarda no cliente', async () => {
+test('fazSite: o estúdio NÃO procura o Instagram — usa o que o caçador salvou', async () => {
   const pasta = await pastaNova();
   process.env.MATILHA_CLAUDE_LOG = join(pasta, 'chamadas.jsonl');
-  const guardado = [];
-  const html = DDG([['https://www.instagram.com/cantinadavozuleica/', 'Cantina da Vó Zuleica (@cantinadavozuleica)']]);
+  let buscou = 0;
+  const avisos = [];
   await fazSite({ ...LEAD, instagram: '' }, { pastaTrabalho: pasta, revisar: false, pedePlaces: googleFalso().pede,
-    baixarPagina: async () => html, aoProcurarInstagram: (perfil, como) => guardado.push({ perfil, como }),
-    // os prints em si precisam do navegador: aqui o teste para na busca
-    prepararInstagram: async () => { throw new Error('sem navegador no teste'); } });
-  assert.equal(guardado.length, 1);
-  assert.equal(guardado[0].perfil, 'https://www.instagram.com/cantinadavozuleica/');
+    baixarPagina: async () => { buscou += 1; return ''; }, diz: (t) => avisos.push(t) });
+  assert.equal(buscou, 0, 'o estúdio foi procurar o Instagram');
+  assert.ok(avisos.some((t) => /sem Instagram salvo pelo caçador/.test(t)));
   delete process.env.MATILHA_CLAUDE_LOG;
   await rm(pasta, { recursive: true, force: true });
 });
@@ -326,4 +324,63 @@ test('instagram: link do Bing embrulhado em redirecionamento é desembrulhado', 
 test('instagram: busca que nem abriu diz isso, e não "não achou"', async () => {
   const r = await achaInstagram({ nome: 'Pizzaria Baggio', cidade: 'Maringá' }, { baixar: async () => { throw new Error('ENOTFOUND'); } });
   assert.match(r.como, /não abriu/);
+});
+
+/* ── o caçador entrega completo: site, telefone e Instagram ──────── */
+test('caçador: negócio novo chega com o Instagram já conferido e salvo', async () => {
+  const html = DDG([['https://www.instagram.com/pizzariabaggio/', 'Pizzaria Baggio (@pizzariabaggio)']]);
+  const { fluxo, dados, raiz } = await fluxoDeTeste([]);
+  let buscas = 0;
+  fluxo.baixarPagina = async () => { buscas += 1; return html; };
+  fluxo.pedeValor = async () => {}; fluxo.pedeOferta = async () => {};
+  await fluxo.recebeAchado({ nome: 'Pizzaria Baggio', tipo: 'Pizzaria', cidade: 'Maringá', telefone: '(44) 99999-0000',
+    whatsapp: '44999990000', maps: 'https://maps.google.com/baggio', site_proprio: false });
+  const lead = dados.tudo().leads[0];
+  assert.equal(lead.instagram, 'https://www.instagram.com/pizzariabaggio/');
+  assert.equal(lead.telefone, '(44) 99999-0000');
+  assert.equal(lead.instagram_procurado.achou, true);
+  // repetido não gasta busca
+  await fluxo.recebeAchado({ nome: 'Pizzaria Baggio', whatsapp: '44999990000', maps: 'https://maps.google.com/baggio' });
+  assert.equal(buscas, 1, 'buscou de novo para um negócio que já estava salvo');
+  await rm(raiz, { recursive: true, force: true });
+});
+
+test('caçador: completa o Instagram de quem já estava salvo, e anota quem não achou', async () => {
+  const html = DDG([['https://www.instagram.com/clinicabatel/', 'Clínica Batel (@clinicabatel)']]);
+  const { fluxo, dados, raiz } = await fluxoDeTeste([
+    novo('a', { nome: 'Clínica de Estética Batel', cidade: 'Curitiba' }),
+    novo('b', { nome: 'Pizzaria Baggio', cidade: 'Maringá' }),
+    novo('c', { nome: 'Já Tem', instagram: 'https://www.instagram.com/jatem/' }),
+  ]);
+  fluxo.baixarPagina = async () => html;
+  const r = await fluxo.completaInstagrams({ pausa: 0 });
+  assert.equal(r.conferidos, 2, 'conferiu quem já tinha Instagram');
+  const [a, b] = ['a', 'b'].map((id) => dados.tudo().leads.find((l) => l.id === id));
+  assert.equal(a.instagram, 'https://www.instagram.com/clinicabatel/');
+  assert.ok(!b.instagram);
+  assert.equal(b.instagram_procurado.achou, false);
+  assert.equal((await fluxo.completaInstagrams({ pausa: 0 })).conferidos, 0, 'procurou de novo quem já tinha sido conferido');
+  await rm(raiz, { recursive: true, force: true });
+});
+
+/* ── a área das demonstrações ─────────────────────────────────────── */
+test('demonstrações: lista os sites (no ar e no computador) e abre a cópia', async () => {
+  const { writeFile, mkdir } = await import('node:fs/promises');
+  const { fluxo, raiz } = await fluxoDeTeste([
+    novo('a', { nome: 'Casa A', sites: { demo: { url: 'https://a.netlify.app', quando: 2, avisado_em: 3 } } }),
+    novo('b', { nome: 'Casa B' }),
+    novo('c', { nome: 'Casa C' }),
+  ]);
+  const pastaB = fluxo.pastaDoSite({ nome: 'Casa B', id: 'b' });
+  await mkdir(pastaB, { recursive: true });
+  await writeFile(join(pastaB, 'index.html'), '<h1>B</h1>');
+  await writeFile(join(pastaB, 'PROMPT-MASTER.md'), '# prompt');
+  const lista = await fluxo.demonstracoes();
+  assert.deepEqual(lista.map((d) => d.id).sort(), ['a', 'b'], 'quem não tem site não entra');
+  const b = lista.find((d) => d.id === 'b');
+  assert.ok(b.local && b.prompt && !b.url);
+  assert.ok(lista.find((d) => d.id === 'a').enviado);
+  assert.equal(String(await fluxo.arquivoDaDemo('b')), '<h1>B</h1>');
+  assert.equal(await fluxo.arquivoDaDemo('b', '../../dados.json'), null, 'deixou ler arquivo fora da pasta do site');
+  await rm(raiz, { recursive: true, force: true });
 });

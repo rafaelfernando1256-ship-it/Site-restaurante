@@ -48,7 +48,7 @@
  *             O site final é seu. Depois que você entrega, os agentes
  *             retomam sozinhos para avisar o cliente.
  */
-import { copyFile, mkdir, rm, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
@@ -61,6 +61,7 @@ import { confereNoAr, dominioValido, estaLivre, limpaDominio, pedeCadeado, procu
 import { cobrancaDevida, mesDe, nomeDoMes, valorDaMensalidade } from './agentes/cobranca.mjs';
 import { contaCliques, relatorioDevido } from './agentes/relatorio.mjs';
 import { apelido, texto } from './agentes/comum.mjs';
+import { achaInstagram } from './agentes/acha-instagram.mjs';
 import { Janela } from './janela.mjs';
 import { Mural, SETORES } from './mural.mjs';
 import { Trabalhador } from './trabalhador.mjs';
@@ -98,7 +99,10 @@ export const SETORES_PAUSAVEIS = ['cacador', 'valor', 'ofertas', 'vendedor', 'es
 
 export class Fluxo {
   constructor({ dados, zap, publica, ajustes = () => ({}), pastaTrabalho,
-    diz = console.log, operacao = null, caca = null, ligaDominio = null, ofertas = null, valor = null }) {
+    diz = console.log, operacao = null, caca = null, ligaDominio = null, ofertas = null, valor = null,
+    baixarPagina = undefined }) {
+    // Como o caçador baixa uma página (a busca do Instagram). Nos testes, um dublê.
+    this.baixarPagina = baixarPagina;
     // Liga um domínio comprado ao site oficial na Netlify (vem do servidor,
     // que tem o token). Sem ele, o agente do domínio só sugere e confere.
     this.ligaDominio = ligaDominio;
@@ -307,6 +311,72 @@ export class Fluxo {
      conversa ganha a demo sozinho. Os dois usam a mesma caixa do estúdio,
      com a mesma chave — o mesmo cliente nunca é feito duas vezes junto. */
 
+  /**
+   * O CAÇADOR COMPLETA OS QUE JÁ ESTÃO SALVOS: quem foi caçado antes de ele
+   * conferir o Instagram. Um por vez, com pausa (é uma busca na internet
+   * por cliente), em segundo plano. Quem a busca não abriu (sem internet)
+   * é tentado de novo na próxima vez que a Matilha abrir.
+   */
+  async completaInstagrams({ pausa = 6000 } = {}) {
+    if (this._completando) return this._completando;
+    this._completando = (async () => {
+      const faltam = (this.dados.tudo().leads || []).filter((l) => !l.instagram && !pediuParaParar(l)
+        && !['fechado', 'com_voce', 'entregue'].includes(l.estagio)
+        && (!l.instagram_procurado || /não abriu/.test(l.instagram_procurado.como || '')));
+      let achados = 0;
+      for (const [n, l] of faltam.entries()) {
+        if (n) await new Promise((r) => setTimeout(r, pausa));
+        const r = await achaInstagram(l, { websiteDoGoogle: l.link_social, baixar: this.baixarPagina, diz: this.diz });
+        await this.comOsDados(async (tudo) => {
+          const atual = (tudo.leads || []).find((x) => x.id === l.id);
+          if (!atual || atual.instagram) return;
+          if (r.instagram) atual.instagram = r.instagram;
+          atual.instagram_procurado = { quando: agora(), achou: Boolean(r.instagram), como: texto(r.como, 160) };
+        });
+        if (r.instagram) achados += 1;
+      }
+      if (faltam.length) this.diz(`  · caçador: Instagram de ${achados} de ${faltam.length} cliente(s) que estavam sem`);
+      return { conferidos: faltam.length, achados };
+    })().finally(() => { this._completando = null; });
+    return this._completando;
+  }
+
+  /* ══ AS DEMONSTRAÇÕES ═══════════════════════════════════════
+     A tela Demonstrações: todo site de demonstração que o estúdio fez, com
+     o link no ar e a cópia que ficou no computador. */
+
+  /** A pasta do site de um cliente (a mesma que o estúdio usa). */
+  pastaDoSite(lead) {
+    return join(this.pastaTrabalho, apelido(lead?.nome, lead?.id));
+  }
+
+  /** Os sites de demonstração, do mais novo para o mais velho. */
+  async demonstracoes() {
+    const saida = [];
+    for (const l of this.dados.tudo().leads || []) {
+      const pasta = this.pastaDoSite(l);
+      const local = await stat(join(pasta, 'index.html')).then((x) => x.mtimeMs, () => 0);
+      const d = l.sites?.demo;
+      if (!local && !d?.url) continue;
+      saida.push({
+        id: l.id, nome: l.nome, tipo: l.tipo, cidade: l.cidade, estagio: l.estagio,
+        url: d?.url || '', expirada: Boolean(d?.expirada), expira_texto: d?.expira_texto || '',
+        quando: d?.quando || local, local: Boolean(local),
+        prompt: await stat(join(pasta, 'PROMPT-MASTER.md')).then(() => true, () => false),
+        antes_do_contato: Boolean(d?.antes_do_contato && !d.avisado_em), enviado: Boolean(d?.avisado_em),
+        oficial: l.sites?.oficial?.url || '',
+      });
+    }
+    return saida.sort((a, b) => (b.quando || 0) - (a.quando || 0));
+  }
+
+  /** Um arquivo da pasta do site ('index.html' ou 'PROMPT-MASTER.md'); nulo se não há. */
+  async arquivoDaDemo(id, qual = 'index.html') {
+    const lead = (this.dados.tudo().leads || []).find((l) => l.id === id);
+    if (!lead || !['index.html', 'PROMPT-MASTER.md'].includes(qual)) return null;
+    return readFile(join(this.pastaDoSite(lead), qual)).catch(() => null);
+  }
+
   /** Liga só o estúdio e o publicador: o botão funciona com a matilha parada. */
   async ligaEstudio() {
     await this._muralPronto();
@@ -370,6 +440,7 @@ export class Fluxo {
           situacao, url: l.sites?.demo?.expirada ? '' : (l.sites?.demo?.url || ''),
           antes_do_contato: Boolean(l.sites?.demo?.antes_do_contato && !l.sites.demo.avisado_em),
           instagram_procurado: l.instagram ? null : (l.instagram_procurado || null),
+          telefone: l.telefone || '', site_proprio: Boolean(l.site_proprio || l.website),
           // Falhou, ou está esperando para tentar de novo (o limite do plano, por exemplo).
           erro: texto(travada?.erro || naFila?.erro || naFila?.aviso || '', 200),
         };
@@ -891,6 +962,19 @@ export class Fluxo {
     const numeroLimpo = (valor) => String(valor || '').replace(/\D/g, '');
     const whats = numeroLimpo(negocio.whatsapp || negocio.telefone);
 
+    // O CAÇADOR ENTREGA COMPLETO: se tem site, o telefone e o Instagram.
+    // Site e telefone ele leu do Maps; o Instagram, quando não estava na
+    // ficha, ele confere aqui — antes de o negócio virar cliente, para o
+    // estúdio já encontrar tudo salvo. Só para quem é novo: repetido não
+    // gasta busca.
+    const conhecido = (this.dados.tudo().leads || []).some((l) => (
+      (whats && numeroLimpo(l.whatsapp) === whats) || (negocio.maps && l.maps === negocio.maps)));
+    if (!conhecido && !negocio.instagram && !negocio.site_proprio) {
+      const achado = await achaInstagram(negocio, { websiteDoGoogle: negocio.link_social, baixar: this.baixarPagina, diz: this.diz });
+      negocio.instagram = achado.instagram;
+      negocio.instagram_procurado = { quando: agora(), achou: Boolean(achado.instagram), como: texto(achado.como, 160) };
+    }
+
     const resultado = await this.comOsDados(async (tudo) => {
       tudo.leads = tudo.leads || [];
       // Repetido é repetido: mesmo número ou mesmo ponto no mapa.
@@ -917,6 +1001,10 @@ export class Fluxo {
         telefone: negocio.telefone || '',
         whatsapp: whats,
         instagram: negocio.instagram || '',
+        // O caçador procurou e não achou: fica anotado, com o motivo.
+        ...(negocio.instagram_procurado ? { instagram_procurado: negocio.instagram_procurado } : {}),
+        // O que estava no lugar do site (Linktree, Facebook): ajuda a achar o resto.
+        link_social: negocio.link_social || '',
         horario: negocio.horario || '',
         itens: [],
         observacao: '',
@@ -1605,15 +1693,6 @@ sem a linha sobre os preços das fotos publicadas:\n${cardapioEmTexto(lead.carda
       autor: ajustes.autor, ajustes, pastaTrabalho: this.pastaTrabalho,
       // Os prints de referência ficam em dados/referencias, ao lado de dados/sites.
       pastaDados: dirname(this.pastaTrabalho), diz: this.diz,
-      // O Instagram que o estúdio achou sozinho fica salvo no cliente: da
-      // próxima vez nem procura. Não achado também fica anotado, para a tela
-      // Estúdio dizer por quê.
-      aoProcurarInstagram: (perfil, como) => this.comOsDados(async (tudo) => {
-        const atual = (tudo.leads || []).find((l) => l.id === lead.id);
-        if (!atual) return;
-        if (perfil && !atual.instagram) atual.instagram = perfil;
-        atual.instagram_procurado = { quando: agora(), achou: Boolean(perfil), como: texto(como, 160) };
-      }),
     });
     if (feito.promptMaster) this.diz(`  ▣ ${lead.nome}: feito pelo prompt master${feito.instagram ? ', com o print do Instagram' : ' (sem Instagram)'} (${feito.promptMaster})`);
     const { html, consertos } = enderecaDemo(feito.html, { autor: ajustes.autor });

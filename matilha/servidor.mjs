@@ -997,6 +997,8 @@ async function rota(pedido, caminho, local) {
     if (!ids.length) return json({ erro: 'Nenhum cliente selecionado.' }, 400);
     return json(await fluxo.liberaPrimeiroContato(ids));
   }
+  // A TELA DEMONSTRAÇÕES: todos os sites, no ar e no computador.
+  if (caminho === '/api/fluxo/demos') return json({ demos: await fluxo.demonstracoes() });
   // A TELA ESTÚDIO: cada cliente com o site dele, e o botão de fazer a demo.
   if (caminho === '/api/fluxo/estudio') return json(fluxo.estadoDoEstudio());
   if (caminho === '/api/fluxo/demo') {
@@ -1381,6 +1383,8 @@ async function atende(req, res, daInternet) {
       resposta = destrancado(pedido)
         ? await rota(pedido, url.pathname, local)
         : json({ erro: 'Senha do painel inválida.' }, 401);
+    } else if (url.pathname.startsWith('/demos/')) {
+      resposta = await demo(url.pathname);
     } else {
       resposta = await arquivo(url.pathname);
     }
@@ -1392,6 +1396,32 @@ async function atende(req, res, daInternet) {
 
   res.writeHead(resposta.status, Object.fromEntries(resposta.headers));
   res.end(Buffer.from(await resposta.arrayBuffer()));
+}
+
+/**
+ * A cópia de um site de demonstração que ficou no computador:
+ * /demos/<id> (o site) e /demos/<id>/prompt (o prompt master).
+ *
+ * O site foi escrito pelo Claude a partir de conteúdo de terceiros (o
+ * Instagram, o Maps): ele abre em CAIXA FECHADA (sandbox, sem a origem do
+ * painel). Assim um script dele não consegue ler o painel nem falar com a
+ * API como se fosse você.
+ */
+async function demo(caminho) {
+  const [, , id, extra] = caminho.split('/');
+  if (!/^[\w-]{1,40}$/.test(id || '')) return null;
+  if (extra === 'prompt') {
+    const texto = await fluxo.arquivoDaDemo(id, 'PROMPT-MASTER.md');
+    return texto ? new Response(texto, { headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' } }) : null;
+  }
+  if (extra) return null;
+  const html = await fluxo.arquivoDaDemo(id, 'index.html');
+  if (!html) return null;
+  return new Response(html, { headers: {
+    'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store',
+    'content-security-policy': 'sandbox allow-scripts allow-popups allow-popups-to-escape-sandbox; form-action \'none\'',
+    'x-content-type-options': 'nosniff', 'referrer-policy': 'no-referrer',
+  } });
 }
 
 const servidor = createServer((req, res) => atende(req, res, false));
@@ -1424,6 +1454,10 @@ servidor.listen(PORTA, '0.0.0.0', async () => {
     .filter((c) => !(process.env[c] || '').trim());
   if (faltando.length) console.log(`  falta no .env: ${faltando.join(', ')}`);
   console.log('  (feche esta janela para desligar)\n');
+
+  // O caçador completa o Instagram de quem foi caçado antes de ele conferir
+  // isso: em segundo plano, um por vez, sem segurar a abertura do painel.
+  fluxo.completaInstagrams().catch((e) => console.log(`  · caçador: não completei os Instagrams (${e.message})`));
 
   // Se você marcou "deixar sempre aberto", o túnel sobe junto — é o
   // que faz o painel estar lá quando você já saiu de casa.

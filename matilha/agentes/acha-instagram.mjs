@@ -1,10 +1,10 @@
 /**
- * ACHAR O INSTAGRAM — sozinho, quando o estúdio vai fazer o site.
+ * ACHAR O INSTAGRAM — trabalho do CAÇADOR (agente 1), que entrega cada
+ * negócio com o site, o telefone e o Instagram. O estúdio só usa o que
+ * está salvo.
  *
- * O caçador só guarda o Instagram quando o link aparece na ficha do Maps.
- * Na maioria dos negócios não aparece, e sem o perfil o estúdio trabalha
- * sem os prints. Então, antes de fazer o site, o estúdio procura, nesta
- * ordem (do mais certo para o menos):
+ * O link do Instagram nem sempre aparece na ficha do Maps. Quando não
+ * aparece, o caçador procura, nesta ordem (do mais certo para o menos):
  *
  *   1. o "site" cadastrado na ficha do Google, quando ele É o Instagram;
  *   2. a página de links (Linktree, Beacons...) que estava no lugar do
@@ -15,7 +15,7 @@
  * bater com o @ ou com o título do resultado. Instagram de outra empresa
  * nos prints é pior que nenhum — o Opus copiaria a identidade errada.
  *
- * O que for achado fica salvo no cliente: na próxima vez, nem procura.
+ * O que for achado fica salvo no cliente.
  */
 import { texto } from './comum.mjs';
 import { enderecoDoPerfil } from './instagram.mjs';

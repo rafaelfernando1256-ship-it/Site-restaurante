@@ -236,7 +236,7 @@ function desenha() { desenhaQuadro(); desenhaLista(); desenhaFilas(); desenhaRes
 /* ── o estúdio: de quem fazer o site de demonstração agora ── */
 let estudio = null;
 const OBRA = {
-  sem_site: ['sem site', ''], na_fila: ['na fila', 'espera'], fazendo: ['fazendo o site', 'espera'],
+  sem_site: ['sem demonstração', ''], na_fila: ['na fila', 'espera'], fazendo: ['fazendo o site', 'espera'],
   publicando: ['publicando', 'espera'], no_ar: ['no ar', 'bom'], falhou: ['falhou', 'ruim'],
 };
 async function carregaEstudio() {
@@ -273,7 +273,10 @@ function desenhaEstudio() {
     const botao = l.cliente
       ? '<span class="nota">cliente: mudança é pedido de alteração</span>'
       : `<button class="bt bt-contorno bt-pequeno" data-demo="${esc(l.id)}" ${andando(l) ? 'disabled' : ''}>${esc(acao)}</button>`;
-    const detalhes = [l.tipo, l.cidade, l.instagram ? `Instagram ${l.instagram.replace(/^https?:\/\/(www\.)?instagram\.com\//, '@').replace(/\/$/, '')}` : '',
+    // O que o caçador entregou: site, telefone e Instagram.
+    const arroba = l.instagram ? l.instagram.replace(/^https?:\/\/(www\.)?instagram\.com\//, '@').replace(/\/$/, '') : '';
+    const detalhes = [l.tipo, l.cidade, l.site_proprio ? 'tem site próprio' : 'não tem site', l.telefone || 'sem telefone',
+      arroba ? `Instagram ${arroba}` : '',
       l.nota ? `${String(l.nota).replace('.', ',')} no Google${l.avaliacoes ? ` (${l.avaliacoes})` : ''}` : ''].filter(Boolean).join(' · ');
     return `<div class="obra" role="listitem">
       <span class="cliente-texto"><b>${esc(l.nome || 'sem nome')}</b>
@@ -282,9 +285,9 @@ function desenhaEstudio() {
         ${l.antes_do_contato ? '<span class="obra-aviso">No ar, mas ele ainda não respondeu: o link vai quando ele aceitar ver, na conversa.</span>' : ''}
         ${l.erro ? `<span class="obra-erro">${esc(l.erro)}</span>` : ''}
         ${!l.instagram && !l.cliente && !l.instagram_procurado
-    ? '<span>Instagram: o estúdio procura sozinho quando fizer o site.</span>' : ''}
+    ? '<span>Instagram: o caçador ainda vai conferir (ele completa os clientes salvos em segundo plano).</span>' : ''}
         ${!l.instagram && !l.cliente && l.instagram_procurado && !l.instagram_procurado.achou ? `<span class="obra-insta">
-          <small>O estúdio procurou e não achou o Instagram: ${esc(l.instagram_procurado.como || '')}. Se você souber o @, é opcional:</small>
+          <small>O caçador não achou o Instagram: ${esc(l.instagram_procurado.como || '')}. O site sai com a ficha do Maps. Se você souber o @, é opcional:</small>
           <input data-insta="${esc(l.id)}" placeholder="@ do Instagram" aria-label="Instagram de ${esc(l.nome)}" autocomplete="off">
           <button class="bt bt-texto bt-pequeno" data-salva-insta="${esc(l.id)}">Guardar</button></span>` : ''}</span>
       <span class="pilula${tom ? ` pilula-${tom}` : ''}">${esc(rotulo)}</span>
@@ -301,6 +304,57 @@ function desenhaEstudio() {
   }
 }
 $('#estudio-busca').addEventListener('input', desenhaEstudio);
+
+/* ── as demonstrações: todos os sites, para abrir ── */
+let demos = null;
+async function carregaDemos() {
+  demos = (await fluxoPede('/demos')).demos || [];
+  desenhaDemos();
+}
+function desenhaDemos() {
+  if (!demos) return;
+  const busca = ($('#demos-busca').value || '').toLowerCase();
+  const visiveis = demos.filter((d) => !busca || `${d.nome} ${d.tipo} ${d.cidade}`.toLowerCase().includes(busca));
+  const noAr = demos.filter((d) => d.url && !d.expirada).length;
+  texto('#demos-sub', demos.length ? `${demos.length} site(s) de demonstração · ${noAr} no ar` : '');
+  texto('#demos-total', demos.length ? `${visiveis.length} na lista` : '');
+  $('#demos-vazio').hidden = demos.length !== 0;
+  // Só redesenha o que mudou: recarregar as miniaturas a cada atualização piscaria a tela.
+  const assinatura = JSON.stringify(visiveis);
+  if ($('#demos-lista').dataset.assinatura === assinatura) return;
+  $('#demos-lista').dataset.assinatura = assinatura;
+  poe('#demos-lista', visiveis.map((d) => {
+    const situacao = d.expirada ? ['saiu do ar', 'ruim'] : d.url ? (d.enviado ? ['no ar · enviado', 'bom']
+      : d.antes_do_contato ? ['no ar · não enviado', 'espera'] : ['no ar', 'bom']) : ['só no computador', ''];
+    const quando = d.quando ? new Date(d.quando).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : '';
+    return `<article class="demo" role="listitem">
+      <div class="demo-tela">${d.local
+        ? `<iframe src="/demos/${encodeURIComponent(d.id)}" title="Miniatura do site de ${esc(d.nome)}" loading="lazy"
+            sandbox="allow-scripts" tabindex="-1" aria-hidden="true"></iframe>`
+        : '<span class="vazio">sem cópia no computador</span>'}</div>
+      <div class="demo-corpo">
+        <b>${esc(d.nome || 'sem nome')}</b>
+        <span class="meta">${esc([d.tipo, d.cidade, quando && `feito em ${quando}`, d.url && !d.expirada && d.expira_texto ? `no ar até ${d.expira_texto}` : ''].filter(Boolean).join(' · '))}</span>
+        <span><span class="pilula${situacao[1] ? ` pilula-${situacao[1]}` : ''}">${esc(situacao[0])}</span></span>
+        <div class="demo-acoes">
+          ${d.url && !d.expirada ? `<a class="bt bt-contorno bt-pequeno" href="${esc(d.url)}" target="_blank" rel="noopener">Abrir no ar</a>` : ''}
+          ${d.local ? `<a class="bt bt-contorno bt-pequeno" href="/demos/${encodeURIComponent(d.id)}" target="_blank" rel="noopener">Abrir a cópia</a>` : ''}
+          ${d.prompt ? `<a class="bt bt-texto bt-pequeno" href="/demos/${encodeURIComponent(d.id)}/prompt" target="_blank" rel="noopener">Prompt master</a>` : ''}
+        </div>
+      </div>
+    </article>`;
+  }).join(''));
+  ajustaMiniaturas();
+}
+/** A miniatura é o site em 1280px, reduzido até caber no cartão. */
+function ajustaMiniaturas() {
+  $$('#demos-lista .demo-tela').forEach((tela) => {
+    const quadro = tela.querySelector('iframe');
+    if (quadro) quadro.style.transform = `scale(${tela.clientWidth / 1280})`;
+  });
+}
+window.addEventListener('resize', ajustaMiniaturas);
+$('#demos-busca').addEventListener('input', desenhaDemos);
 $('#estudio-lista').addEventListener('keydown', (ev) => {
   if (ev.key === 'Enter' && ev.target.matches('[data-insta]')) {
     $(`[data-salva-insta="${CSS.escape(ev.target.dataset.insta)}"]`)?.click();
@@ -1978,7 +2032,7 @@ aoClicar('#c-depois', async () => {
 }, { semEspera: true });
 
 /* ══ NAVEGAÇÃO ══════════════════════════════════════════════════ */
-const TELAS = { comecar: 'Começar', hoje: 'Hoje', jarvis: 'Jarvis', escritorio: 'Escritório', cacada: 'Caçada', whatsapp: 'WhatsApp', clientes: 'Clientes', estudio: 'Estúdio', ofertas: 'Ofertas', valor: 'Value Intelligence', rede: 'Rede de agentes', financeiro: 'Financeiro', ajustes: 'Ajustes' };
+const TELAS = { comecar: 'Começar', hoje: 'Hoje', jarvis: 'Jarvis', escritorio: 'Escritório', cacada: 'Caçada', whatsapp: 'WhatsApp', clientes: 'Clientes', estudio: 'Estúdio', demos: 'Demonstrações', ofertas: 'Ofertas', valor: 'Value Intelligence', rede: 'Rede de agentes', financeiro: 'Financeiro', ajustes: 'Ajustes' };
 const telaRede = montaRede({ $, poe, esc, pede, recado, ocupado });
 const telaFinanceiro = montaFinanceiro({ $, poe, esc, pede, recado, ocupado, abreFicha: (id) => carrega().then(() => abreFicha(id)) });
 // O caminho das telas (para o "volta" do Jarvis voltar para onde você estava, e não para fora do painel).
@@ -2008,6 +2062,7 @@ function vaiPara() {
   if (tela === 'whatsapp') { zapEstado(); claudeCarrega(); }
   if (tela === 'clientes') desenha();
   if (tela === 'estudio') carregaEstudio().catch((e) => recado(e.message, 'ruim'));
+  if (tela === 'demos') carregaDemos().catch((e) => recado(e.message, 'ruim'));
   if (tela === 'ofertas') carrega().then(() => telaOfertas.abre(subPedida)).catch((e) => recado(e.message, 'ruim'));
   if (tela === 'rede') telaRede.abre().catch((e) => recado(e.message, 'ruim'));
   if (tela === 'valor') telaValor.abre().catch((e) => recado(e.message, 'ruim'));
@@ -2205,6 +2260,7 @@ setInterval(() => {
   else if (voltas % 3 === 0) fluxoPede('').then(desenhaFluxo).catch(() => {});
   else if (telaAtual === 'clientes' && !$('#ficha').open) carrega().then(desenha).catch(() => {});
   else if (telaAtual === 'estudio') carregaEstudio().catch(() => {});
+  else if (telaAtual === 'demos') carregaDemos().catch(() => {});
   else if (telaAtual === 'ofertas') telaOfertas.atualiza().catch(() => {});
   else if (telaAtual === 'rede') telaRede.atualiza().catch(() => {});
   else if (telaAtual === 'valor') telaValor.atualiza().catch(() => {});

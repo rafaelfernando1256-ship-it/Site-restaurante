@@ -41,7 +41,8 @@ WhatsApp, e você talvez precise ler o QR Code de novo.
 | **Caçada** | Ramos e cidades, quantos caçadores, a meta e os freios, e "caçar agora, sem abordar" |
 | **WhatsApp** | **Conectar Claude para WhatsApp**, a conexão com o WhatsApp Web e quem respondeu |
 | **Clientes** | Os projetos: o funil em abas por estágio, mais **Em produção**, **Finalizados** e **Arquivados**, e a ficha de cada negócio (com Arquivar e Encerrar) |
-| **Estúdio** | Cada cliente com o site dele (sem site, na fila, fazendo, no ar, falhou) e o botão **Fazer site de demonstração** do lado: o site na hora, com a matilha ligada ou parada |
+| **Estúdio** | Cada cliente com o que o caçador entregou (site, telefone, Instagram), a situação da demonstração (sem demonstração, na fila, fazendo, no ar, falhou) e o botão **Fazer site de demonstração** do lado: o site na hora, com a matilha ligada ou parada |
+| **Demonstrações** | Todos os sites de demonstração, com a miniatura de cada um: **Abrir no ar** (o link que vai para o cliente), **Abrir a cópia** (a que ficou no computador) e o **Prompt master** |
 | **Rede de agentes** | O mapa dos agentes (Agent Network): o que cada um faz agora, o que está na caixa, quem está com erro, e o Jarvis no centro com tudo o que ele executou |
 | **Financeiro** | O Revenue Guardian: quem paga mensalidade, quanto soma por mês e o que está pendente |
 | **Ofertas** | O Offer Architect: as propostas de cada cliente, os pacotes e os resultados |
@@ -279,14 +280,9 @@ Para cada demonstração, o estúdio faz assim, sozinho:
    Com a `GOOGLE_PLACES_KEY` vem a ficha inteira, pela API oficial (um
    pedido por site feito). Sem a chave, vai o que o caçador leu da tela —
    sem o texto das avaliações.
-2. **Acha o Instagram sozinho**, se o cliente ainda não tem: primeiro o
-   "site" cadastrado na ficha do Google (quando ele é o Instagram), depois a
-   página de links (Linktree e parecidos), e por fim uma busca na internet
-   por "nome + cidade + instagram". Da busca, só vale o perfil que traz o
-   nome próprio do negócio (não o ramo nem a cidade): "@clinicabatel" serve
-   para a Clínica de Estética Batel, "@esteticacuritiba" não. O que for
-   achado fica salvo no cliente. Não achou: o site sai mesmo assim, com a
-   ficha do Maps, e a tela Estúdio diz por quê.
+2. **Usa o Instagram que o caçador entregou.** Quem acha é o caçador
+   (agente 1), não o estúdio: veja "O caçador entrega completo", abaixo.
+   Sem Instagram salvo, o site sai com a ficha do Maps, sem os prints.
 3. **Tira o print do perfil do Instagram do negócio** (como aparece no
    computador e no celular), num Chrome invisível e **sem login**: fecha a
    janela de "entre no Instagram" para o print não sair coberto, e guarda
@@ -311,6 +307,24 @@ O prompt master de cada cliente fica em
 `dados/sites/<cliente>/_maps/`, e os prints em
 `dados/sites/<cliente>/_instagram/`, para você ler.
 
+### O caçador entrega completo: site, telefone e Instagram
+
+O caçador (agente 1) entrega cada negócio com as três coisas que o estúdio
+precisa, salvas no cliente:
+
+1. **Se tem site** — lido da ficha do Maps; quem tem site próprio nem entra.
+2. **O telefone** — da ficha do Maps (é o WhatsApp da abordagem).
+3. **O Instagram** — da ficha do Maps, quando o link está lá. Quando não
+   está, o caçador procura antes de entregar: a página de links (Linktree e
+   parecidos) que estava no lugar do site, e uma busca por "nome + cidade +
+   instagram". Da busca, só vale o perfil que traz o nome próprio do
+   negócio (não o ramo nem a cidade): "@clinicabatel" serve para a Clínica
+   de Estética Batel, "@esteticacuritiba" não.
+
+Os clientes caçados antes disso são completados sozinhos, em segundo plano,
+um por vez, quando a Matilha abre. Quem a busca não achou fica anotado com
+o motivo na tela Estúdio (e, se você souber o @, pode pôr, como opcional).
+
 ### O botão do estúdio
 
 A tela **Estúdio** lista os clientes com o site de cada um e um botão do
@@ -329,6 +343,16 @@ Depois de publicado, o link:
 
 Cliente que já fechou não tem botão: mudança no site dele é pedido de
 alteração, para não apagar o site que está no ar.
+
+### A tela Demonstrações
+
+Todos os sites de demonstração que o estúdio fez, do mais novo para o mais
+velho, com a miniatura de cada um e a situação (no ar · enviado, no ar ·
+não enviado, só no computador, saiu do ar). **Abrir no ar** abre o link da
+Netlify; **Abrir a cópia** abre a que ficou no computador, em
+`dados/sites/<cliente>/index.html` — ela abre numa caixa fechada (sandbox),
+porque o site foi escrito a partir do Instagram e do Maps de outra pessoa e
+não pode mexer no painel.
 
 O logo vai **dentro** do site. A imagem do Instagram não é usada por
 link, porque os links de imagem do Instagram expiram em poucos dias e
