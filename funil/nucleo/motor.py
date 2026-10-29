@@ -397,3 +397,85 @@ class Eco:
 
     def __getattr__(self, nome):
         return getattr(self.original, nome)
+
+
+class Oficina:
+    """
+    O botão "Fazer site" da central. Uma fila e uma linha própria: funciona
+    com os agentes ligados ou desligados, um site por vez (cada um leva
+    minutos de Claude Code, e dois juntos só dividiriam a mesma conta).
+
+    O estúdio automático continua no motor. Os dois respeitam a mesma trava
+    (`a3_estudio.obra`): o mesmo lead nunca é construído duas vezes juntas.
+    """
+
+    def __init__(self, cfg, executor: Any = None, pede_google: Any = None,
+                 publica: Any = None, diz: Any = None):
+        self.cfg = cfg
+        self._executor = executor
+        self._pede_google = pede_google
+        self._publica = publica
+        self._diz = diz or (lambda t: print(t, flush=True))
+        self._fila: deque[tuple[int, str]] = deque()
+        self._trava = threading.Lock()
+        self._linha: threading.Thread | None = None
+        self._rodando = False      # mudado só com a trava na mão
+        self.atual: dict | None = None
+        self.feitos: deque[dict] = deque(maxlen=20)
+
+    def pede(self, lead_id: int, nome: str = '') -> str:
+        with self._trava:
+            if any(i == lead_id for i, _ in self._fila) or (
+                    self.atual and self.atual['id'] == lead_id):
+                return f'{nome or lead_id} já está na fila do estúdio'
+            self._fila.append((lead_id, nome))
+            posicao = len(self._fila) + (1 if self.atual else 0)
+            if not self._rodando:
+                self._rodando = True
+                self._linha = threading.Thread(target=self._roda, name='motor',
+                                               daemon=True)
+                self._linha.start()
+        return (f'{nome or lead_id}: começando agora' if posicao == 1
+                else f'{nome or lead_id}: {posicao}º na fila do estúdio')
+
+    def retrato(self) -> dict:
+        with self._trava:
+            return {'fila': [{'id': i, 'nome': n} for i, n in self._fila],
+                    'atual': self.atual, 'feitos': list(self.feitos)[::-1]}
+
+    def espera(self, segundos: float = 30) -> None:
+        """Para os testes: espera a fila esvaziar."""
+        if self._linha:
+            self._linha.join(segundos)
+
+    def _roda(self) -> None:
+        from .a3_estudio import sob_encomenda
+        from .estado import Estado
+        est = Estado(self.cfg.banco)
+        try:
+            while True:
+                with self._trava:
+                    if not self._fila:
+                        self.atual = None
+                        self._rodando = False
+                        return
+                    lead_id, nome = self._fila.popleft()
+                    self.atual = {'id': lead_id, 'nome': nome,
+                                  'desde': f'{datetime.now():%H:%M}'}
+                self._diz(f'🎨 estúdio: fazendo o site de {nome or lead_id}...')
+                try:
+                    r = sob_encomenda(est, self.cfg, lead_id, executor=self._executor,
+                                      pede_google=self._pede_google,
+                                      publica=self._publica)
+                    feito = {'id': lead_id, 'nome': nome, 'ok': True, 'resultado': r}
+                    self._diz(f'🎨 estúdio: {nome} pronto — {r}')
+                except Exception as e:
+                    feito = {'id': lead_id, 'nome': nome, 'ok': False,
+                             'resultado': f'{type(e).__name__}: {e}'[:300]}
+                    est.avisa('estudio', f'o site não saiu: {str(e)[:200]}', lead_id)
+                    self._diz(f'✗ estúdio: {nome}: {e}')
+                feito['quando'] = f'{datetime.now():%H:%M}'
+                with self._trava:
+                    self.feitos.append(feito)
+        finally:
+            est.fechar()

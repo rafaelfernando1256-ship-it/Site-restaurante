@@ -3244,6 +3244,184 @@ def _():
     verdade('avaliação no Google' in a3.HONESTIDADE)
 
 
+# ── O estúdio no botão ──────────────────────────────────────────────
+def cfg_estudio(est, nome, **extra):
+    return cfg_falso(banco=est.caminho, saida=TMP / f'saida-{nome}',
+                     material=TMP / f'material-{nome}', capturar_sozinho=False, **extra)
+
+
+def com_prints(cfg, l):
+    pasta = cfg.material / l.slug
+    pasta.mkdir(parents=True, exist_ok=True)
+    (pasta / '01-capa.png').write_bytes(b'\x89PNG')
+
+
+def publica_falsa(token, lead, zip_, site_id):
+    return 'https://cantina-abc123.netlify.app', site_id or 'novo-site'
+
+
+@teste('botão do estúdio: lead novo ganha site, link e mensagem PARA APROVAR')
+def _():
+    est = banco()
+    l = lead_exemplo(est)
+    m_fria = est.guarda_mensagem(l.id, 'abordagem', 'oi, posso te mostrar um site?')
+    est.move(l.id, RASCUNHO, 't')
+    cfg = cfg_estudio(est, 'botao1')
+    com_prints(cfg, l)
+    cc, g = FalsoClaudeCode(), FalsoGoogle()
+    url = a3.sob_encomenda(est, cfg, l.id, executor=cc, pede_google=g,
+                           publica=publica_falsa)
+    igual(url, 'https://cantina-abc123.netlify.app')
+    igual(len(cc.chamadas), 2, 'Sonnet e Opus')
+    verdade(cc.chamadas[0]['tinha_maps'])
+    abord = [m for m in est.mensagens(tipo='abordagem', lead_id=l.id)]
+    igual([m['situacao'] for m in abord], ['recusada', 'rascunho'],
+          'a mensagem fria tem que dar lugar à do site')
+    verdade(url in abord[-1]['texto'])
+    igual(est.lead(l.id).estado, RASCUNHO)
+    igual(est.demo(l.id)['url'], url)
+
+
+@teste('botão do estúdio: quem já conversou recebe o link sozinho (é resposta)')
+def _():
+    est = banco()
+    l = conversa_com(est, ABORDADO, 'manda o site aí')
+    cfg = cfg_estudio(est, 'botao2')
+    com_prints(cfg, l)
+    url = a3.sob_encomenda(est, cfg, l.id, executor=FalsoClaudeCode(),
+                           pede_google=FalsoGoogle(), publica=publica_falsa)
+    r = est.mensagens(tipo='resposta', lead_id=l.id)
+    verdade(r and url in r[-1]['texto'] and r[-1]['situacao'] == 'rascunho')
+    igual([m['situacao'] for m in est.mensagens(tipo='abordagem', lead_id=l.id)], ['enviada'],
+          'criou primeiro contato para quem já conversa')
+
+
+@teste('botão do estúdio: cliente não tem o site refeito (é pedido de alteração)')
+def _():
+    est = banco()
+    l = conversa_com(est, FECHADO, 'oi', com_site=True)
+    try:
+        a3.sob_encomenda(est, cfg_estudio(est, 'botao3'), l.id, executor=FalsoClaudeCode())
+        raise AssertionError('refez o site de um cliente')
+    except ValueError as e:
+        verdade('alteração' in str(e))
+
+
+@teste('botão do estúdio: sem prints diz onde pôr, e não chama o Claude Code')
+def _():
+    est = banco()
+    l = lead_exemplo(est, instagram='')
+    cc = FalsoClaudeCode()
+    try:
+        a3.sob_encomenda(est, cfg_estudio(est, 'botao4'), l.id, executor=cc)
+        raise AssertionError('seguiu sem prints')
+    except ValueError as e:
+        verdade('material-botao4' in str(e) and 'Instagram' in str(e), str(e))
+    igual(cc.chamadas, [])
+    igual(est.demo(l.id)['situacao'], 'pendente')
+
+
+@teste('botão do estúdio: refazer guarda o site anterior em versoes/')
+def _():
+    est = banco()
+    l = lead_exemplo(est)
+    cfg = cfg_estudio(est, 'botao5')
+    com_prints(cfg, l)
+    for _ in range(2):
+        a3.sob_encomenda(est, cfg, l.id, executor=FalsoClaudeCode(),
+                         pede_google=FalsoGoogle(), publica=publica_falsa)
+    verdade(any((cfg.saida / l.slug / 'versoes').iterdir()))
+    igual(est.demo(l.id)['site_id'], 'novo-site', 'refazer publicou em outro endereço')
+
+
+@teste('estúdio: o automático pula o lead que o botão está construindo')
+def _():
+    est = banco()
+    l = lead_exemplo(est)
+    for e in (RASCUNHO, ABORDADO, RESPONDEU, QUER_DEMO):
+        est.move(l.id, e, 't')
+    cfg = cfg_estudio(est, 'obra')
+    com_prints(cfg, l)
+    cc = FalsoClaudeCode()
+    with a3.obra(l.id):
+        try:
+            with a3.obra(l.id):
+                raise AssertionError('deixou construir duas vezes')
+        except a3.EmObra:
+            pass
+        igual(a3.roda(est, cfg, executor=cc, pede_google=FalsoGoogle())['prontas'], 0)
+    igual(cc.chamadas, [], 'o automático construiu junto com o botão')
+    igual(a3.roda(est, cfg, executor=cc, pede_google=FalsoGoogle())['prontas'], 1,
+          'a trava não foi solta')
+
+
+@teste('estúdio: a entrega automática não publica o lead que está na obra')
+def _():
+    est = banco()
+    l = lead_exemplo(est)
+    est.move(l.id, DEMO_PRONTA, 't')
+    with a3.obra(l.id):
+        orig = a4.confere_equipe
+        a4.confere_equipe = lambda *a: 'eq'
+        try:
+            c = a4.entrega(est, cfg_falso(banco=est.caminho))
+        finally:
+            a4.confere_equipe = orig
+    igual(c['publicadas'] + c['falhas'], 0)
+    igual(est.lead(l.id).estado, DEMO_PRONTA)
+
+
+@teste('oficina: o botão vira fila, não repete o mesmo lead, e registra o resultado')
+def _():
+    import threading
+    from nucleo.motor import Oficina
+    est = banco()
+    l1 = lead_exemplo(est, n=31, nome='Casa Um')
+    l2 = lead_exemplo(est, n=32, nome='Casa Dois', instagram='')
+    cfg = cfg_estudio(est, 'oficina')
+    com_prints(cfg, l1)
+    solta = threading.Event()
+
+    class Lento(FalsoClaudeCode):
+        def __call__(self, *a, **k):
+            solta.wait(10)          # segura a Casa Um na obra
+            return super().__call__(*a, **k)
+    of = Oficina(cfg, executor=Lento(), pede_google=FalsoGoogle(),
+                 publica=publica_falsa, diz=lambda t: None)
+    of.pede(l1.id, 'Casa Um')
+    verdade('já está' in of.pede(l1.id, 'Casa Um'), 'enfileirou o mesmo lead duas vezes')
+    verdade('2º na fila' in of.pede(l2.id, 'Casa Dois'))
+    solta.set()
+    of.espera(20)
+    feitos = {f['nome']: f for f in of.retrato()['feitos']}
+    verdade(feitos['Casa Um']['ok'], feitos)
+    verdade(not feitos['Casa Dois']['ok'] and 'prints' in feitos['Casa Dois']['resultado'])
+    verdade(any(a['tipo'] == 'estudio' for a in est.avisos()), 'a falha não virou aviso')
+    igual(of.retrato()['atual'], None)
+
+
+@teste('central: a área do estúdio lista os leads com prints e site')
+def _():
+    import central as C
+    est = banco()
+    l = lead_exemplo(est)
+    cfg = cfg_estudio(est, 'central-estudio')
+    com_prints(cfg, l)
+    cl = conversa_com(est, FECHADO, 'oi', com_site=True, n=40, place_id='cli40')
+    ce = C.Central(cfg)
+    e = ce.estado()
+    linha = next(x for x in e['estudio']['leads'] if x['id'] == l.id)
+    igual(linha['prints'], 1)
+    igual(linha['site'], None)
+    try:
+        ce.faz('demo', {'lead_id': cl.id})
+        raise AssertionError('aceitou refazer o site de um cliente')
+    except ValueError:
+        pass
+    pagina = C.PAGINA
+    verdade('Fazer site de demonstração' in pagina and 'id="estudio"' in pagina)
+
+
 # ── As alterações ───────────────────────────────────────────────────
 @teste('alteração: faz, republica no MESMO site e avisa o cliente com o link')
 def _():

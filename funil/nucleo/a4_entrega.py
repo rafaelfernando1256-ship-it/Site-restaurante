@@ -168,7 +168,10 @@ def entrega(est: Estado, cfg, limite: int = 10, cli: Any = None) -> dict[str, An
     conta: dict[str, Any] = {'publicadas': 0, 'falhas': 0, 'links': []}
     equipe = confere_equipe(cfg.netlify, cfg.equipe_netlify)
 
+    from .a3_estudio import EM_OBRA
     for l in est.leads(DEMO_PRONTA, limite=limite):
+        if l.id in EM_OBRA:
+            continue          # o botão do estúdio está terminando este
         d = est.demo(l.id)
         if not d or not d['zip']:
             conta['falhas'] += 1

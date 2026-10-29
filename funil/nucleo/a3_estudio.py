@@ -621,6 +621,92 @@ def constroi_rapido(lead: Lead, leitura: Leitura, imagens: Sequence[Path],
     return pasta, f'página única escrita pelo {cfg.modelo_do_cerebro}'
 
 
+# ── Um lead por vez na obra ─────────────────────────────────────────
+# O estúdio trabalha em duas linhas: o motor (sozinho, para quem quis ver)
+# e o botão da central (quando você manda). As duas não podem construir o
+# mesmo lead ao mesmo tempo — escreveriam na mesma pasta.
+import threading
+from contextlib import contextmanager
+
+EM_OBRA: set[int] = set()
+_OBRA = threading.Lock()
+# O perfil do Chrome do Instagram é um só: duas capturas ao mesmo tempo
+# dariam "perfil em uso" numa delas.
+_INSTA = threading.Lock()
+
+
+@contextmanager
+def obra(lead_id: int):
+    with _OBRA:
+        if lead_id in EM_OBRA:
+            raise EmObra(f'o lead #{lead_id} já está sendo construído')
+        EM_OBRA.add(lead_id)
+    try:
+        yield
+    finally:
+        with _OBRA:
+            EM_OBRA.discard(lead_id)
+
+
+class EmObra(RuntimeError):
+    pass
+
+
+def _referencia() -> Path:
+    # O molde é um site pronto deste repositório, não cfg.saida — que o
+    # usuário pode ter apontado para qualquer lugar.
+    from . import config as _cfg
+    referencia = _cfg.RAIZ.parent / 'grao-dourado'
+    return referencia if referencia.exists() else _cfg.RAIZ.parent
+
+
+def prints_de(est: Estado, l: Lead, cfg) -> tuple[list[Path], str]:
+    """Os prints do Instagram do lead; tira sozinho se ainda não houver."""
+    pasta_material = material_de(l, cfg.material)
+    imagens, notas = reune(pasta_material)
+    if imagens or not (cfg.capturar_sozinho and l.instagram):
+        return imagens, notas
+    with _INSTA:
+        olho = None
+        try:
+            from .insta import Insta
+            olho = Insta(Path(cfg.perfil_instagram or Path(cfg.banco).parent / 'instagram'))
+            print(f'  capturando o Instagram de @{l.instagram}...')
+            olho.captura(l.instagram, pasta_material, posts=cfg.posts_por_perfil)
+            imagens, notas = reune(pasta_material)
+            print(f'  {len(imagens)} capturas de @{l.instagram}')
+        except Exception as e:
+            est.anota(AGENTE, 'erro_captura', l.id, str(e)[:300])
+            print(f'  ⚠ não consegui capturar @{l.instagram}: {e}')
+        finally:
+            if olho is not None:
+                olho.fecha()
+    return imagens, notas
+
+
+def monta(est: Estado, l: Lead, imagens: Sequence[Path], notas: str, cfg,
+          cli: Any = None, executor: Any = None, pede_google: Any = None) -> tuple[Path, str]:
+    """Constrói e empacota. Guarda a versão anterior, se for refazer."""
+    pasta_antiga = cfg.saida / l.slug
+    if (pasta_antiga / 'publico' / 'index.html').exists():
+        from .alteracoes import guarda_versao
+        guarda_versao(pasta_antiga)
+    if cfg.estudio_claude_code and (executor or tem_claude_code()):
+        print(f'  {l.nome}: {len(imagens)} prints → Claude Code')
+        pasta, relato = constroi(l, imagens, notas, cfg.saida, _referencia(),
+                                 cfg, executor=executor, pede_google=pede_google)
+    else:
+        print(f'  lendo o Instagram de {l.nome} ({len(imagens)} imagens)...')
+        leitura = le(l, imagens, notas, modelo=cfg.modelo_do_cerebro,
+                     cli=cli or (cfg.chave_do_dialeto or None),
+                     provedor=cfg.provedor)
+        print(f'  escrevendo o site de {l.nome}...')
+        pasta, relato = constroi_rapido(l, leitura, imagens, cfg.saida, cfg)
+    zip_ = empacota(pasta)
+    est.guarda_demo(l.id, pasta=str(pasta), zip=str(zip_), situacao='construido', erro='')
+    return pasta, relato
+
+
 def roda(est: Estado, cfg, limite: int = 3, cli: Any = None,
          executor: Any = None, leads: list[Lead] | None = None,
          pede_google: Any = None) -> dict[str, int]:
@@ -629,32 +715,12 @@ def roda(est: Estado, cfg, limite: int = 3, cli: Any = None,
     para esses — é o fluxo da prévia, em que o site vem ANTES da conversa.
     """
     conta = {'prontas': 0, 'sem_material': 0, 'falhas': 0}
-    # O molde é um site pronto deste repositório, não cfg.saida — que o
-    # usuário pode ter apontado para qualquer lugar.
-    from . import config as _cfg
-    referencia = _cfg.RAIZ.parent / 'grao-dourado'
-    if not referencia.exists():
-        referencia = _cfg.RAIZ.parent
-    olho = None          # o navegador das capturas, aberto só se precisar
     for l in (leads if leads is not None else est.leads(QUER_DEMO, limite=limite)):
-        pasta_material = material_de(l, cfg.material)
-        imagens, notas = reune(pasta_material)
-
-        if not imagens and cfg.capturar_sozinho and l.instagram:
-            try:
-                from .insta import Insta
-                if olho is None:
-                    olho = Insta(Path(cfg.perfil_instagram
-                                      or Path(cfg.banco).parent / 'instagram'))
-                print(f'  capturando o Instagram de @{l.instagram}...')
-                olho.captura(l.instagram, pasta_material, posts=cfg.posts_por_perfil)
-                imagens, notas = reune(pasta_material)
-                print(f'  {len(imagens)} capturas de @{l.instagram}')
-            except Exception as e:
-                est.anota(AGENTE, 'erro_captura', l.id, str(e)[:300])
-                print(f'  ⚠ não consegui capturar @{l.instagram}: {e}')
-
+        if l.id in EM_OBRA:
+            continue          # o botão da central já está construindo este
+        imagens, notas = prints_de(est, l, cfg)
         if not imagens:
+            pasta_material = material_de(l, cfg.material)
             conta['sem_material'] += 1
             est.guarda_demo(l.id, situacao='pendente',
                             erro=f'sem capturas em {pasta_material}')
@@ -662,28 +728,109 @@ def roda(est: Estado, cfg, limite: int = 3, cli: Any = None,
                   + (f' (@{l.instagram})' if l.instagram else ''))
             continue
         try:
-            if cfg.estudio_claude_code and (executor or tem_claude_code()):
-                print(f'  {l.nome}: {len(imagens)} prints → Claude Code')
-                pasta, relato = constroi(l, imagens, notas, cfg.saida, referencia,
-                                         cfg, executor=executor, pede_google=pede_google)
-            else:
-                print(f'  lendo o Instagram de {l.nome} ({len(imagens)} imagens)...')
-                leitura = le(l, imagens, notas, modelo=cfg.modelo_do_cerebro,
-                             cli=cli or (cfg.chave_do_dialeto or None),
-                             provedor=cfg.provedor)
-                print(f'  escrevendo o site de {l.nome}...')
-                pasta, relato = constroi_rapido(l, leitura, imagens, cfg.saida, cfg)
-            zip_ = empacota(pasta)
-            est.guarda_demo(l.id, pasta=str(pasta), zip=str(zip_),
-                            situacao='construido', erro='')
+            with obra(l.id):
+                pasta, relato = monta(est, l, imagens, notas, cfg, cli=cli,
+                                      executor=executor, pede_google=pede_google)
             est.move(l.id, DEMO_PRONTA, AGENTE, relato[:200])
             conta['prontas'] += 1
-            print(f'  ✓ {l.nome}: {zip_}')
+            print(f'  ✓ {l.nome}: {pasta / "site.zip"}')
+        except EmObra:
+            continue
         except Exception as e:
             conta['falhas'] += 1
             est.guarda_demo(l.id, situacao='falhou', erro=str(e)[:500])
             est.anota(AGENTE, 'erro', l.id, str(e)[:300])
             print(f'  ✗ {l.nome}: {e}')
-    if olho is not None:
-        olho.fecha()
     return conta
+
+
+# ── Sob encomenda: o botão "Fazer site" da central ──────────────────
+def sob_encomenda(est: Estado, cfg, lead_id: int, cli: Any = None,
+                  executor: Any = None, pede_google: Any = None,
+                  publica: Any = None) -> str:
+    """
+    Você apertou o botão: constrói AGORA, publica e deixa a mensagem pronta.
+    Devolve o link (ou a pasta, sem Netlify).
+
+    Depois da construção, o lead segue o caminho de sempre:
+      • quem já conversou com você recebe o link sozinho (é resposta);
+      • quem nunca falou com você ganha a mensagem de prévia em
+        "Primeiros contatos", esperando a sua aprovação.
+    """
+    from .estado import DESCARTADO, FECHADO
+    l = est.lead(lead_id)
+    if l is None:
+        raise ValueError(f'lead #{lead_id} não existe')
+    if l.estado == FECHADO:
+        raise ValueError(f'{l.nome} já é cliente: mudança no site dele é pedido de '
+                         'alteração, não site novo (refazer apagaria o site no ar)')
+    if l.estado == DESCARTADO:
+        raise ValueError(f'{l.nome} foi descartado')
+    # A obra vai até a mensagem pronta: no meio do caminho o lead passa por
+    # "site pronto", e a entrega automática do motor não pode pegá-lo ali.
+    with obra(l.id):
+        return _sob_encomenda(est, cfg, l, cli, executor, pede_google, publica)
+
+
+def _sob_encomenda(est, cfg, l, cli, executor, pede_google, publica) -> str:
+    from .estado import NOVO, PUBLICADO, RASCUNHO, TRANSICOES
+    imagens, notas = prints_de(est, l, cfg)
+    if not imagens:
+        pasta_material = material_de(l, cfg.material)
+        est.guarda_demo(l.id, situacao='pendente', erro=f'sem capturas em {pasta_material}')
+        raise ValueError(f'sem prints do Instagram de {l.nome}: ponha em {pasta_material}'
+                         + ('' if l.instagram else ' (o lead não tem @ do Instagram)'))
+    try:
+        pasta, relato = monta(est, l, imagens, notas, cfg, cli=cli,
+                              executor=executor, pede_google=pede_google)
+    except Exception as e:
+        est.guarda_demo(l.id, situacao='falhou', erro=str(e)[:500])
+        raise
+    est.anota(AGENTE, 'sob_encomenda', l.id, relato[:200])
+
+    def anda(para: str) -> None:
+        atual = est.lead(l.id).estado
+        if para in TRANSICOES.get(atual, set()):
+            est.move(l.id, para, AGENTE, 'site feito pelo botão')
+
+    if not cfg.netlify:
+        anda(DEMO_PRONTA)
+        est.avisa('estudio', f'site de {l.nome} pronto em {pasta / "publico"}, mas sem '
+                  'NETLIFY_TOKEN não dá para publicar.', l.id)
+        return str(pasta / 'publico')
+
+    d = est.demo(l.id)
+    if publica is None:
+        from .a4_entrega import confere_equipe
+        from .a4_entrega import publica as _publica
+        equipe = confere_equipe(cfg.netlify, cfg.equipe_netlify)
+
+        def publica(token, lead_, zip__, site_id_):
+            return _publica(token, lead_, zip__, equipe, site_id_)
+    url, site_id = publica(cfg.netlify, l, Path(d['zip']), d['site_id'] or '')
+    est.guarda_demo(l.id, url=url, site_id=site_id, situacao='publicado', erro='')
+    anda(DEMO_PRONTA)
+    anda(PUBLICADO)
+    print(f'  ✓ {l.nome}: {url}')
+
+    from .a4_entrega import _pendencias
+    from .precos import nicho_do_lead
+    from .vigia import texto_previa
+    conversou = bool(est.mensagens(tipo='retorno', lead_id=l.id))
+    if (l.dados or {}).get('nao_contatar'):
+        est.avisa('estudio', f'site de {l.nome} no ar ({url}), mas ele pediu para não ser '
+                  'contatado: nenhuma mensagem foi preparada.', l.id)
+    elif conversou:
+        est.guarda_mensagem(l.id, 'resposta', f'Montei o site de vocês, olha como ficou: '
+                            f'{url}\nÉ uma demonstração, dá para mudar tudo. O que achou?')
+    else:
+        # A mensagem fria que esperava aprovação é trocada pela de prévia:
+        # duas primeiras mensagens para a mesma pessoa é uma a mais.
+        for m in est.mensagens(tipo='abordagem', lead_id=l.id):
+            if m['situacao'] in ('rascunho', 'aprovada'):
+                est.marca_mensagem(m['id'], 'recusada', '', 'trocada pela mensagem com o site')
+        est.guarda_mensagem(l.id, 'abordagem', texto_previa(
+            cfg.autor, l.nome, nicho_do_lead(l), url, _pendencias(pasta)))
+        if est.lead(l.id).estado in (NOVO, PUBLICADO):
+            anda(RASCUNHO)
+    return url

@@ -76,6 +76,29 @@ Usa a **sua conta do Claude Code** (a assinatura), não a chave de API — e
 funciona com Groq ou Gemini como cérebro do resto. Modelo e esforço de
 cada etapa ficam em `config.toml`, seção `[estudio]`.
 
+### A área do Estúdio — o botão
+
+Na central, a seção **Estúdio** lista os leads com o que cada um tem:
+nicho, cidade, em que pé está, o @ do Instagram, quantos prints, e o site
+(sem site, construindo, no ar com o link, ou falhou com o motivo).
+
+Do lado de cada um, **Fazer site de demonstração** (ou **Refazer site**,
+ou **Tentar de novo**). O botão faz o mesmo caminho acima — ficha do
+Maps, Sonnet, Opus — e depois:
+
+- publica na Netlify (refazer publica no MESMO endereço, e o site
+  anterior fica guardado em `versoes/`);
+- quem **já conversou** com você recebe o link sozinho;
+- quem **nunca falou** com você ganha a mensagem com o link em
+  "Primeiros contatos", esperando a sua aprovação (a mensagem fria que
+  estava lá é trocada por ela).
+
+Funciona com os agentes ligados ou desligados. É uma fila: um site por
+vez. O **automático continua**: quem pede para ver no WhatsApp ganha o
+site sozinho, e o botão e o automático nunca constroem o mesmo lead ao
+mesmo tempo. Cliente (quem fechou) não tem botão: mudança no site dele é
+pedido de alteração, para não apagar o site que está no ar.
+
 ## Alteração pedida no WhatsApp
 
 ```

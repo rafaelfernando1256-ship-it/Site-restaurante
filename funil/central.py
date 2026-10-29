@@ -38,7 +38,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from nucleo import config  # noqa: E402
 from nucleo.estado import ESTADOS, Estado  # noqa: E402
-from nucleo.motor import PADRAO, Motor  # noqa: E402
+from nucleo.motor import PADRAO, Eco, Motor, Oficina  # noqa: E402
 from nucleo.precos import Precos, eh_comida, nicho_do_lead, nichos, valor  # noqa: E402
 
 TOKEN = secrets.token_urlsafe(24)
@@ -47,9 +47,12 @@ TOKEN = secrets.token_urlsafe(24)
 class Central:
     """O que a página pode pedir. Cada pedido abre o seu próprio banco."""
 
-    def __init__(self, cfg, motor: Motor | None = None):
+    def __init__(self, cfg, motor: Motor | None = None, oficina: Oficina | None = None):
         self.cfg = cfg
         self.motor = motor or Motor(cfg)
+        # O estúdio do botão escreve no mesmo registro dos agentes.
+        self.oficina = oficina or Oficina(cfg, diz=self.motor.diz)
+        Eco.instala(self.motor)
         self.precos_arq = Path(cfg.banco).parent / 'precos.json'
 
     def _est(self) -> Estado:
@@ -82,6 +85,7 @@ class Central:
                                      pasta=(d['pasta'] if d else '')))
             negociando = [dict(id=l.id, nome=l.nome, estado=l.estado)
                           for l in est.leads(['negociando', 'publicado'], limite=200)]
+            estudio = self._leads_do_estudio(est)
         extras = [k for k in precos.dados if k not in {n['nome'] for n in nichos()}]
         return {
             'motor': {'situacao': self.motor.situacao, 'ligado': self.motor.ligado(),
@@ -93,6 +97,7 @@ class Central:
             'pedidos': pedidos,
             'clientes': clientes,
             'negociando': negociando,
+            'estudio': {**self.oficina.retrato(), 'leads': estudio},
             'nichos': nichos(extras),
             'precos': precos.dados,
             'ajustes': {k: aj[k] for k in PADRAO},
@@ -107,6 +112,25 @@ class Central:
                 'playwright': self._tem_playwright(),
             },
         }
+
+    def _leads_do_estudio(self, est) -> list[dict]:
+        """A lista da área do estúdio: cada lead, os prints e o site dele."""
+        from nucleo.a3_estudio import EM_OBRA, IMAGENS, material_de
+        saida = []
+        for l in est.leads([e for e in ESTADOS if e != 'descartado'], limite=300):
+            pasta = material_de(l, self.cfg.material)
+            try:
+                prints = sum(1 for x in pasta.iterdir() if x.suffix.lower() in IMAGENS)
+            except OSError:
+                prints = 0
+            d = est.demo(l.id)
+            saida.append(dict(
+                id=l.id, nome=l.nome, nicho=nicho_do_lead(l), cidade=l.cidade,
+                estado=l.estado, instagram=l.instagram, prints=prints,
+                pasta_prints=str(pasta), em_obra=l.id in EM_OBRA,
+                site=dict(situacao=d['situacao'], url=d['url'], erro=d['erro'])
+                if d else None))
+        return saida
 
     def _tem_cerebro(self) -> bool:
         return bool({'claude': self.cfg.anthropic, 'gemini': self.cfg.gemini,
@@ -205,6 +229,16 @@ class Central:
             raise ValueError('ligue os agentes primeiro: quem envia é o motor, '
                              'pelo WhatsApp Web que ele abriu')
         self.motor.pede('enviar_aprovados')
+
+    def a_demo(self, d):
+        """O botão "Fazer site de demonstração" do estúdio."""
+        with self._est() as est:
+            l = est.lead(int(d['lead_id']))
+        if l is None:
+            raise ValueError('lead não encontrado')
+        if l.estado == 'fechado':
+            raise ValueError(f'{l.nome} já é cliente: mande um pedido de alteração')
+        return {'aviso': self.oficina.pede(l.id, l.nome)}
 
     def a_aviso(self, d):
         with self._est() as est:
@@ -410,6 +444,10 @@ th{color:var(--fraco);font-weight:500;border-top:0}
 .recado.ve{opacity:1}
 details summary{cursor:pointer;font-weight:600;min-height:44px;display:flex;align-items:center}
 .quebra{overflow-wrap:anywhere}
+.lead-obra{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;justify-content:space-between}
+.lead-obra .info{min-width:0;flex:1 1 260px}
+.tag.no-ar{color:var(--verde);border-color:var(--verde)}
+.tag.construindo,.tag.na-fila,.tag.pendente{color:var(--ambar);border-color:var(--ambar)}
 </style>
 </head>
 <body>
@@ -438,6 +476,19 @@ details summary{cursor:pointer;font-weight:600;min-height:44px;display:flex;alig
     <button class="botao pequeno" id="enviar">Enviar os aprovados</button>
   </div>
   <div id="primeiros"></div>
+</section>
+
+<section class="cartao" id="estudio">
+  <h2>Estúdio <small>sites de demonstração — sozinho para quem pede, ou no botão quando você quiser</small></h2>
+  <p class="situacao" id="obra" style="margin:0 0 12px"></p>
+  <div class="linha" style="margin-bottom:6px">
+    <div><label for="busca">Procurar lead</label><input id="busca" placeholder="nome, nicho ou cidade"></div>
+    <div><label for="filtro">Mostrar</label><select id="filtro">
+      <option value="todos">todos</option><option value="sem">sem site</option>
+      <option value="com">com site</option><option value="falhou">que falharam</option></select></div>
+  </div>
+  <div id="leads-estudio"></div>
+  <div id="feitos-estudio"></div>
 </section>
 
 <section class="cartao">
@@ -609,6 +660,7 @@ function desenha() {
       <button class="botao pequeno" data-msg="${x.id}" data-acao="editar">Salvar texto</button>
       <button class="botao pequeno" data-msg="${x.id}" data-acao="descartar">Descartar lead</button></div></div>`).join('');
 
+  desenhaEstudio();
   desenhaNichos();
   const pr = Object.entries(E.precos);
   $('#tabela-precos').innerHTML = pr.length ? '<tr><th>Nicho</th><th>Como cobra</th><th>Valores</th><th></th></tr>' +
@@ -645,6 +697,54 @@ function desenha() {
   const reg = $('#registro'), noFim = reg.scrollTop + reg.clientHeight >= reg.scrollHeight - 20;
   reg.textContent = m.log.join('\n') || 'nada ainda.';
   if (noFim) reg.scrollTop = reg.scrollHeight;
+}
+
+function situacaoSite(l, naFila) {
+  if (l.em_obra || (E.estudio.atual && E.estudio.atual.id === l.id)) return ['construindo', 'construindo…'];
+  if (naFila) return ['na-fila', 'na fila'];
+  const s = l.site;
+  if (!s) return ['', 'sem site'];
+  if (s.url) return ['no-ar', 'no ar'];
+  if (s.situacao === 'falhou') return ['falhou', 'falhou'];
+  if (s.situacao === 'pendente') return ['pendente', 'sem prints'];
+  if (s.situacao === 'construido') return ['', 'pronto, não publicado'];
+  return ['', s.situacao];
+}
+
+function desenhaEstudio() {
+  const o = E.estudio;
+  const fila = new Set(o.fila.map(x => x.id));
+  $('#obra').textContent = (o.atual ? `Fazendo agora: ${o.atual.nome} (desde ${o.atual.desde})` : 'Nenhum site sendo feito pelo botão agora')
+    + (o.fila.length ? ` · na fila: ${o.fila.map(x => x.nome).join(', ')}` : '')
+    + ' · o automático continua: quem pede para ver ganha o site sozinho.';
+  const termo = $('#busca').value.trim().toLowerCase(), filtro = $('#filtro').value;
+  const leads = o.leads.filter(l => {
+    if (termo && !`${l.nome} ${l.nicho} ${l.cidade}`.toLowerCase().includes(termo)) return false;
+    if (filtro === 'sem') return !(l.site && l.site.url);
+    if (filtro === 'com') return !!(l.site && l.site.url);
+    if (filtro === 'falhou') return !!(l.site && l.site.situacao === 'falhou');
+    return true;
+  });
+  $('#leads-estudio').innerHTML = leads.length ? leads.slice(0, 80).map(l => {
+    const [classe, rotulo] = situacaoSite(l, fila.has(l.id));
+    const ocupado = classe === 'construindo' || classe === 'na-fila';
+    const cliente = l.estado === 'fechado';
+    const botao = cliente ? '<span class="meta">cliente — mudança é pedido de alteração</span>'
+      : `<button class="botao pequeno" data-demo="${l.id}" ${ocupado ? 'disabled' : ''}>${
+          l.site && l.site.url ? 'Refazer site' : classe === 'falhou' ? 'Tentar de novo'
+          : 'Fazer site de demonstração'}</button>`;
+    return `<div class="item lead-obra"><div class="info">
+      <div class="nome">${esc(l.nome)} <span class="tag ${classe}">${esc(rotulo)}</span></div>
+      <div class="meta">${[l.nicho, l.cidade, NOMES[l.estado] || l.estado].filter(Boolean).map(esc).join(' · ')}
+        · ${l.instagram ? '@' + esc(l.instagram) : 'sem Instagram'} · ${l.prints} print${l.prints === 1 ? '' : 's'}</div>
+      ${l.site && l.site.url ? `<div class="meta quebra"><a href="${esc(l.site.url)}" target="_blank" rel="noopener">${esc(l.site.url)}</a></div>` : ''}
+      ${l.site && l.site.erro && !l.site.url ? `<div class="meta quebra">⚠ ${esc(l.site.erro)}</div>` : ''}
+      ${!l.prints && !l.instagram && !cliente ? `<div class="meta quebra">ponha os prints em ${esc(l.pasta_prints)}</div>` : ''}
+      </div>${botao}</div>`;
+  }).join('') + (leads.length > 80 ? `<p class="vazio">mostrando 80 de ${leads.length} — use a busca</p>` : '')
+    : '<p class="vazio">Nenhum lead aqui ainda.</p>';
+  $('#feitos-estudio').innerHTML = o.feitos.length ? '<h2 style="margin-top:16px">Feitos pelo botão</h2>' +
+    o.feitos.slice(0, 6).map(f => `<div class="meta quebra">${esc(f.quando)} · ${f.ok ? '✓' : '✗'} ${esc(f.nome)} — ${esc(f.resultado)}</div>`).join('') : '';
 }
 
 function opcoesNicho(sel, comOutro) {
@@ -707,6 +807,7 @@ document.addEventListener('click', async ev => {
       await api('mensagem', d);
       if (d.acao === 'editar') recado('texto salvo');
     }
+    else if (t.dataset.demo) { t.disabled = true; await api('demo', {lead_id: +t.dataset.demo}); }
     else if (t.dataset.aviso) await api('aviso', {id: +t.dataset.aviso});
     else if (t.dataset.fechou) { if (confirm('Marcar como cliente? Os pedidos dele no WhatsApp viram alteração no site.')) await api('fechou', {lead_id: +t.dataset.fechou}); }
     else if (t.dataset.apagaPreco) await api('preco_apagar', {nicho: t.dataset.apagaPreco});
@@ -735,6 +836,8 @@ document.addEventListener('input', ev => {
   if (ev.target.dataset.texto) editando.add(ev.target.dataset.texto);
 });
 $('#nicho').addEventListener('change', preencheValores);
+$('#busca').addEventListener('input', () => E && desenhaEstudio());
+$('#filtro').addEventListener('change', () => E && desenhaEstudio());
 $('#nicho-outro').addEventListener('input', preencheValores);
 document.querySelectorAll('input[name=modo]').forEach(r => r.addEventListener('change', mostraCampos));
 
