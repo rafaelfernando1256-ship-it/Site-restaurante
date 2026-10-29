@@ -210,7 +210,7 @@ export async function escreveFicha(lead, pasta, { chave = process.env.GOOGLE_PLA
         await writeFile(arquivo, markdownDaFicha(f), 'utf8');
         diz(`  · ${lead?.nome}: ficha do Maps — nota ${f.rating ?? '—'}, ${(f.reviews || []).length} avaliações, `
           + `${(f.regularOpeningHours?.weekdayDescriptions || []).length} dias de horário`);
-        return { arquivo, fonte: 'google', motivo: '' };
+        return { arquivo, fonte: 'google', motivo: '', website: f.websiteUri || '' };
       }
       motivo = 'a empresa não foi achada no Google pelo nome';
     } catch (e) {

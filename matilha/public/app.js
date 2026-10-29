@@ -273,7 +273,7 @@ function desenhaEstudio() {
     const botao = l.cliente
       ? '<span class="nota">cliente: mudança é pedido de alteração</span>'
       : `<button class="bt bt-contorno bt-pequeno" data-demo="${esc(l.id)}" ${andando(l) ? 'disabled' : ''}>${esc(acao)}</button>`;
-    const detalhes = [l.tipo, l.cidade, l.instagram ? 'com Instagram' : 'sem Instagram',
+    const detalhes = [l.tipo, l.cidade, l.instagram ? `Instagram ${l.instagram.replace(/^https?:\/\/(www\.)?instagram\.com\//, '@').replace(/\/$/, '')}` : '',
       l.nota ? `${String(l.nota).replace('.', ',')} no Google${l.avaliacoes ? ` (${l.avaliacoes})` : ''}` : ''].filter(Boolean).join(' · ');
     return `<div class="obra" role="listitem">
       <span class="cliente-texto"><b>${esc(l.nome || 'sem nome')}</b>
@@ -281,10 +281,12 @@ function desenhaEstudio() {
         ${l.url ? `<span><a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.url)}</a></span>` : ''}
         ${l.antes_do_contato ? '<span class="obra-aviso">No ar, mas ele ainda não respondeu: o link vai quando ele aceitar ver, na conversa.</span>' : ''}
         ${l.erro ? `<span class="obra-erro">${esc(l.erro)}</span>` : ''}
-        ${!l.instagram && !l.cliente ? `<span class="obra-insta">
+        ${!l.instagram && !l.cliente && !l.instagram_procurado
+    ? '<span>Instagram: o estúdio procura sozinho quando fizer o site.</span>' : ''}
+        ${!l.instagram && !l.cliente && l.instagram_procurado && !l.instagram_procurado.achou ? `<span class="obra-insta">
+          <small>O estúdio procurou e não achou o Instagram: ${esc(l.instagram_procurado.como || '')}. Se você souber o @, é opcional:</small>
           <input data-insta="${esc(l.id)}" placeholder="@ do Instagram" aria-label="Instagram de ${esc(l.nome)}" autocomplete="off">
-          <button class="bt bt-texto bt-pequeno" data-salva-insta="${esc(l.id)}">Pôr o Instagram</button>
-          <small>sem ele, o Sonnet e o Opus trabalham sem os prints</small></span>` : ''}</span>
+          <button class="bt bt-texto bt-pequeno" data-salva-insta="${esc(l.id)}">Guardar</button></span>` : ''}</span>
       <span class="pilula${tom ? ` pilula-${tom}` : ''}">${esc(rotulo)}</span>
       ${botao}
     </div>`;

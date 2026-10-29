@@ -46,6 +46,7 @@ import { confereDesign, emTexto } from './conferente.mjs';
 import { normalizaItens, porCategoria } from './cardapio.mjs';
 import { fotografaInstagram } from './instagram.mjs';
 import { escreveFicha } from './ficha-maps.mjs';
+import { achaInstagram } from './acha-instagram.mjs';
 
 export { conferePronto };
 
@@ -543,8 +544,17 @@ export async function fazSite(lead, opcoes = {}) {
     await rm(join(pasta, '_instagram'), { recursive: true, force: true });
     await rm(join(pasta, '_maps'), { recursive: true, force: true });
     await rm(join(pasta, 'PROMPT-MASTER.md'), { force: true });
-    if (lead?.instagram) instagram = await fotografaInstagram(lead.instagram, pasta, { diz, prepara: opcoes.prepararInstagram }).catch(() => null);
     ficha = await escreveFicha(lead, pasta, { pede: opcoes.pedePlaces, diz });
+    // Sem o @ salvo, o estúdio procura sozinho: você só aperta o botão.
+    let perfil = lead?.instagram || '';
+    if (!perfil) {
+      const achado = await achaInstagram(lead, { websiteDoGoogle: ficha.website, baixar: opcoes.baixarPagina, diz });
+      perfil = achado.instagram;
+      diz(perfil ? `  · ${lead?.nome}: Instagram ${perfil} — ${achado.como}`
+        : `  · ${lead?.nome}: Instagram não achado (${achado.como}); o site sai com a ficha do Maps`);
+      await opcoes.aoProcurarInstagram?.(perfil, achado.como);
+    }
+    if (perfil) instagram = await fotografaInstagram(perfil, pasta, { diz, prepara: opcoes.prepararInstagram }).catch(() => null);
 
     // Etapa 1 · o Sonnet. O pedido vai pela entrada padrão: pela linha de
     // comando, no Windows, ele passava pelo cmd.exe e era cortado na

@@ -369,6 +369,7 @@ export class Fluxo {
           cliente: ['fechado', 'com_voce', 'entregue'].includes(l.estagio),
           situacao, url: l.sites?.demo?.expirada ? '' : (l.sites?.demo?.url || ''),
           antes_do_contato: Boolean(l.sites?.demo?.antes_do_contato && !l.sites.demo.avisado_em),
+          instagram_procurado: l.instagram ? null : (l.instagram_procurado || null),
           // Falhou, ou está esperando para tentar de novo (o limite do plano, por exemplo).
           erro: texto(travada?.erro || naFila?.erro || naFila?.aviso || '', 200),
         };
@@ -1604,6 +1605,15 @@ sem a linha sobre os preços das fotos publicadas:\n${cardapioEmTexto(lead.carda
       autor: ajustes.autor, ajustes, pastaTrabalho: this.pastaTrabalho,
       // Os prints de referência ficam em dados/referencias, ao lado de dados/sites.
       pastaDados: dirname(this.pastaTrabalho), diz: this.diz,
+      // O Instagram que o estúdio achou sozinho fica salvo no cliente: da
+      // próxima vez nem procura. Não achado também fica anotado, para a tela
+      // Estúdio dizer por quê.
+      aoProcurarInstagram: (perfil, como) => this.comOsDados(async (tudo) => {
+        const atual = (tudo.leads || []).find((l) => l.id === lead.id);
+        if (!atual) return;
+        if (perfil && !atual.instagram) atual.instagram = perfil;
+        atual.instagram_procurado = { quando: agora(), achou: Boolean(perfil), como: texto(como, 160) };
+      }),
     });
     if (feito.promptMaster) this.diz(`  ▣ ${lead.nome}: feito pelo prompt master${feito.instagram ? ', com o print do Instagram' : ' (sem Instagram)'} (${feito.promptMaster})`);
     const { html, consertos } = enderecaDemo(feito.html, { autor: ajustes.autor });

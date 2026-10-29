@@ -159,6 +159,9 @@ export function tipoPeloNome(nome) {
   return '';
 }
 
+/** As palavras de ramo ("pizzaria", "estetica"...): não identificam um negócio, só o ramo. */
+export const PALAVRAS_DE_RAMO = RAMOS.flatMap((r) => r.palavras);
+
 /** O ramo de um cliente, consertado: categoria lida, ou o que o nome diz. */
 export function tipoDoLead(lead) {
   return categoriaValida(lead?.tipo) || tipoPeloNome(lead?.nome);

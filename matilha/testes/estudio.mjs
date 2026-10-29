@@ -110,7 +110,7 @@ test('fazSite: ficha do Maps → Sonnet alto → Opus 5.5 alto, nesta ordem', as
   process.env.MATILHA_CLAUDE_LOG = log;
   process.env.GOOGLE_PLACES_KEY = 'chave-falsa';   // o Google é o dublê: nada sai para a rede
   const g = googleFalso();
-  const feito = await fazSite(LEAD, { autor: 'Rafael', pastaTrabalho: pasta, revisar: false, pedePlaces: g.pede,
+  const feito = await fazSite(LEAD, { autor: 'Rafael', pastaTrabalho: pasta, revisar: false, pedePlaces: g.pede, baixarPagina: async () => '',
     diz: () => {} });
   const [um, dois, ...resto] = await chamadas(log);
   assert.equal(resto.length, 0, 'chamou o Claude Code mais de duas vezes');
@@ -136,7 +136,7 @@ test('fazSite: sem prompt master, o Opus nem começa', async () => {
   const log = join(pasta, 'chamadas.jsonl');
   process.env.MATILHA_CLAUDE_LOG = log;
   process.env.MATILHA_CLAUDE_FALHA = 'sonnet';
-  await assert.rejects(fazSite(LEAD, { pastaTrabalho: pasta, revisar: false, pedePlaces: googleFalso().pede }));
+  await assert.rejects(fazSite(LEAD, { pastaTrabalho: pasta, revisar: false, pedePlaces: googleFalso().pede, baixarPagina: async () => '' }));
   assert.equal((await chamadas(log)).filter((c) => c.modelo === 'claude-opus-5-5').length, 0);
   delete process.env.MATILHA_CLAUDE_FALHA;
   delete process.env.MATILHA_CLAUDE_LOG;
@@ -251,4 +251,79 @@ test('publicador: a chamada de dentro da Matilha passa sem PAINEL_SENHA; a de fo
   assert.equal(destranca(pedido('minha')), null);
   assert.equal(destranca(pedido(SENHA_INTERNA)).status, 401, 'com senha definida, vale a senha');
   if (antes === undefined) delete process.env.PAINEL_SENHA; else process.env.PAINEL_SENHA = antes;
+});
+
+
+/* ── o Instagram que o estúdio acha sozinho ──────────────────────── */
+const { achaInstagram, perfilCombina } = await import('../agentes/acha-instagram.mjs');
+
+const DDG = (resultados) => resultados.map(([url, titulo]) =>
+  `<a rel="nofollow" class="result__a" href="//duckduckgo.com/l/?uddg=${encodeURIComponent(url)}&amp;rut=x">${titulo}</a>`).join('\n');
+
+test('instagram: o site cadastrado no Google já é o Instagram — nem busca', async () => {
+  let baixou = 0;
+  const r = await achaInstagram({ nome: 'Pizzaria Baggio', cidade: 'Maringá' },
+    { websiteDoGoogle: 'https://www.instagram.com/pizzariabaggio/', baixar: async () => { baixou += 1; return ''; } });
+  assert.equal(r.instagram, 'https://www.instagram.com/pizzariabaggio/');
+  assert.equal(baixou, 0);
+});
+
+test('instagram: achado no Linktree que estava no lugar do site', async () => {
+  const r = await achaInstagram({ nome: 'Salão Mônika Ganem', cidade: 'Curitiba', link_social: 'https://linktr.ee/monikaganem' },
+    { baixar: async (url) => (url.includes('linktr.ee') ? '<a href="https://instagram.com/monika.ganem">Instagram</a>' : '') });
+  assert.equal(r.instagram, 'https://www.instagram.com/monika.ganem/');
+  assert.match(r.como, /página de links/);
+});
+
+test('instagram: a busca pula o perfil de outra empresa e pega o certo', async () => {
+  const html = DDG([
+    ['https://www.instagram.com/esteticacuritiba/', 'Estética Curitiba (@esteticacuritiba)'],
+    ['https://www.instagram.com/p/C123abc/', 'post qualquer'],
+    ['https://www.instagram.com/clinicabatel/', 'Clínica Batel (@clinicabatel) • Instagram'],
+  ]);
+  const r = await achaInstagram({ nome: 'Clínica de Estética Batel', cidade: 'Curitiba' }, { baixar: async () => html });
+  assert.equal(r.instagram, 'https://www.instagram.com/clinicabatel/');
+});
+
+test('instagram: nada que combine com o nome = sem Instagram, e o motivo', async () => {
+  const html = DDG([['https://www.instagram.com/pizzariabella/', 'Pizzaria Bella']]);
+  const r = await achaInstagram({ nome: 'Pizzaria Baggio', cidade: 'Maringá' }, { baixar: async () => html });
+  assert.equal(r.instagram, '');
+  assert.match(r.como, /nenhum perfil/);
+});
+
+test('instagram: a regra do nome — o nome próprio, nunca o ramo nem a cidade', () => {
+  assert.ok(perfilCombina('esteticabatel', 'Clínica de Estética Batel'));
+  assert.ok(!perfilCombina('esteticacuritiba', 'Clínica de Estética Batel', '', 'Curitiba'));
+  assert.ok(!perfilCombina('deliciapizzas', 'KI DELÍCIA PIZZARIA'));
+  assert.ok(perfilCombina('beauniquemaringa', 'Clinica de Estética em Maringá Beaunique', '', 'Maringá'));
+  assert.ok(!perfilCombina('esteticamaringa', 'Clinica de Estética em Maringá Beaunique', '', 'Maringá'));
+  assert.ok(perfilCombina('ganem.beauty', 'Salão Mônika Ganem', 'Mônika Ganem (@ganem.beauty) • Instagram'));
+});
+
+test('fazSite: sem @ salvo, procura sozinho e avisa quem guarda no cliente', async () => {
+  const pasta = await pastaNova();
+  process.env.MATILHA_CLAUDE_LOG = join(pasta, 'chamadas.jsonl');
+  const guardado = [];
+  const html = DDG([['https://www.instagram.com/cantinadavozuleica/', 'Cantina da Vó Zuleica (@cantinadavozuleica)']]);
+  await fazSite({ ...LEAD, instagram: '' }, { pastaTrabalho: pasta, revisar: false, pedePlaces: googleFalso().pede,
+    baixarPagina: async () => html, aoProcurarInstagram: (perfil, como) => guardado.push({ perfil, como }),
+    // os prints em si precisam do navegador: aqui o teste para na busca
+    prepararInstagram: async () => { throw new Error('sem navegador no teste'); } });
+  assert.equal(guardado.length, 1);
+  assert.equal(guardado[0].perfil, 'https://www.instagram.com/cantinadavozuleica/');
+  delete process.env.MATILHA_CLAUDE_LOG;
+  await rm(pasta, { recursive: true, force: true });
+});
+
+test('instagram: link do Bing embrulhado em redirecionamento é desembrulhado', async () => {
+  const { resultadosDaBusca } = await import('../agentes/acha-instagram.mjs');
+  const alvo = Buffer.from('https://www.instagram.com/pizzariabaggio/').toString('base64').replace(/=+$/, '');
+  const html = `<h2><a href="https://www.bing.com/ck/a?!&amp;&amp;p=abc&amp;u=a1${alvo}&amp;ntb=1">Pizzaria Baggio (@pizzariabaggio)</a></h2>`;
+  assert.equal(resultadosDaBusca(html)[0].url, 'https://www.instagram.com/pizzariabaggio/');
+});
+
+test('instagram: busca que nem abriu diz isso, e não "não achou"', async () => {
+  const r = await achaInstagram({ nome: 'Pizzaria Baggio', cidade: 'Maringá' }, { baixar: async () => { throw new Error('ENOTFOUND'); } });
+  assert.match(r.como, /não abriu/);
 });

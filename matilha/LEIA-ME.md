@@ -272,29 +272,37 @@ Entre esses dois pontos: **zero clique seu.**
 
 Para cada demonstração, o estúdio faz assim, sozinho:
 
-1. **Tira o print do perfil do Instagram do negócio** (como aparece no
-   computador e no celular), num Chrome invisível e **sem login**: fecha a
-   janela de "entre no Instagram" para o print não sair coberto, e guarda
-   também o texto da bio e a foto do perfil (quase sempre o logo). Nunca usa
-   a sua conta do Instagram.
-2. **Junta a ficha do Google Maps** em `_maps/GOOGLE_MAPS.md`: nota, número
+1. **Junta a ficha do Google Maps** em `_maps/GOOGLE_MAPS.md`: nota, número
    de avaliações, **as avaliações com o nome de quem escreveu**, endereço,
    horário de cada dia, telefone, faixa de preço, o resumo do Google e as
    marcações (entrega, retirada, cartão, estacionamento, acessível, pet...).
    Com a `GOOGLE_PLACES_KEY` vem a ficha inteira, pela API oficial (um
    pedido por site feito). Sem a chave, vai o que o caçador leu da tela —
    sem o texto das avaliações.
-3. **O Sonnet, com esforço alto**, recebe a ficha do Maps, os prints do
+2. **Acha o Instagram sozinho**, se o cliente ainda não tem: primeiro o
+   "site" cadastrado na ficha do Google (quando ele é o Instagram), depois a
+   página de links (Linktree e parecidos), e por fim uma busca na internet
+   por "nome + cidade + instagram". Da busca, só vale o perfil que traz o
+   nome próprio do negócio (não o ramo nem a cidade): "@clinicabatel" serve
+   para a Clínica de Estética Batel, "@esteticacuritiba" não. O que for
+   achado fica salvo no cliente. Não achou: o site sai mesmo assim, com a
+   ficha do Maps, e a tela Estúdio diz por quê.
+3. **Tira o print do perfil do Instagram do negócio** (como aparece no
+   computador e no celular), num Chrome invisível e **sem login**: fecha a
+   janela de "entre no Instagram" para o print não sair coberto, e guarda
+   também o texto da bio e a foto do perfil (quase sempre o logo). Nunca usa
+   a sua conta do Instagram.
+4. **O Sonnet, com esforço alto**, recebe a ficha do Maps, os prints do
    Instagram, os fatos, as fotos da ficha e os prints de referência, usa as
    **skills instaladas**, e escreve o **PROMPT-MASTER.md**: a identidade
    tirada do Instagram (cores, logo, tipo de foto, jeito de falar), as
    seções, os textos, e tudo o que importa do Maps copiado para dentro
    (as avaliações inteiras com autor, o horário, o mapa, os selos). Ele só
    escreve o prompt; não faz o site.
-4. **O Opus 5.5, com esforço alto**, recebe o prompt master e os prints do
+5. **O Opus 5.5, com esforço alto**, recebe o prompt master e os prints do
    Instagram e faz o site. Se o prompt master e o print discordarem num
    texto ou num preço, vale o print.
-5. Vem a revisão de sempre: o site é fotografado no computador e no
+6. Vem a revisão de sempre: o site é fotografado no computador e no
    celular, e o Claude Code compara com o prompt master e com o print do
    Instagram e corrige.
 
