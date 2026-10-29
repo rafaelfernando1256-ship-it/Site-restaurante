@@ -384,3 +384,111 @@ test('demonstrações: lista os sites (no ar e no computador) e abre a cópia', 
   assert.equal(await fluxo.arquivoDaDemo('b', '../../dados.json'), null, 'deixou ler arquivo fora da pasta do site');
   await rm(raiz, { recursive: true, force: true });
 });
+
+/* ── as fotos do Instagram NO SITE ────────────────────────────────── */
+// Um Instagram de mentira, servido dentro do navegador: o perfil com a grade
+// e as fotos. Precisa do Chromium do Playwright (a Matilha instala).
+const JPEG = Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0]), Buffer.alloc(9000, 7)]);
+const instagramFalso = (perfil, { login = false } = {}) => async (ctx) => {
+  await ctx.route('**/*', async (rota) => {
+    const u = rota.request().url();
+    if (/\/foto\d+_(320|640|1080)\.jpg/.test(u) || /\/logo\.jpg/.test(u)) {
+      return rota.fulfill({ status: 200, contentType: 'image/jpeg', body: JPEG });
+    }
+    if (u.includes(`instagram.com/${perfil}`)) {
+      // O Instagram manda para o login pela própria página.
+      if (login) return rota.fulfill({ status: 200, contentType: 'text/html', body: '<script>location.href="https://www.instagram.com/accounts/login/"</script>' });
+      const grade = [1, 2, 3, 4, 5, 6].map((n) => `<a href="/p/post${n}/"><img style="width:300px;height:300px"
+        alt="Foto ${n}: pizza de calabresa" src="https://cdn.falso/foto${n}_320.jpg"
+        srcset="https://cdn.falso/foto${n}_320.jpg 320w, https://cdn.falso/foto${n}_640.jpg 640w, https://cdn.falso/foto${n}_1080.jpg 1080w"></a>`).join('');
+      return rota.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body:
+        `<html><head><meta property="og:description" content="Pizzaria Baggio · Maringá"></head><body>
+         <header><img src="https://cdn.falso/logo.jpg" style="width:150px;height:150px"><h2>${perfil}</h2><p>A melhor massa de fermentação natural</p></header>
+         <main>${grade}</main></body></html>` });
+    }
+    if (u.includes('instagram.com/accounts/login')) return rota.fulfill({ status: 200, contentType: 'text/html', body: '<html><body>Entrar</body></html>' });
+    return rota.fulfill({ status: 404, body: '' });
+  });
+};
+
+async function temNavegador() {
+  try {
+    const { chromium } = await import('playwright');
+    const b = await chromium.launch({ headless: true, ...(process.env.MATILHA_CHROMIUM ? { executablePath: process.env.MATILHA_CHROMIUM } : {}) });
+    await b.close();
+    return true;
+  } catch { return false; }
+}
+
+test('instagram: tira os prints E guarda as fotos dos posts (a versão de 640px)', async (t) => {
+  if (!await temNavegador()) return t.skip('sem o Chromium do Playwright nesta máquina');
+  const { fotografaInstagram } = await import('../agentes/instagram.mjs');
+  const pasta = await pastaNova();
+  const r = await fotografaInstagram('@pizzariabaggio', pasta, { espera: 300, prepara: instagramFalso('pizzariabaggio') });
+  assert.ok(!r.falhou, r.motivo);
+  assert.ok(r.computador && r.celular, 'faltou print');
+  assert.equal(r.fotos.length, 6);
+  assert.equal(r.fotos[0].arquivo, '_instagram/foto-01.jpg');
+  assert.match(r.fotos[0].descricao, /calabresa/);
+  assert.ok(r.logo, 'o logo não foi guardado');
+  await rm(pasta, { recursive: true, force: true });
+});
+
+test('instagram: tela de login não some em silêncio — volta o motivo', async (t) => {
+  if (!await temNavegador()) return t.skip('sem o Chromium do Playwright nesta máquina');
+  const { fotografaInstagram } = await import('../agentes/instagram.mjs');
+  const pasta = await pastaNova();
+  const r = await fotografaInstagram('@pizzariabaggio', pasta, { espera: 300, prepara: instagramFalso('pizzariabaggio', { login: true }) });
+  assert.ok(r.falhou);
+  assert.match(r.motivo, /login/);
+  await rm(pasta, { recursive: true, force: true });
+});
+
+test('fazSite: as fotos do Instagram ENTRAM no site, e vão embutidas na publicação', async (t) => {
+  if (!await temNavegador()) return t.skip('sem o Chromium do Playwright nesta máquina');
+  const { embutePrints, fotosUsadas } = await import('../agentes/claudecode.mjs');
+  const pasta = await pastaNova();
+  process.env.MATILHA_CLAUDE_LOG = join(pasta, 'chamadas.jsonl');
+  const feito = await fazSite({ ...LEAD, nome: 'Pizzaria Baggio', instagram: '@pizzariabaggio' }, {
+    pastaTrabalho: pasta, revisar: false, pedePlaces: googleFalso().pede,
+    prepararInstagram: instagramFalso('pizzariabaggio') });
+  const [sonnet, opus] = await chamadas(process.env.MATILHA_CLAUDE_LOG);
+  assert.match(sonnet.pedido, /_instagram\/foto-01\.jpg/, 'o Sonnet não recebeu as fotos');
+  assert.match(sonnet.pedido, /ONDE ENTRA CADA FOTO/);
+  assert.match(opus.pedido, /PARA DENTRO DO SITE/, 'o Opus não foi mandado usar as fotos');
+  assert.ok(!/NÃO use endereço de imagem do Instagram[^\n]*só as fotos do Maps/.test(opus.pedido), 'voltou a regra que proibia as fotos');
+  assert.ok(fotosUsadas(feito.html).size >= 4, 'o site saiu com menos de 4 fotos do Instagram');
+  assert.equal(feito.fotosDoInstagram, 6);
+  const publicado = await embutePrints(feito.html, feito.pasta);
+  assert.ok(!/_instagram\/foto-/.test(publicado), 'ficou caminho de arquivo no site publicado');
+  assert.ok(/data:image\/jpeg;base64,/.test(publicado));
+  delete process.env.MATILHA_CLAUDE_LOG;
+  await rm(pasta, { recursive: true, force: true });
+});
+
+test('fazSite: Opus que esquece as fotos é cobrado — e sem foto nenhuma, falha', async (t) => {
+  if (!await temNavegador()) return t.skip('sem o Chromium do Playwright nesta máquina');
+  const pasta = await pastaNova();
+  process.env.MATILHA_CLAUDE_LOG = join(pasta, 'chamadas.jsonl');
+  process.env.MATILHA_FALSO_SEM_FOTOS = '1';
+  await assert.rejects(fazSite({ ...LEAD, nome: 'Pizzaria Baggio', instagram: '@pizzariabaggio' }, {
+    pastaTrabalho: pasta, revisar: false, pedePlaces: googleFalso().pede,
+    prepararInstagram: instagramFalso('pizzariabaggio') }), /sem nenhuma foto do Instagram/);
+  const cobrou = (await chamadas(process.env.MATILHA_CLAUDE_LOG)).some((c) => /TÊM de estar no site/.test(c.pedido));
+  assert.ok(cobrou, 'não pediu ao Opus para pôr as fotos');
+  delete process.env.MATILHA_FALSO_SEM_FOTOS;
+  delete process.env.MATILHA_CLAUDE_LOG;
+  await rm(pasta, { recursive: true, force: true });
+});
+
+test('fazSite: quem tem Instagram e os prints não saem NÃO ganha site sem eles', async (t) => {
+  if (!await temNavegador()) return t.skip('sem o Chromium do Playwright nesta máquina');
+  const pasta = await pastaNova();
+  process.env.MATILHA_CLAUDE_LOG = join(pasta, 'chamadas.jsonl');
+  await assert.rejects(fazSite({ ...LEAD, instagram: '@pizzariabaggio' }, {
+    pastaTrabalho: pasta, revisar: false, pedePlaces: googleFalso().pede,
+    prepararInstagram: instagramFalso('pizzariabaggio', { login: true }) }), /prints do Instagram não saíram/);
+  assert.equal((await chamadas(process.env.MATILHA_CLAUDE_LOG)).length, 0, 'chamou o Claude sem os prints');
+  delete process.env.MATILHA_CLAUDE_LOG;
+  await rm(pasta, { recursive: true, force: true });
+});

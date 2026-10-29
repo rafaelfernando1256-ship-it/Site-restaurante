@@ -60,11 +60,13 @@ export default async (req) => {
       + 'app.netlify.com → User settings → Applications → Personal access tokens.', 503);
   }
   let dados;
-  try { dados = await corpo(req); } catch (e) { return erro(e.message); }
+  // As fotos do Instagram vão DENTRO do HTML: um site com oito delas passa de
+  // 1 MB. O limite comum (512 KB) recusava a publicação.
+  try { dados = await corpo(req, 5 * 1024 * 1024); } catch (e) { return erro(e.message); }
 
   const html = String(dados.html || '');
   if (!html.toLowerCase().includes('<html')) return erro('O HTML do site não veio.');
-  if (html.length > 2 * 1024 * 1024) return erro('O HTML passou de 2 MB.');
+  if (html.length > 4 * 1024 * 1024) return erro('O HTML passou de 4 MB.');
   const versao = dados.versao === 'oficial' ? 'oficial' : 'demo';
   const lead = dados.lead || {};
   if (!texto(lead.nome, 140)) return erro('O negócio precisa de um nome.');

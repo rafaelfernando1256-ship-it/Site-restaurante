@@ -55,9 +55,9 @@ export function destranca(req) {
   return null;
 }
 
-export async function corpo(req) {
+export async function corpo(req, limite = LIMITE_CORPO) {
   const bruto = await req.text();
-  if (bruto.length > LIMITE_CORPO) throw new Error('Corpo grande demais.');
+  if (bruto.length > limite) throw new Error('Corpo grande demais.');
   try {
     const dados = JSON.parse(bruto || '{}');
     if (!dados || typeof dados !== 'object' || Array.isArray(dados)) {

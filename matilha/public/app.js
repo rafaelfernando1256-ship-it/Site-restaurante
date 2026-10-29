@@ -335,7 +335,10 @@ function desenhaDemos() {
       <div class="demo-corpo">
         <b>${esc(d.nome || 'sem nome')}</b>
         <span class="meta">${esc([d.tipo, d.cidade, quando && `feito em ${quando}`, d.url && !d.expirada && d.expira_texto ? `no ar até ${d.expira_texto}` : ''].filter(Boolean).join(' · '))}</span>
-        <span><span class="pilula${situacao[1] ? ` pilula-${situacao[1]}` : ''}">${esc(situacao[0])}</span></span>
+        <span><span class="pilula${situacao[1] ? ` pilula-${situacao[1]}` : ''}">${esc(situacao[0])}</span>
+          ${d.fotos_do_instagram === null || d.fotos_do_instagram === undefined ? ''
+    : d.fotos_do_instagram ? `<span class="pilula pilula-bom">${d.fotos_do_instagram} foto(s) do Instagram</span>`
+      : '<span class="pilula pilula-ruim">sem fotos do Instagram</span>'}</span>
         <div class="demo-acoes">
           ${d.url && !d.expirada ? `<a class="bt bt-contorno bt-pequeno" href="${esc(d.url)}" target="_blank" rel="noopener">Abrir no ar</a>` : ''}
           ${d.local ? `<a class="bt bt-contorno bt-pequeno" href="/demos/${encodeURIComponent(d.id)}" target="_blank" rel="noopener">Abrir a cópia</a>` : ''}

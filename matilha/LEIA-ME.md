@@ -286,8 +286,12 @@ Para cada demonstração, o estúdio faz assim, sozinho:
 3. **Tira o print do perfil do Instagram do negócio** (como aparece no
    computador e no celular), num Chrome invisível e **sem login**: fecha a
    janela de "entre no Instagram" para o print não sair coberto, e guarda
-   também o texto da bio e a foto do perfil (quase sempre o logo). Nunca usa
-   a sua conta do Instagram.
+   também o texto da bio, a foto do perfil (quase sempre o logo) e **as
+   fotos dos posts** (`_instagram/foto-01.jpg`...). Nunca usa a sua conta do
+   Instagram. **Quem tem Instagram não ganha site sem ele:** se os prints não
+   saírem (o Instagram pediu login, o perfil não abriu), a demonstração não
+   é feita — fica "falhou" na tela Estúdio, com o motivo, e o botão "Tentar
+   de novo" (a fila também tenta sozinha, com intervalo).
 4. **O Sonnet, com esforço alto**, recebe a ficha do Maps, os prints do
    Instagram, os fatos, as fotos da ficha e os prints de referência, usa as
    **skills instaladas**, e escreve o **PROMPT-MASTER.md**: a identidade
@@ -295,9 +299,13 @@ Para cada demonstração, o estúdio faz assim, sozinho:
    seções, os textos, e tudo o que importa do Maps copiado para dentro
    (as avaliações inteiras com autor, o horário, o mapa, os selos). Ele só
    escreve o prompt; não faz o site.
-5. **O Opus 5.5, com esforço alto**, recebe o prompt master e os prints do
-   Instagram e faz o site. Se o prompt master e o print discordarem num
-   texto ou num preço, vale o print.
+5. **O Opus 5.5, com esforço alto**, recebe o prompt master, os prints e
+   as fotos do Instagram e faz o site. **As fotos do Instagram entram no
+   site**: a melhor no topo, as outras na galeria e nas seções, pelo menos
+   quatro (todas as boas). Se o Opus usar menos, o estúdio cobra dele; se
+   mesmo assim não usar nenhuma, a demonstração falha em vez de sair sem as
+   fotos do dono. Se o prompt master e o print discordarem num texto ou num
+   preço, vale o print.
 6. Vem a revisão de sempre: o site é fotografado no computador e no
    celular, e o Claude Code compara com o prompt master e com o print do
    Instagram e corrige.
@@ -354,9 +362,12 @@ Netlify; **Abrir a cópia** abre a que ficou no computador, em
 porque o site foi escrito a partir do Instagram e do Maps de outra pessoa e
 não pode mexer no painel.
 
-O logo vai **dentro** do site. A imagem do Instagram não é usada por
-link, porque os links de imagem do Instagram expiram em poucos dias e
-o site quebraria.
+As fotos do Instagram e o logo vão **dentro** do site publicado (o
+publicador embute os arquivos de `_instagram/` no HTML). Nunca pelo link
+do próprio Instagram, porque esses links expiram em poucos dias e o site
+quebraria. No computador, o `index.html` usa o caminho do arquivo — fica
+pequeno para o Claude ler e revisar. A tela Demonstrações mostra quantas
+fotos do Instagram cada site usou.
 
 **Sem Instagram** (ou se o Instagram pedir login, o que às vezes
 acontece sem a sua conta), o pedido é o mesmo, sem o print, e a direção

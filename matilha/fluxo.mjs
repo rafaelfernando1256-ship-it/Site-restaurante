@@ -54,7 +54,7 @@ import { dirname, join } from 'node:path';
 
 import { conversa, momentoDo } from './agentes/vendedor.mjs';
 import { casaComLead } from './navegador.mjs';
-import { alteraSite, enderecaDemo, fazCardapio, fazOficial, fazSite, leCardapio } from './agentes/claudecode.mjs';
+import { alteraSite, embutePrints, enderecaDemo, fazCardapio, fazOficial, fazSite, leCardapio } from './agentes/claudecode.mjs';
 import { buscaFotosDoCardapio, cardapioEmTexto, guardaFotoRecebida, textoEmCardapio } from './agentes/cardapio.mjs';
 import { ehDeComida, listaDeNichos } from './oferta.mjs';
 import { confereNoAr, dominioValido, estaLivre, limpaDominio, pedeCadeado, procuraLivres } from './agentes/dominio.mjs';
@@ -365,6 +365,7 @@ export class Fluxo {
         prompt: await stat(join(pasta, 'PROMPT-MASTER.md')).then(() => true, () => false),
         antes_do_contato: Boolean(d?.antes_do_contato && !d.avisado_em), enviado: Boolean(d?.avisado_em),
         oficial: l.sites?.oficial?.url || '',
+        fotos_do_instagram: l.ultima_demo ? l.ultima_demo.fotos_do_instagram : null,
       });
     }
     return saida.sort((a, b) => (b.quando || 0) - (a.quando || 0));
@@ -374,7 +375,10 @@ export class Fluxo {
   async arquivoDaDemo(id, qual = 'index.html') {
     const lead = (this.dados.tudo().leads || []).find((l) => l.id === id);
     if (!lead || !['index.html', 'PROMPT-MASTER.md'].includes(qual)) return null;
-    return readFile(join(this.pastaDoSite(lead), qual)).catch(() => null);
+    const pasta = this.pastaDoSite(lead);
+    const conteudo = await readFile(join(pasta, qual), 'utf8').catch(() => null);
+    // A cópia abre como no ar: com as fotos do Instagram dentro.
+    return conteudo && qual === 'index.html' ? embutePrints(conteudo, pasta) : conteudo;
   }
 
   /** Liga só o estúdio e o publicador: o botão funciona com a matilha parada. */
@@ -1701,6 +1705,10 @@ sem a linha sobre os preços das fotos publicadas:\n${cardapioEmTexto(lead.carda
     // Põe na caixa do publicador e vai embora. O HTML não viaja na
     // tarefa — viaja o CAMINHO do arquivo, senão o mural engordaria
     // uns 10 KB por site.
+    await this.comOsDados(async (tudo) => {
+      const atual = (tudo.leads || []).find((l) => l.id === lead.id);
+      if (atual) atual.ultima_demo = { quando: agora(), fotos_do_instagram: feito.fotosDoInstagram || 0, instagram: feito.instagram || '' };
+    });
     await this.mural.poe('publicador', 'publicar', {
       leadId: lead.id, nome: lead.nome, versao: 'demo',
       caminho: feito.caminho, consertos, ...(tarefa.dados.manual ? { manual: true } : {}),
@@ -1716,8 +1724,9 @@ sem a linha sobre os preços das fotos publicadas:\n${cardapioEmTexto(lead.carda
     // Pediu para parar enquanto o site era montado: não vai ao ar.
     if (pediuParaParar(lead)) return 'cliente pediu para parar — não publicado';
 
-    const { readFile } = await import('node:fs/promises');
-    const html = await readFile(tarefa.dados.caminho, 'utf8');
+    // As fotos do Instagram, que no computador o site usa pelo caminho do
+    // arquivo, vão para DENTRO do HTML publicado (demo, oficial e alterações).
+    const html = await embutePrints(await readFile(tarefa.dados.caminho, 'utf8'), dirname(tarefa.dados.caminho));
     const versao = tarefa.dados.versao === 'oficial' ? 'oficial' : 'demo';
 
     const publicado = await this.publica(lead, html, versao);

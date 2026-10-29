@@ -6,10 +6,16 @@
  * diz mais ao Claude Code do que qualquer descrição.
  *
  * Sem login: abre o perfil público num navegador limpo, fecha a janela de
- * "entre no Instagram" para a foto não sair coberta, e tira o print. Se o
- * Instagram mandar para a tela de login ou o perfil não existir, devolve
- * `null` e a demo segue sem o print (com as fotos do Maps), sem travar.
- * Nunca usa a sua conta do Instagram.
+ * "entre no Instagram" para a foto não sair coberta, e tira o print.
+ *
+ * E GUARDA AS FOTOS DOS POSTS (`_instagram/foto-01.jpg`...): elas VÃO PARA O
+ * SITE, dentro do próprio HTML. Antes os prints serviam só de referência de
+ * cores, e as fotos do site vinham só do Maps — o dono abria a demonstração
+ * e não via nenhuma foto do Instagram dele.
+ *
+ * Se o Instagram mandar para a tela de login ou o perfil não existir, devolve
+ * `{ falhou: true, motivo }`: quem chamou decide (o estúdio não faz a demo
+ * sem os prints de quem tem Instagram). Nunca usa a sua conta do Instagram.
  */
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -62,6 +68,66 @@ async function tiraDaFrente(pagina) {
   }).catch(() => {});
 }
 
+/**
+ * Os bytes de uma imagem: a que a página já baixou, ou baixada de novo.
+ * A resposta guardada do navegador às vezes vem VAZIA (o Chromium não
+ * guarda o corpo de toda imagem) — e por isso o logo nunca era salvo.
+ * Devolve `{ bytes, extensao }` ou nulo.
+ */
+async function bytesDaImagem(ctx, imagens, src, { minimo = 2_000, maximo = 1_500_000 } = {}) {
+  for (const pega of [() => imagens.get(src), () => ctx.request.get(src, { timeout: 20_000 })]) {
+    try {
+      const r = await pega();
+      if (!r || !r.ok()) continue;
+      const tipo = String(r.headers()['content-type'] || '').split(';')[0].trim();
+      const bytes = EXTENSAO[tipo] ? await r.body() : null;
+      if (bytes && bytes.length > minimo && bytes.length < maximo) return { bytes, extensao: EXTENSAO[tipo] };
+    } catch { /* tenta o próximo */ }
+  }
+  return null;
+}
+
+/**
+ * As fotos dos posts da grade, salvas como arquivo. Prefere a versão de uns
+ * 640px que o próprio Instagram oferece (boa no site e leve no HTML); se o
+ * download falhar, recorta a foto da tela, sem a interface em volta.
+ */
+async function guardaFotos(pagina, ctx, imagens, destino, { maximo = 8 } = {}) {
+  const SELETOR = 'a[href*="/p/"] img, a[href*="/reel/"] img';
+  const lidas = await pagina.evaluate((seletor) => [...document.querySelectorAll(seletor)].map((img) => {
+    const opcoes = (img.srcset || '').split(',').map((x) => x.trim().split(/\s+/))
+      .filter((x) => x[0]).map(([u, w]) => ({ u, w: parseInt(w, 10) || 0 }));
+    const boa = opcoes.filter((o) => o.w >= 600).sort((a, b) => a.w - b.w)[0]
+      || opcoes.sort((a, b) => b.w - a.w)[0];
+    const r = img.getBoundingClientRect();
+    return { src: boa?.u || img.currentSrc || img.src || '', alt: img.alt || '', grande: r.width >= 80 };
+  }), SELETOR).catch(() => []);
+  const fotos = [];
+  for (const [i, f] of lidas.entries()) {
+    if (fotos.length >= maximo) break;
+    if (!f.grande) continue;
+    const numero = String(fotos.length + 1).padStart(2, '0');
+    let arquivo = '';
+    if (f.src && !f.src.startsWith('data:')) {
+      const img = await bytesDaImagem(ctx, imagens, f.src, { minimo: 6_000 });
+      if (img) {
+        arquivo = `foto-${numero}.${img.extensao}`;
+        await writeFile(join(destino, arquivo), img.bytes);
+      }
+    }
+    if (!arquivo) {
+      try {
+        const alvo = pagina.locator(SELETOR).nth(i);
+        await alvo.scrollIntoViewIfNeeded({ timeout: 3000 });
+        arquivo = `foto-${numero}.jpg`;
+        await alvo.screenshot({ path: join(destino, arquivo), type: 'jpeg', quality: 85, timeout: 5000 });
+      } catch { arquivo = ''; }
+    }
+    if (arquivo) fotos.push({ arquivo: `_instagram/${arquivo}`, descricao: texto(f.alt, 200) });
+  }
+  return fotos;
+}
+
 /** O que dá para ler do perfil sem login: o nome, a bio, o link. Vai em texto, ao lado do print. */
 async function leCabecalho(pagina) {
   return pagina.evaluate(() => {
@@ -78,15 +144,17 @@ async function leCabecalho(pagina) {
  */
 export async function fotografaInstagram(bruto, pasta, { diz = () => {}, espera = 5000, prepara = null } = {}) {
   const url = enderecoDoPerfil(bruto);
-  if (!url) return null;
+  if (!url) return { falhou: true, motivo: `"${texto(bruto, 80)}" não é um perfil do Instagram` };
   const destino = join(pasta, '_instagram');
   await mkdir(destino, { recursive: true });
   const { chromium } = await import('playwright');
-  const navegador = await chromium.launch({ headless: true });
-  const saida = { url, computador: '', celular: '', texto: '', logo: '' };
+  // MATILHA_CHROMIUM: só para os testes, numa máquina com outro Chrome.
+  const navegador = await chromium.launch({ headless: true, ...(process.env.MATILHA_CHROMIUM ? { executablePath: process.env.MATILHA_CHROMIUM } : {}) });
+  const saida = { url, computador: '', celular: '', texto: '', logo: '', fotos: [] };
+  let motivo = '';
   try {
     for (const [nome, opcoes, alturaMax] of [
-      ['computador', { viewport: { width: 1280, height: 900 }, userAgent: NAVEGADOR_COMUM }, 2200],
+      ['computador', { viewport: { width: 1280, height: 900 }, deviceScaleFactor: 2, userAgent: NAVEGADOR_COMUM }, 2200],
       ['celular', { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, userAgent: CELULAR }, 2600],
     ]) {
       const ctx = await navegador.newContext({ ...opcoes, locale: 'pt-BR' });
@@ -102,11 +170,11 @@ export async function fotografaInstagram(bruto, pasta, { diz = () => {}, espera 
         const login = /accounts\/login|challenge|\/suspended/.test(pagina.url());
         const fora = /esta página não está disponível|this page isn.t available|sorry, this page/i.test(corpo) || !(await pagina.locator('header').count());
         if (login || fora) {
-          // O print do computador já saiu e só o do celular falhou: fica o que deu.
-          if (saida.computador) break;
-          diz(login ? '  · Instagram pediu login: a demo segue sem o print do perfil'
-            : `  · Instagram: o perfil ${url} não abriu (não existe ou está fora do ar)`);
-          return null;
+          // Um dos dois (computador ou celular) às vezes passa quando o outro
+          // cai no login: tenta o outro antes de desistir.
+          motivo = login ? 'o Instagram pediu login para abrir o perfil'
+            : `o perfil ${url} não abriu (não existe ou está fora do ar)`;
+          continue;
         }
         await tiraDaFrente(pagina);
         // Rola um pouco para as fotos da grade carregarem, e volta ao topo.
@@ -119,6 +187,8 @@ export async function fotografaInstagram(bruto, pasta, { diz = () => {}, espera 
         await pagina.screenshot({ path: join(destino, `perfil-${nome}.jpg`), type: 'jpeg', quality: 72, fullPage: true,
           clip: { x: 0, y: 0, width: opcoes.viewport.width, height: Math.min(altura, alturaMax) } });
         saida[nome] = `_instagram/perfil-${nome}.jpg`;
+        // As fotos dos posts: na primeira vista que abrir (computador ou celular).
+        if (!saida.fotos.length) saida.fotos = await guardaFotos(pagina, ctx, imagens, destino);
 
         if (nome === 'computador') {
           const lido = await leCabecalho(pagina);
@@ -130,24 +200,29 @@ export async function fotografaInstagram(bruto, pasta, { diz = () => {}, espera 
             return i ? (i.currentSrc || i.src) : '';
           }).catch(() => '');
           if (src) {
-            try {
-              const r = imagens.get(src) || await ctx.request.get(src, { timeout: 20_000 });
-              const tipo = String(r.headers()['content-type'] || '').split(';')[0].trim();
-              const bytes = r.ok() && EXTENSAO[tipo] ? await r.body() : null;
-              if (bytes && bytes.length > 2_000 && bytes.length < 600_000) {
-                const arquivo = `logo.${EXTENSAO[tipo]}`;
-                await writeFile(join(destino, arquivo), bytes);
-                saida.logo = `_instagram/${arquivo}`;
-              }
-            } catch { /* sem logo, segue */ }
+            const img = await bytesDaImagem(ctx, imagens, src, { maximo: 600_000 });
+            if (img) {
+              const arquivo = `logo.${img.extensao}`;
+              await writeFile(join(destino, arquivo), img.bytes);
+              saida.logo = `_instagram/${arquivo}`;
+            } else {
+              // O download falhou: recorta o logo da tela, como as fotos.
+              try {
+                await pagina.locator('header img').first().screenshot({ path: join(destino, 'logo.png'), type: 'png', timeout: 5000 });
+                saida.logo = '_instagram/logo.png';
+              } catch { /* sem logo, segue */ }
+            }
           }
         }
       } finally { await ctx.close().catch(() => {}); }
     }
   } catch (e) {
-    diz(`  · Instagram: ${texto(e.message, 120)} — a demo segue sem o print`);
-    return saida.computador || saida.celular ? saida : null;
+    motivo = `o navegador falhou: ${texto(e.message, 120)}`;
   } finally { await navegador.close().catch(() => {}); }
-  diz(`  ▣ print do Instagram tirado (${url})`);
+  if (!saida.computador && !saida.celular) {
+    diz(`  ✗ Instagram ${url}: ${motivo || 'nenhum print saiu'}`);
+    return { falhou: true, motivo: motivo || 'nenhum print saiu', url };
+  }
+  diz(`  ▣ Instagram ${url}: print tirado e ${saida.fotos.length} foto(s) dos posts guardada(s)`);
   return saida;
 }

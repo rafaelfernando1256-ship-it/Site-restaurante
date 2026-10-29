@@ -37,9 +37,13 @@ process.stdin.on('end', () => {
     const ficha = readFileSync(join(pasta, '_maps', 'GOOGLE_MAPS.md'), 'utf8');
     writeFileSync(join(pasta, 'PROMPT-MASTER.md'), `# Prompt master\n\n${ficha}`);
   } else {
+    // O Opus falso usa as fotos do Instagram que o pedido mandar usar — menos
+    // quando o teste quer ver o que acontece com um Opus que "esquece".
+    const fotos = process.env.MATILHA_FALSO_SEM_FOTOS ? []
+      : [...new Set(pedido.match(/_instagram\/foto-\d+\.\w+/g) || [])];
     writeFileSync(join(pasta, 'index.html'),
       '<!doctype html><html lang="pt-BR"><head><meta name="robots" content="noindex,nofollow"><title>x</title></head>'
-      + '<body><h1>Site</h1></body></html>');
+      + `<body><h1>Site</h1>${fotos.map((f) => `<img src="${f}" alt="foto">`).join('')}</body></html>`);
   }
   console.log(JSON.stringify({ result: 'feito', session_id: 's1' }));
 });
