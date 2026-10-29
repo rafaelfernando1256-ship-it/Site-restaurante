@@ -3060,7 +3060,8 @@ class FalsoClaudeCode:
         self.falha_na = falha_na
 
     def __call__(self, comando, input='', cwd=None, **kw):
-        self.chamadas.append({'comando': comando, 'pedido': input, 'cwd': Path(cwd)})
+        self.chamadas.append({'comando': comando, 'pedido': input, 'cwd': Path(cwd),
+                              'tinha_maps': (Path(cwd) / 'GOOGLE_MAPS.md').exists()})
         pasta = Path(cwd)
         if self.falha_na == len(self.chamadas):
             return types.SimpleNamespace(returncode=1, stdout='', stderr='quebrou')
@@ -3090,8 +3091,11 @@ def _():
     prints.mkdir(parents=True)
     (prints / '01-capa.png').write_bytes(b'\x89PNG')
     cc = FalsoClaudeCode()
-    c = a3.roda(est, cfg, executor=cc)
+    google = FalsoGoogle()
+    c = a3.roda(est, cfg, executor=cc, pede_google=google)
     igual(c['prontas'], 1)
+    verdade(cc.chamadas[0]['tinha_maps'], 'o Sonnet começou sem a ficha do Google Maps')
+    verdade('GOOGLE_MAPS.md' in cc.chamadas[0]['pedido'], 'o Sonnet não foi mandado ler a ficha')
     igual(len(cc.chamadas), 2)
     um, dois = (x['comando'] for x in cc.chamadas)
     verdade(um[um.index('--model') + 1] == 'sonnet' and um[um.index('--effort') + 1] == 'high', um)
@@ -3119,7 +3123,7 @@ def _():
 def _():
     est = banco()
     l = lead_exemplo(est)
-    cfg = cfg_falso(banco=est.caminho, saida=TMP / 'saida-sem-prompt')
+    cfg = cfg_falso(banco=est.caminho, saida=TMP / 'saida-sem-prompt', google_places='')
 
     class Mudo(FalsoClaudeCode):
         def __call__(self, comando, input='', cwd=None, **kw):
@@ -3132,6 +3136,112 @@ def _():
     except RuntimeError as e:
         verdade('PROMPT_MASTER' in str(e))
     igual(len(cc.chamadas), 1)
+
+
+# ── A ficha do Google Maps ──────────────────────────────────────────
+FICHA = {
+    'id': 'ChIJcantina1234567890', 'displayName': {'text': 'Cantina da Vó Zuleica'},
+    'formattedAddress': 'R. das Flores, 10 - Ponta Negra, Natal - RN',
+    'nationalPhoneNumber': '(84) 98888-7777', 'rating': 4.6, 'userRatingCount': 180,
+    'googleMapsUri': 'https://maps.google.com/?cid=123', 'priceLevel': 'PRICE_LEVEL_MODERATE',
+    'regularOpeningHours': {'weekdayDescriptions': ['segunda-feira: Fechado',
+                                                    'terça-feira: 11:00–15:00']},
+    'editorialSummary': {'text': 'Comida caseira nordestina.'},
+    'delivery': True, 'takeout': True, 'dineIn': False,
+    'paymentOptions': {'acceptsCreditCards': True, 'acceptsCashOnly': False},
+    'reviews': [{'authorAttribution': {'displayName': 'Maria Souza'}, 'rating': 5,
+                 'relativePublishTimeDescription': 'um mês atrás',
+                 'originalText': {'text': 'O baião de dois é o melhor de Natal!'}}],
+}
+
+
+class FalsoGoogle:
+    """Imita a Places API: a busca acha a empresa, os detalhes devolvem a ficha."""
+
+    def __init__(self, ficha=None, nome_achado='Cantina da Vó Zuleica', recusa_campo=False):
+        self.ficha = FICHA if ficha is None else ficha
+        self.nome_achado = nome_achado
+        self.recusa_campo = recusa_campo
+        self.pedidos = []
+
+    def __call__(self, chave, url, campos, corpo=None):
+        self.pedidos.append((url, campos))
+        if corpo is not None:
+            return {'places': [{'id': 'ChIJcantina1234567890',
+                                'displayName': {'text': self.nome_achado}}]}
+        if self.recusa_campo and 'priceRange' in campos:
+            raise RuntimeError('Places devolveu 400: Invalid field: priceRange')
+        return self.ficha
+
+
+@teste('maps: a ficha tem nota, avaliação com autor, horário e marcações')
+def _():
+    from nucleo import mapa
+    md = mapa.markdown(FICHA)
+    for pedaco in ('4,6 de 5 (180 avaliações)', 'Maria Souza — ★★★★★',
+                   'O baião de dois é o melhor de Natal!', 'terça-feira: 11:00–15:00',
+                   'faz entrega', 'retirada', 'cartão de crédito', '$$',
+                   'https://maps.google.com/?cid=123', 'Comida caseira nordestina.'):
+        verdade(pedaco in md, f'faltou "{pedaco}" na ficha')
+    verdade('consumo no local' not in md and 'só dinheiro' not in md,
+            'marcou o que o Maps diz que NÃO tem')
+
+
+@teste('maps: lead posto à mão é achado pelo nome — e empresa de outro nome não')
+def _():
+    from nucleo import mapa
+    est = banco()
+    l = lead_exemplo(est, place_id='manual:cantina-natal')
+    g = FalsoGoogle()
+    igual(mapa.ficha('k', l, pede=g)['rating'], 4.6)
+    verdade('searchText' in g.pedidos[0][0], 'não buscou pelo nome')
+    igual(mapa.ficha('k', l, pede=FalsoGoogle(nome_achado='Churrascaria Gaúcha')), {},
+          'pôs a ficha de outra empresa no site')
+
+
+@teste('maps: lead do caçador vai direto aos detalhes, sem buscar de novo')
+def _():
+    from nucleo import mapa
+    est = banco()
+    l = lead_exemplo(est, place_id='ChIJcantina1234567890')
+    g = FalsoGoogle()
+    mapa.ficha('k', l, pede=g)
+    igual(len(g.pedidos), 1)
+    verdade('places/ChIJcantina1234567890' in g.pedidos[0][0])
+    verdade('reviews' in g.pedidos[0][1] and 'regularOpeningHours' in g.pedidos[0][1])
+
+
+@teste('maps: campo recusado pelo Google não deixa o site sem ficha')
+def _():
+    from nucleo import mapa
+    est = banco()
+    l = lead_exemplo(est, place_id='ChIJcantina1234567890')
+    g = FalsoGoogle(recusa_campo=True)
+    igual(mapa.ficha('k', l, pede=g)['rating'], 4.6)
+    igual(g.pedidos[-1][1], mapa.ESSENCIAIS)
+
+
+@teste('maps: sem ficha o site sai mesmo assim, e o Sonnet sabe o porquê')
+def _():
+    est = banco()
+    l = lead_exemplo(est)
+    pasta = TMP / 'sem-ficha'
+    pasta.mkdir()
+    igual(a3.ficha_do_google(l, pasta, cfg_falso(google_places='')),
+          'sem ficha — falta GOOGLE_PLACES_KEY no .env')
+    motivo = a3.ficha_do_google(l, pasta, cfg_falso(), pede=FalsoGoogle(nome_achado='Outra'))
+    verdade('não foi achada' in motivo, motivo)
+    verdade(not (pasta / 'GOOGLE_MAPS.md').exists())
+
+
+@teste('maps: o Sonnet é mandado copiar o Maps para o prompt (o Opus só vê o prompt)')
+def _():
+    verdade('quem constrói o site recebe só o prompt mestre e os prints'
+            in a3.PEDE_PROMPT_MASTER.replace('\n', ' '))
+    verdade('avaliações com texto INTEIRO' in a3.PEDE_PROMPT_MASTER.replace('\n', ' ')
+            or 'texto INTEIRO' in a3.PEDE_PROMPT_MASTER)
+    verdade('abra TODOS os prints' in a3.PEDE_SITE)
+    verdade('avaliação no Google' in a3.HONESTIDADE)
 
 
 # ── As alterações ───────────────────────────────────────────────────

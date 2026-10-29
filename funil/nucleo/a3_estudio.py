@@ -27,11 +27,14 @@ Se quiser colar texto — bio, cardápio, horário —, escreva em
 QUEM CONSTRÓI O SITE
 O Claude Code, em modo não interativo (`claude -p`), em DUAS etapas:
 
-  1. o Sonnet, em esforço alto, olha os prints do Instagram e escreve o
-     PROMPT MESTRE (`PROMPT_MASTER.md`): identidade, cores, seções,
-     textos e cardápio exatamente como estão nos prints, e as regras;
-  2. o Opus 5.5, em esforço alto, lê o prompt mestre e as fotos e
-     constrói o site em `publico/`.
+  0. antes, a FICHA DO GOOGLE MAPS da empresa (nucleo/mapa.py): nota,
+     avaliações com autor, endereço, horários, telefone, faixa de preço,
+     resumo e as marcações — vai para `GOOGLE_MAPS.md`;
+  1. o Sonnet, em esforço alto, lê a ficha do Maps e olha os prints do
+     Instagram e escreve o PROMPT MESTRE (`PROMPT_MASTER.md`): identidade,
+     cores, seções, textos e cardápio dos prints, e tudo o que o Maps tem;
+  2. o Opus 5.5, em esforço alto, recebe o prompt mestre e os prints do
+     Instagram e constrói o site em `publico/`.
 
 Separar as duas coisas não é enfeite: quem olha vinte prints e decide o
 que importa é um trabalho; quem escreve três mil linhas de HTML bem
@@ -261,11 +264,15 @@ Este site é uma DEMONSTRAÇÃO, feita de fora, sem a casa ter contratado nada.
    média, sem "mais de X clientes", sem prêmio, sem certificação, sem data de
    fundação. O que falta vira um lugar óbvio para o dono preencher, nunca um
    número bonito.
-2. **Nenhuma avaliação fictícia.** Se não houver avaliação real com autor, a
-   seção não existe. Nada de `aggregateRating` nos dados estruturados.
+2. **Nenhuma avaliação fictícia.** Avaliação só as reais do Google Maps (em
+   `GOOGLE_MAPS.md` / no prompt mestre): o texto como está, com o nome de quem
+   escreveu, as estrelas, "avaliação no Google" e o link para o perfil no Maps.
+   A nota média só como o Google mostra ("4,6 no Google · 180 avaliações").
+   Sem avaliação real, a seção não existe. Nada de `aggregateRating` nos dados
+   estruturados.
 3. **Nenhum pagamento.** Não existe checkout. Pedido e reserva montam a
    mensagem e abrem o WhatsApp da casa.
-4. **Telefone** é o que aparece público no perfil dele, num único lugar do
+4. **Telefone** é o que aparece público no perfil dele ou no Google Maps, num único lugar do
    código, fácil de trocar. Se não houver, use `+55 00 00000-0000` e deixe
    escrito no README que é placeholder.
 5. **O site se declara demonstração**: `<meta name="robots" content="noindex">`
@@ -374,11 +381,15 @@ PEDE_PROMPT_MASTER = """Você é o diretor de criação de um estúdio que faz \
 sites para pequenos negócios. Nesta pasta estão:
 
 - `DADOS.md` — o que se sabe do negócio e as regras que não se negociam;
+- `GOOGLE_MAPS.md` — a ficha da empresa no Google Maps: nota, avaliações com \
+o nome de quem escreveu, endereço, horário de cada dia, telefone, faixa de \
+preço, resumo e o que o Maps marca (entrega, cartão, estacionamento...). Se \
+o arquivo não existir, o DADOS.md diz por quê;
 - `fotos/` — prints do Instagram dele.
 
-Abra TODAS as imagens de `fotos/` (uma por uma, com a ferramenta Read) e \
-leia com atenção: bio, destaques, posts, cardápio, preços escritos, cores, \
-o clima das fotos.
+Leia o GOOGLE_MAPS.md inteiro. Depois abra TODAS as imagens de `fotos/` (uma \
+por uma, com a ferramenta Read) e leia com atenção: bio, destaques, posts, \
+cardápio, preços escritos, cores, o clima das fotos.
 
 Depois escreva DOIS arquivos, e mais nada:
 
@@ -394,11 +405,19 @@ estiver escrito;
    - quais arquivos de `fotos/` usar em cada lugar, e em que região de \
 cada print está a foto boa (os prints têm a interface do Instagram em \
 volta: diga onde recortar, em porcentagem da imagem);
+   - TUDO o que interessa do Google Maps, copiado para dentro do prompt — \
+quem constrói o site recebe só o prompt mestre e os prints, não a ficha: a \
+nota e o número de avaliações, as melhores avaliações com texto INTEIRO, \
+autor, estrelas e o link do perfil no Maps, o endereço com o mapa \
+(iframe `https://www.google.com/maps?q=<endereço codificado>&output=embed`), \
+o horário de cada dia, o telefone, a faixa de preço e as marcações que \
+valem virar selo no site;
    - as regras de `DADOS.md`, copiadas inteiras no fim.
 2. `leitura.json` — exatamente neste formato:
    {{"nome_exibido": "...", "uma_linha": "...", "nao_sei": ["...", "..."]}}
-   Em `nao_sei`, tudo que NÃO está nos prints e por isso não pode ser \
-inventado: preço, horário, endereço, telefone, formas de pagamento...
+   Em `nao_sei`, tudo que NÃO está nem nos prints nem no Google Maps e por \
+isso não pode ser inventado: preço, horário, endereço, telefone, formas de \
+pagamento...
 
 Não construa o site. Só os dois arquivos."""
 
@@ -422,9 +441,11 @@ pendente para o dono preencher."""
 FERRAMENTAS = 'Read,Write,Edit,Glob,Grep'
 
 
-def dados_md(lead: Lead, notas: str, fotos: list[str]) -> str:
+def dados_md(lead: Lead, notas: str, fotos: list[str], google: str = '') -> str:
     from .precos import nicho_do_lead
     return f"""# {lead.nome}
+
+- **Google Maps:** {google or 'veja GOOGLE_MAPS.md'}
 
 - **Cidade:** {lead.cidade or '(não sei)'}
 - **Instagram:** @{lead.instagram or '(não sei)'}
@@ -482,8 +503,39 @@ def claude_code(pedido: str, pasta: Path, modelo: str, esforco: str,
     return str(relato)
 
 
+def ficha_do_google(lead: Lead, pasta: Path, cfg, pede: Any = None) -> str:
+    """
+    Escreve `GOOGLE_MAPS.md` (e o JSON cru em `google.json`). Devolve vazio
+    se deu certo, ou o motivo de não haver ficha — que vai no DADOS.md para
+    o Sonnet saber que a falta é da ficha, não da empresa.
+
+    Ficha que falha não para o site: os prints do Instagram bastam para uma
+    demonstração, só sem nota, avaliações e horário do Google.
+    """
+    from . import mapa
+    if not cfg.google_places:
+        return 'sem ficha — falta GOOGLE_PLACES_KEY no .env'
+    try:
+        f = mapa.ficha(cfg.google_places, lead, **({'pede': pede} if pede else {}))
+    except Exception as e:
+        print(f'  ⚠ ficha do Google Maps de {lead.nome}: {e}')
+        return f'sem ficha — a Places API falhou ({str(e)[:120]})'
+    if not f:
+        print(f'  ⚠ {lead.nome} não foi achado no Google Maps')
+        return 'sem ficha — a empresa não foi achada no Google Maps pelo nome e cidade'
+    (pasta / 'google.json').write_text(json.dumps(f, indent=2, ensure_ascii=False),
+                                       encoding='utf-8')
+    (pasta / 'GOOGLE_MAPS.md').write_text(mapa.markdown(f), encoding='utf-8')
+    print(f'  0/2 ficha do Google Maps: nota {f.get("rating", "—")}, '
+          f'{len(f.get("reviews") or [])} avaliações, '
+          f'{len((f.get("regularOpeningHours") or {}).get("weekdayDescriptions") or [])} '
+          'dias de horário')
+    return ''
+
+
 def constroi(lead: Lead, imagens: Sequence[Path], notas: str, saida: Path,
-             referencia: Path, cfg, executor: Any = None) -> tuple[Path, str]:
+             referencia: Path, cfg, executor: Any = None,
+             pede_google: Any = None) -> tuple[Path, str]:
     """
     As duas etapas. Devolve (pasta, o que o Opus disse que ficou pendente).
     O zip é separado: se a construção falhar, a pasta fica para você olhar.
@@ -499,7 +551,9 @@ def constroi(lead: Lead, imagens: Sequence[Path], notas: str, saida: Path,
             if not destino.exists():
                 shutil.copy2(p, destino)
         nomes.append(p.name)
-    (pasta / 'DADOS.md').write_text(dados_md(lead, notas, nomes), encoding='utf-8')
+    google = ficha_do_google(lead, pasta, cfg, pede=pede_google)
+    (pasta / 'DADOS.md').write_text(dados_md(lead, notas, nomes, google),
+                                    encoding='utf-8')
 
     print(f'  1/2 {cfg.estudio_modelo_prompt} ({cfg.estudio_esforco_prompt}) '
           'lendo os prints e escrevendo o prompt mestre...')
@@ -568,7 +622,8 @@ def constroi_rapido(lead: Lead, leitura: Leitura, imagens: Sequence[Path],
 
 
 def roda(est: Estado, cfg, limite: int = 3, cli: Any = None,
-         executor: Any = None, leads: list[Lead] | None = None) -> dict[str, int]:
+         executor: Any = None, leads: list[Lead] | None = None,
+         pede_google: Any = None) -> dict[str, int]:
     """
     Pega quem disse que quer, lê o Instagram e constrói. Com `leads`, constrói
     para esses — é o fluxo da prévia, em que o site vem ANTES da conversa.
@@ -610,7 +665,7 @@ def roda(est: Estado, cfg, limite: int = 3, cli: Any = None,
             if cfg.estudio_claude_code and (executor or tem_claude_code()):
                 print(f'  {l.nome}: {len(imagens)} prints → Claude Code')
                 pasta, relato = constroi(l, imagens, notas, cfg.saida, referencia,
-                                         cfg, executor=executor)
+                                         cfg, executor=executor, pede_google=pede_google)
             else:
                 print(f'  lendo o Instagram de {l.nome} ({len(imagens)} imagens)...')
                 leitura = le(l, imagens, notas, modelo=cfg.modelo_do_cerebro,

@@ -55,12 +55,22 @@ você", e quando você salva o preço ele responde sozinho.
 
 1. os prints do Instagram do negócio vão para `material/<nome>/`
    (o agente tira sozinho, ou você põe os do celular);
-2. o **Claude Code com Sonnet, esforço alto**, olha todos os prints e
-   escreve o `PROMPT_MASTER.md` — o prompt mestre: cores, seções, textos e
-   cardápio exatamente como estão nos prints, onde recortar cada foto, e
-   as regras de não inventar nada;
-3. o **Claude Code com Opus 5.5, esforço alto**, lê o prompt mestre e as
-   fotos e constrói o site em `saida/<nome>/publico/`.
+2. a **ficha do Google Maps** da empresa vira `GOOGLE_MAPS.md`: nota,
+   número de avaliações, as avaliações com o nome de quem escreveu,
+   endereço, horário de cada dia, telefone, faixa de preço, o resumo do
+   Google e as marcações (entrega, retirada, cartão, estacionamento,
+   acessibilidade, pet...). Vem pela API oficial, com a mesma
+   `GOOGLE_PLACES_KEY` do caçador;
+3. o **Claude Code com Sonnet, esforço alto**, lê a ficha do Maps, olha
+   todos os prints e escreve o `PROMPT_MASTER.md` — o prompt mestre:
+   cores, seções, textos e cardápio dos prints, onde recortar cada foto,
+   tudo o que interessa do Maps (avaliações inteiras com autor, horário,
+   mapa, selos) e as regras de não inventar nada;
+4. o **Claude Code com Opus 5.5, esforço alto**, recebe o prompt mestre e
+   os prints do Instagram e constrói o site em `saida/<nome>/publico/`.
+
+Sem a chave da Places (ou se a empresa não for achada no Maps), o site
+sai só com os prints, e o `DADOS.md` diz ao Sonnet por que não há ficha.
 
 Usa a **sua conta do Claude Code** (a assinatura), não a chave de API — e
 funciona com Groq ou Gemini como cérebro do resto. Modelo e esforço de
