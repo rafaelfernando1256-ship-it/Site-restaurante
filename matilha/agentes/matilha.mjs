@@ -68,6 +68,7 @@ import { mkdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { texto } from './comum.mjs';
+import { categoriaValida, tipoPeloNome } from './roteiro.mjs';
 
 const ONDE = {
   lista: ['div[role="feed"]', 'div[aria-label^="Resultados"]', 'div[aria-label^="Results"]'],
@@ -447,7 +448,16 @@ export class Matilha {
           site: um(onde.site, 'href'),
           telefone: um(onde.telefone),
           endereco: um(onde.endereco),
-          categoria: um(onde.categoria),
+          // Todas as candidatas, não só a primeira: a primeira às vezes é o "Ver mais".
+          categoria: (() => {
+            for (const alvo of onde.categoria) {
+              for (const el of raiz.querySelectorAll(alvo)) {
+                const v = (el.innerText || '').trim();
+                if (v && v.length < 60 && !/^(ver mais|ver menos|see more|mais|more)$/i.test(v)) return v;
+              }
+            }
+            return '';
+          })(),
           nota: um(onde.nota),
           avaliacoes: um(onde.avaliacoes),
           links: [...raiz.querySelectorAll('a[href^="http"]')].slice(0, 40).map((a) => a.href),
@@ -488,7 +498,7 @@ export class Matilha {
       const achado = {
         fonte: 'matilha_maps',
         nome: texto(lido.nome || rotulo, 140),
-        tipo: texto(lido.categoria, 60),
+        tipo: texto(categoriaValida(lido.categoria) || tipoPeloNome(lido.nome || rotulo), 60),
         cidade: texto(cidade, 120),
         endereco: texto(limpaRotulo(lido.endereco), 240),
         telefone: texto(telefone, 40),

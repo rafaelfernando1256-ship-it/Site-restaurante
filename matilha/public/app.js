@@ -264,6 +264,9 @@ function desenhaEstudio() {
       : fila ? `${fila} na fila do estúdio.` : 'Nenhum site sendo feito agora.');
   $('#estudio-vazio').hidden = estudio.leads.length !== 0;
   texto('#estudio-total', estudio.leads.length ? `${visiveis.length} na lista` : '');
+  // A tela se atualiza sozinha: o @ que você está digitando não pode sumir.
+  const digitados = new Map($$('#estudio-lista [data-insta]').map((i) => [i.dataset.insta, i.value]));
+  const focado = document.activeElement?.dataset?.insta || '';
   poe('#estudio-lista', visiveis.map((l) => {
     const [rotulo, tom] = OBRA[l.situacao] || [l.situacao, ''];
     const acao = l.situacao === 'no_ar' ? 'Refazer o site' : l.situacao === 'falhou' ? 'Tentar de novo' : 'Fazer site de demonstração';
@@ -277,15 +280,51 @@ function desenhaEstudio() {
         <span>${esc(detalhes)}</span>
         ${l.url ? `<span><a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.url)}</a></span>` : ''}
         ${l.antes_do_contato ? '<span class="obra-aviso">No ar, mas ele ainda não respondeu: o link vai quando ele aceitar ver, na conversa.</span>' : ''}
-        ${l.erro ? `<span class="obra-erro">${esc(l.erro)}</span>` : ''}</span>
+        ${l.erro ? `<span class="obra-erro">${esc(l.erro)}</span>` : ''}
+        ${!l.instagram && !l.cliente ? `<span class="obra-insta">
+          <input data-insta="${esc(l.id)}" placeholder="@ do Instagram" aria-label="Instagram de ${esc(l.nome)}" autocomplete="off">
+          <button class="bt bt-texto bt-pequeno" data-salva-insta="${esc(l.id)}">Pôr o Instagram</button>
+          <small>sem ele, o Sonnet e o Opus trabalham sem os prints</small></span>` : ''}</span>
       <span class="pilula${tom ? ` pilula-${tom}` : ''}">${esc(rotulo)}</span>
       ${botao}
     </div>`;
   }).join(''));
+  for (const [id, valor] of digitados) {
+    const campo = $(`[data-insta="${CSS.escape(id)}"]`);
+    if (campo) campo.value = valor;
+  }
+  if (focado) {
+    const campo = $(`[data-insta="${CSS.escape(focado)}"]`);
+    if (campo) { campo.focus(); campo.setSelectionRange(campo.value.length, campo.value.length); }
+  }
 }
 $('#estudio-busca').addEventListener('input', desenhaEstudio);
+$('#estudio-lista').addEventListener('keydown', (ev) => {
+  if (ev.key === 'Enter' && ev.target.matches('[data-insta]')) {
+    $(`[data-salva-insta="${CSS.escape(ev.target.dataset.insta)}"]`)?.click();
+  }
+});
 $('#estudio-filtro').addEventListener('change', desenhaEstudio);
 $('#estudio-lista').addEventListener('click', async (ev) => {
+  const insta = ev.target.closest('button[data-salva-insta]');
+  if (insta) {
+    const id = insta.dataset.salvaInsta;
+    const valor = ($(`[data-insta="${CSS.escape(id)}"]`)?.value || '').trim();
+    if (!/^@?[\w.]{1,30}$/.test(valor) && !/instagram\.com\/[\w.]+/i.test(valor)) {
+      recado('Escreva o @ do perfil (ex.: @pizzariabaggio) ou cole o link do Instagram.', 'ruim');
+      return;
+    }
+    await ocupado(insta, async () => {
+      await carrega();
+      const lead = estado.leads.find((x) => x.id === id);
+      if (!lead) throw new Error('Cliente não encontrado.');
+      lead.instagram = valor;
+      await salva();
+      recado(`Instagram de ${lead.nome} guardado. Agora é só fazer o site.`, 'bom');
+      await carregaEstudio();
+    });
+    return;
+  }
   const botao = ev.target.closest('button[data-demo]');
   if (!botao) return;
   await ocupado(botao, async () => {
@@ -374,6 +413,7 @@ function abreFicha(id) {
         <label class="campo"><span>WhatsApp (só números)</span><input data-campo="whatsapp" value="${esc(l.whatsapp)}" placeholder="5544988887777" inputmode="numeric"></label>
         <label class="campo"><span>Endereço</span><input data-campo="endereco" value="${esc(l.endereco)}"></label>
         <label class="campo"><span>Horário</span><input data-campo="horario" value="${esc(l.horario)}" placeholder="Ter a Dom, 11h às 15h"></label>
+        <label class="campo"><span>Instagram (@ ou link)</span><input data-campo="instagram" value="${esc(l.instagram || '')}" placeholder="@pizzariabaggio"></label>
       </div>
       <label class="campo"><span>Três itens da vitrine, um por linha</span>
         <textarea data-campo="itens" rows="3">${esc((l.itens || []).join('\n'))}</textarea></label>

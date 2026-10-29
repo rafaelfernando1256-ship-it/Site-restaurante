@@ -226,3 +226,29 @@ test('publicador: demo do botão para quem já conversa manda o link', async () 
   assert.equal(aviso.dados.url, 'https://a.netlify.app');
   await rm(raiz, { recursive: true, force: true });
 });
+
+/* ── o que o print do painel mostrou ─────────────────────────────── */
+test('ramo: "Ver mais" não é ramo — o nome diz qual é', async () => {
+  const { categoriaValida, tipoDoLead } = await import('../agentes/roteiro.mjs');
+  assert.equal(categoriaValida('Ver mais'), '');
+  assert.equal(categoriaValida('Fechado · Abre às 18:00'), '');
+  assert.equal(categoriaValida('Pizzaria'), 'Pizzaria');
+  assert.equal(tipoDoLead({ tipo: 'Ver mais', nome: 'Clínica de Estética Batel' }), 'Estética');
+  assert.equal(tipoDoLead({ tipo: 'Ver mais', nome: 'KI DELÍCIA PIZZARIA' }), 'Pizzaria');
+  assert.equal(tipoDoLead({ tipo: 'Ver mais', nome: 'Salão Mônika Ganem' }), 'Salão');
+  assert.equal(tipoDoLead({ tipo: 'Hamburgueria', nome: 'Casa X' }), 'Hamburgueria');
+});
+
+test('publicador: a chamada de dentro da Matilha passa sem PAINEL_SENHA; a de fora, não', async () => {
+  const { SENHA_INTERNA, destranca } = await import('../agentes/comum.mjs');
+  const antes = process.env.PAINEL_SENHA;
+  delete process.env.PAINEL_SENHA;
+  const pedido = (senha) => new Request('http://127.0.0.1/api/publicar', { method: 'POST', headers: senha ? { 'x-orbita-senha': senha } : {} });
+  assert.equal(destranca(pedido(SENHA_INTERNA)), null, 'recusou a chamada interna (era o "Defina PAINEL_SENHA")');
+  assert.equal(destranca(pedido('local')).status, 503, 'aceitou um chute');
+  assert.equal(destranca(pedido('')).status, 503);
+  process.env.PAINEL_SENHA = 'minha';
+  assert.equal(destranca(pedido('minha')), null);
+  assert.equal(destranca(pedido(SENHA_INTERNA)).status, 401, 'com senha definida, vale a senha');
+  if (antes === undefined) delete process.env.PAINEL_SENHA; else process.env.PAINEL_SENHA = antes;
+});

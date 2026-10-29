@@ -28,6 +28,7 @@
 import { mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { texto } from './comum.mjs';
+import { categoriaValida, tipoPeloNome } from './roteiro.mjs';
 
 const ONDE = {
   lista: ['div[role="feed"]', 'div[aria-label^="Resultados"]', 'div[aria-label^="Results"]'],
@@ -197,7 +198,7 @@ export class CacadorNavegador {
           endereco,
           telefone,
           whatsapp: telefone.replace(/\D/g, ''),
-          tipo: texto(await leia(painel, ONDE.categoria), 60),
+          tipo: texto(categoriaValida(await leia(painel, ONDE.categoria)) || tipoPeloNome(nome), 60),
           site_achado: site.startsWith('http') ? site : '',
           nota: Number(notaBruta) || 0,
           avaliacoes: Number(avaliacoesBrutas) || 0,

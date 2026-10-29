@@ -20,7 +20,7 @@ import { fileURLToPath } from 'node:url';
 
 import { abreInstalacao, abreLogin, conferePronto, estatisticas, pausadoAte } from './agentes/claude-cli.mjs';
 import { RegistroDeAcoes } from './agentes/acoes.mjs';
-import { texto } from './agentes/comum.mjs';
+import { SENHA_INTERNA, texto } from './agentes/comum.mjs';
 import { PonteDaTela } from './agentes/ui-ponte.mjs';
 import { financeiro, montaOperador, situacaoDoProjeto } from './agentes/operador.mjs';
 import { conversa } from './agentes/vendedor.mjs';
@@ -36,7 +36,7 @@ import { qrSVG } from './qr.mjs';
 import { Tunel } from './tunel.mjs';
 import { WhatsApp, casaComLead } from './navegador.mjs';
 import { printsDoRamo, todasAsListas } from './agentes/referencias.mjs';
-import { RAMOS_COM_REFERENCIA } from './agentes/roteiro.mjs';
+import { RAMOS_COM_REFERENCIA, categoriaValida, tipoPeloNome } from './agentes/roteiro.mjs';
 import { ACOES, perguntaAoChefe, resumo as resumoDaMatilha } from './agentes/chefe.mjs';
 import { Jarvis, transcreve } from './agentes/jarvis.mjs';
 import { Trabalhos } from './agentes/trabalhos.mjs';
@@ -107,8 +107,9 @@ async function publicaNaNetlify(lead, html, versao) {
   const { default: publicar } = await import('./agentes/publicar.mjs');
   const pedido = new Request('http://127.0.0.1/api/publicar', {
     method: 'POST',
+    // Sem PAINEL_SENHA (o normal, rodando local), vai o código interno.
     headers: { 'content-type': 'application/json',
-               'x-orbita-senha': process.env.PAINEL_SENHA || 'local' },
+               'x-orbita-senha': process.env.PAINEL_SENHA || SENHA_INTERNA },
     body: JSON.stringify({ lead, html, versao }),
   });
   const resposta = await publicar(pedido);
@@ -420,6 +421,26 @@ function destrancado(pedido) {
 }
 
 const AGENTES = { cacar: 'cacar', escrever: 'escrever', estudio: 'estudio', publicar: 'publicar' };
+
+/**
+ * Clientes que o caçador salvou com "Ver mais" (ou "Fechado · Abre às…") no
+ * lugar do ramo: conserta uma vez, ao abrir, com o ramo que o nome diz.
+ * O caçador novo já não lê isso; aqui é para quem foi caçado antes.
+ */
+async function consertaOsRamos() {
+  const leads = dados.tudo().leads || [];
+  let consertados = 0;
+  for (const l of leads) {
+    if (l.tipo && !categoriaValida(l.tipo)) {
+      l.tipo = tipoPeloNome(l.nome);
+      consertados += 1;
+    }
+  }
+  if (consertados) {
+    await dados.guarda({ leads });
+    console.log(`  · ${consertados} cliente(s) estavam com "Ver mais" no lugar do ramo: consertado pelo nome`);
+  }
+}
 
 /* ── o Claude do vendedor ──────────────────────────────────────── */
 
@@ -1168,9 +1189,11 @@ small{display:block;color:#555;font-size:9pt;word-break:break-all}.dica{max-widt
     const { default: agente } = await import(`./agentes/${nome}.mjs`);
     // Os agentes conferem a senha por conta própria; local, isso é
     // redundante e tudo bem: duas trancas na mesma porta não atrapalham.
-    if (!process.env.PAINEL_SENHA) process.env.PAINEL_SENHA = 'local';
+    // Sem PAINEL_SENHA vai o código interno — antes, aqui se gravava
+    // "local" como senha no ambiente, e dali em diante o PRÓPRIO painel
+    // passava a ser recusado por não mandar senha nenhuma.
     const cabecalhos = new Headers(pedido.headers);
-    cabecalhos.set('x-orbita-senha', process.env.PAINEL_SENHA);
+    cabecalhos.set('x-orbita-senha', process.env.PAINEL_SENHA || SENHA_INTERNA);
     let corpoDoPedido = await pedido.text();
     if (nome === 'escrever') {
       // O rascunho da ficha usa os MESMOS ajustes da conversa automática
@@ -1228,6 +1251,7 @@ async function arquivoPublico(caminho) {
 
 await carregaEnv();
 await dados.carrega();
+await consertaOsRamos();
 await configClaude.carrega();
 await celular.carrega();
 await operacao.carrega();

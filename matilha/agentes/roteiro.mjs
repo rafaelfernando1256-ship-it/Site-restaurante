@@ -131,6 +131,39 @@ export const RAMOS_COM_REFERENCIA = [...RAMOS.map((r) => ({ chave: r.chave, refe
   { chave: PADRAO.chave, referencias: PADRAO.referencias }];
 
 /** O ângulo deste ramo, ou o geral. */
+/**
+ * O que o caçador lê como "categoria" e não é categoria. No painel do Maps,
+ * o seletor da categoria às vezes pega o botão "Ver mais" ou o "Fechado ·
+ * Abre às 18:00", e o ramo do cliente virava "Ver mais" — no funil, na
+ * mensagem e no pedido do estúdio.
+ */
+const NAO_E_CATEGORIA = /^(ver mais|ver menos|see more|see less|mais|more|menos|\+?\d.*|fechad[oa]\b.*|abert[oa]\b.*|abre\b.*|fecha\b.*|closed\b.*|open\b.*)$/i;
+export function categoriaValida(tipo) {
+  const v = String(tipo || '').trim();
+  return v && !NAO_E_CATEGORIA.test(v) ? v : '';
+}
+
+// As palavras sem acento das listas, escritas de volta com acento.
+const COM_ACENTO = { estetica: 'estética', salao: 'salão', japones: 'japonês', cafe: 'café', acai: 'açaí',
+  depilacao: 'depilação', cilios: 'cílios', odontologia: 'odontologia', clinica: 'clínica' };
+
+/** Sem categoria: o ramo tirado do nome ("Pizzaria Baggio" → "Pizzaria"). Vazio se o nome não diz. */
+export function tipoPeloNome(nome) {
+  for (const r of RAMOS) {
+    const p = r.palavras.find((x) => casa(nome, [x]));
+    if (p) {
+      const t = COM_ACENTO[p] || p;
+      return t.charAt(0).toUpperCase() + t.slice(1);
+    }
+  }
+  return '';
+}
+
+/** O ramo de um cliente, consertado: categoria lida, ou o que o nome diz. */
+export function tipoDoLead(lead) {
+  return categoriaValida(lead?.tipo) || tipoPeloNome(lead?.nome);
+}
+
 export function ramoDe(tipo) {
   return RAMOS.find((r) => casa(tipo, r.palavras)) || PADRAO;
 }

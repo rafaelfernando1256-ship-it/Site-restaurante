@@ -7,6 +7,8 @@
  * seu token da Netlify. Por isso TODA função exige a senha do painel,
  * que mora numa variável de ambiente e nunca no navegador.
  */
+import { randomBytes } from 'node:crypto';
+
 const LIMITE_CORPO = 512 * 1024;
 
 export function responde(dados, status = 200) {
@@ -32,13 +34,23 @@ function mesmoSegredo(a, b) {
   return diferenca === 0;
 }
 
+/**
+ * O código das chamadas INTERNAS: o servidor da Matilha chama os agentes
+ * direto, sem rede (o publicador, por exemplo). Sorteado a cada vez que a
+ * Matilha abre e nunca gravado: só quem está dentro do processo o conhece.
+ * Sem ele, o publicador recusava a publicação automática enquanto ninguém
+ * tivesse definido PAINEL_SENHA — e, rodando local, ela é opcional.
+ */
+export const SENHA_INTERNA = randomBytes(24).toString('hex');
+
 export function destranca(req) {
   const esperada = (process.env.PAINEL_SENHA || '').trim();
+  const enviada = (req.headers.get('x-orbita-senha') || '').trim();
   if (!esperada) {
+    if (mesmoSegredo(enviada, SENHA_INTERNA)) return null;
     return erro('Defina PAINEL_SENHA nas variáveis de ambiente do site. '
       + 'Sem ela o painel ficaria aberto para qualquer um na internet.', 503);
   }
-  const enviada = (req.headers.get('x-orbita-senha') || '').trim();
   if (!mesmoSegredo(enviada, esperada)) return erro('Senha do painel inválida.', 401);
   return null;
 }
