@@ -88,6 +88,9 @@ const varianteDe = (id) => ([...String(id)].reduce((n, c) => (n * 31 + c.charCod
 
 /** Quem pediu para parar não recebe mais nada. Sem exceção. */
 const pediuParaParar = (lead) => lead?.estagio === 'perdido' || lead?.nao_perturbe === true;
+// O dono já escreveu alguma coisa para você? Antes disso, mandar o link de
+// uma demo feita pelo botão seria uma mensagem que ele não pediu.
+const jaRespondeu = (lead) => (lead?.conversa || []).some((m) => m.quem === 'dono');
 /** Projeto encerrado por você (e não concluído): os agentes não trabalham mais nele. */
 const projetoParado = (lead) => Boolean(lead?.projeto_encerrado) && lead.projeto_encerrado.estado !== 'concluido';
 /** Os setores do mural que têm trabalhador (o que dá para pausar). */
@@ -296,6 +299,81 @@ export class Fluxo {
   _muralPronto() {
     this.muralCarregado ||= this.mural.carrega();
     return this.muralCarregado;
+  }
+
+  /* ══ O ESTÚDIO NO BOTÃO ═════════════════════════════════════
+     A tela Estúdio do painel: um botão do lado de cada cliente para fazer
+     a demonstração agora. O automático continua: quem topa ver na
+     conversa ganha a demo sozinho. Os dois usam a mesma caixa do estúdio,
+     com a mesma chave — o mesmo cliente nunca é feito duas vezes junto. */
+
+  /** Liga só o estúdio e o publicador: o botão funciona com a matilha parada. */
+  async ligaEstudio() {
+    await this._muralPronto();
+    await mkdir(this.pastaTrabalho, { recursive: true });
+    for (const setor of ['estudio', 'publicador']) this.trabalhadores.find((t) => t.setor === setor)?.liga();
+  }
+
+  /** O botão "Fazer site de demonstração" (e o "Tentar de novo"). */
+  async pedeDemo(id) {
+    await this._muralPronto();
+    const lead = await this.acha(id);
+    if (!lead) throw new Error('Cliente não encontrado.');
+    if (['fechado', 'com_voce', 'entregue'].includes(lead.estagio)) {
+      throw new Error(`${lead.nome} já é cliente: mudança no site dele é pedido de alteração, não demo nova.`);
+    }
+    if (pediuParaParar(lead)) throw new Error(`${lead.nome} pediu para não ser mais contatado.`);
+    // Travou (estúdio ou publicador): o botão solta a mesma tarefa, do zero.
+    const travadas = this._doSiteDemo(lead.id).filter((t) => t.estado === 'travada');
+    if (travadas.length) {
+      for (const t of travadas) await this.mural.destrava(t.id);
+      await this.ligaEstudio();
+      return { ok: true, aviso: `${lead.nome}: tentando de novo.` };
+    }
+    if (this._doSiteDemo(lead.id).some((t) => ['esperando', 'fazendo'].includes(t.estado))) {
+      return { ok: true, aviso: `${lead.nome} já está na caixa do estúdio.` };
+    }
+    await this.mural.poe('estudio', 'fazer_site',
+      { leadId: lead.id, nome: lead.nome, versao: 'demo', manual: true },
+      { chave: `estudio:fazer_site:${lead.id}`, prioridade: 1 });
+    await this.ligaEstudio();
+    const fila = this.mural.tarefas.filter((t) => t.setor === 'estudio' && ['esperando', 'fazendo'].includes(t.estado)).length;
+    return { ok: true, aviso: fila > 1 ? `${lead.nome}: ${fila}º na caixa do estúdio.` : `${lead.nome}: o estúdio começou.` };
+  }
+
+  /** As tarefas de fazer e publicar a demo deste cliente que ainda não acabaram. */
+  _doSiteDemo(id) {
+    return (this.mural.tarefas || []).filter((t) => t.dados?.leadId === id && t.estado !== 'feita'
+      && ((t.setor === 'estudio' && t.tipo === 'fazer_site')
+        || (t.setor === 'publicador' && t.tipo === 'publicar' && t.dados?.versao === 'demo')));
+  }
+
+  /** O que a tela Estúdio mostra: cada cliente, o site dele e o que o estúdio está fazendo. */
+  estadoDoEstudio() {
+    const leads = (this.dados.tudo().leads || []).filter((l) => l.estagio !== 'perdido');
+    const trab = this.trabalhadores.find((t) => t.setor === 'estudio');
+    return {
+      estudio: trab ? trab.estado() : null,
+      leads: leads.map((l) => {
+        const abertas = this._doSiteDemo(l.id);
+        const travada = abertas.find((t) => t.estado === 'travada');
+        const andando = abertas.find((t) => t.estado === 'fazendo');
+        const naFila = abertas.find((t) => t.estado === 'esperando');
+        const situacao = travada ? 'falhou'
+          : andando ? (andando.setor === 'publicador' ? 'publicando' : 'fazendo')
+            : naFila ? 'na_fila'
+              : l.sites?.demo?.url && !l.sites.demo.expirada ? 'no_ar' : 'sem_site';
+        return {
+          id: l.id, nome: l.nome, tipo: l.tipo, cidade: l.cidade, estagio: l.estagio,
+          instagram: l.instagram || '', nota: l.nota || null, avaliacoes: l.avaliacoes || null,
+          cliente: ['fechado', 'com_voce', 'entregue'].includes(l.estagio),
+          situacao, url: l.sites?.demo?.expirada ? '' : (l.sites?.demo?.url || ''),
+          antes_do_contato: Boolean(l.sites?.demo?.antes_do_contato && !l.sites.demo.avisado_em),
+          // Falhou, ou está esperando para tentar de novo (o limite do plano, por exemplo).
+          erro: texto(travada?.erro || naFila?.erro || naFila?.aviso || '', 200),
+        };
+      }),
+    };
   }
 
   /**
@@ -1133,6 +1211,18 @@ export class Fluxo {
 
     // Topou a demo: põe na caixa do estúdio e já sai daqui. Não
     // espera o site ficar pronto — isso é trabalho de outro setor.
+    if (saida.intencao === 'aceitou_demo' && momento === 'antes_da_demo'
+      && lead.sites?.demo?.url && lead.sites.demo.antes_do_contato && !lead.sites.demo.expirada) {
+      // A demo já foi feita pelo botão do estúdio: manda a que está no ar.
+      await this.comOsDados(async (tudo) => {
+        const atual = (tudo.leads || []).find((l) => l.id === lead.id);
+        if (atual) atual.estagio = 'demo_no_ar';
+      });
+      await this.mural.poe('vendedor', 'avisar_demo',
+        { leadId: lead.id, nome: lead.nome, url: lead.sites.demo.url },
+        { chave: `vendedor:avisar:${lead.id}:demo`, prioridade: 1 });
+      return 'topou a demo — a que o estúdio já tinha feito vai agora';
+    }
     if (saida.intencao === 'aceitou_demo' && momento === 'antes_da_demo') {
       await this.comOsDados(async (tudo) => {
         const atual = (tudo.leads || []).find((l) => l.id === lead.id);
@@ -1524,7 +1614,7 @@ sem a linha sobre os preços das fotos publicadas:\n${cardapioEmTexto(lead.carda
     // uns 10 KB por site.
     await this.mural.poe('publicador', 'publicar', {
       leadId: lead.id, nome: lead.nome, versao: 'demo',
-      caminho: feito.caminho, consertos,
+      caminho: feito.caminho, consertos, ...(tarefa.dados.manual ? { manual: true } : {}),
     }, { chave: `publicador:publicar:${lead.id}:demo`, prioridade: 2 });
 
     return `site montado em ${feito.segundos}s — na caixa do publicador`;
@@ -1555,12 +1645,17 @@ sem a linha sobre os preços das fotos publicadas:\n${cardapioEmTexto(lead.carda
         const expiraEm = agora() + dias * 24 * 60 * 60 * 1000;
         // "terça-feira, 28/10": é assim que se fala de uma data numa conversa.
         expiraTexto = new Date(expiraEm).toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit' });
+        // Feita pelo botão do estúdio para quem ainda não respondeu: fica no
+        // ar, mas o link não sai sozinho (seria uma mensagem que ele não
+        // pediu). Vai quando ele aceitar ver, na conversa.
+        const antesDoContato = Boolean(tarefa.dados.manual) && !jaRespondeu(atual);
         atual.sites.demo = {
           url: publicado.url, site_id: publicado.site_id, quando: agora(),
           expira_em: expiraEm, expira_texto: expiraTexto,
           consertos: tarefa.dados.consertos || [],
+          ...(antesDoContato ? { antes_do_contato: true } : {}),
         };
-        if (['fazendo_demo', 'conversando', 'abordado'].includes(atual.estagio)) atual.estagio = 'demo_no_ar';
+        if (!antesDoContato && ['fazendo_demo', 'conversando', 'abordado'].includes(atual.estagio)) atual.estagio = 'demo_no_ar';
       } else {
         atual.sites.oficial = {
           url: publicado.url, site_id: publicado.site_id, quando: agora(),
@@ -1594,6 +1689,9 @@ sem a linha sobre os preços das fotos publicadas:\n${cardapioEmTexto(lead.carda
       }
     }
     const url = versao === 'oficial' && lead.dominio?.estado === 'no_ar' ? `https://${lead.dominio.escolhido}` : publicado.url;
+    if (versao === 'demo' && tarefa.dados.manual && !jaRespondeu(await this.acha(lead.id))) {
+      return `prévia no ar (${url}) — ${lead.nome} ainda não respondeu: o link vai quando ele aceitar ver`;
+    }
     await this.mural.poe('vendedor',
       versao === 'demo' ? 'avisar_demo' : 'avisar_entrega',
       { leadId: lead.id, nome: lead.nome, url },

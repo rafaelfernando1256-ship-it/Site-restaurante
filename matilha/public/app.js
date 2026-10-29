@@ -233,6 +233,68 @@ function desenhaLista() {
 
 function desenha() { desenhaQuadro(); desenhaLista(); desenhaFilas(); desenhaResultados(); }
 
+/* ── o estúdio: de quem fazer o site de demonstração agora ── */
+let estudio = null;
+const OBRA = {
+  sem_site: ['sem site', ''], na_fila: ['na fila', 'espera'], fazendo: ['fazendo o site', 'espera'],
+  publicando: ['publicando', 'espera'], no_ar: ['no ar', 'bom'], falhou: ['falhou', 'ruim'],
+};
+async function carregaEstudio() {
+  estudio = await fluxoPede('/estudio');
+  desenhaEstudio();
+}
+function desenhaEstudio() {
+  if (!estudio) return;
+  const busca = ($('#estudio-busca').value || '').toLowerCase();
+  const filtro = $('#estudio-filtro').value;
+  const andando = (l) => ['na_fila', 'fazendo', 'publicando'].includes(l.situacao);
+  const visiveis = estudio.leads.filter((l) => {
+    if (busca && !`${l.nome} ${l.tipo} ${l.cidade}`.toLowerCase().includes(busca)) return false;
+    if (filtro === 'sem') return l.situacao === 'sem_site';
+    if (filtro === 'com') return l.situacao === 'no_ar';
+    if (filtro === 'andando') return andando(l);
+    if (filtro === 'falhou') return l.situacao === 'falhou';
+    return true;
+  }).sort((a, b) => Number(andando(b)) - Number(andando(a)) || (b.avaliacoes || 0) - (a.avaliacoes || 0));
+  const e = estudio.estudio;
+  const fila = estudio.leads.filter(andando).length;
+  texto('#estudio-sub', e?.dormindoAte
+    ? `Fora do horário de trabalho: o estúdio volta às ${new Date(e.dormindoAte).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}.`
+    : e?.fazendo ? `Fazendo agora: ${e.fazendo}${fila > 1 ? ` · ${fila - 1} na fila` : ''}.`
+      : fila ? `${fila} na fila do estúdio.` : 'Nenhum site sendo feito agora.');
+  $('#estudio-vazio').hidden = estudio.leads.length !== 0;
+  texto('#estudio-total', estudio.leads.length ? `${visiveis.length} na lista` : '');
+  poe('#estudio-lista', visiveis.map((l) => {
+    const [rotulo, tom] = OBRA[l.situacao] || [l.situacao, ''];
+    const acao = l.situacao === 'no_ar' ? 'Refazer o site' : l.situacao === 'falhou' ? 'Tentar de novo' : 'Fazer site de demonstração';
+    const botao = l.cliente
+      ? '<span class="nota">cliente: mudança é pedido de alteração</span>'
+      : `<button class="bt bt-contorno bt-pequeno" data-demo="${esc(l.id)}" ${andando(l) ? 'disabled' : ''}>${esc(acao)}</button>`;
+    const detalhes = [l.tipo, l.cidade, l.instagram ? 'com Instagram' : 'sem Instagram',
+      l.nota ? `${String(l.nota).replace('.', ',')} no Google${l.avaliacoes ? ` (${l.avaliacoes})` : ''}` : ''].filter(Boolean).join(' · ');
+    return `<div class="obra" role="listitem">
+      <span class="cliente-texto"><b>${esc(l.nome || 'sem nome')}</b>
+        <span>${esc(detalhes)}</span>
+        ${l.url ? `<span><a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.url)}</a></span>` : ''}
+        ${l.antes_do_contato ? '<span class="obra-aviso">No ar, mas ele ainda não respondeu: o link vai quando ele aceitar ver, na conversa.</span>' : ''}
+        ${l.erro ? `<span class="obra-erro">${esc(l.erro)}</span>` : ''}</span>
+      <span class="pilula${tom ? ` pilula-${tom}` : ''}">${esc(rotulo)}</span>
+      ${botao}
+    </div>`;
+  }).join(''));
+}
+$('#estudio-busca').addEventListener('input', desenhaEstudio);
+$('#estudio-filtro').addEventListener('change', desenhaEstudio);
+$('#estudio-lista').addEventListener('click', async (ev) => {
+  const botao = ev.target.closest('button[data-demo]');
+  if (!botao) return;
+  await ocupado(botao, async () => {
+    const r = await fluxoPede('/demo', { id: botao.dataset.demo });
+    recado(r.aviso || 'Na caixa do estúdio.', 'bom');
+    await carregaEstudio();
+  });
+});
+
 /* ── o analista: resposta, demo e venda por ramo, cidade e abertura ── */
 function contaFunil(leads) {
   const abordados = leads.filter((l) => l.abordado_em);
@@ -1874,7 +1936,7 @@ aoClicar('#c-depois', async () => {
 }, { semEspera: true });
 
 /* ══ NAVEGAÇÃO ══════════════════════════════════════════════════ */
-const TELAS = { comecar: 'Começar', hoje: 'Hoje', jarvis: 'Jarvis', escritorio: 'Escritório', cacada: 'Caçada', whatsapp: 'WhatsApp', clientes: 'Clientes', ofertas: 'Ofertas', valor: 'Value Intelligence', rede: 'Rede de agentes', financeiro: 'Financeiro', ajustes: 'Ajustes' };
+const TELAS = { comecar: 'Começar', hoje: 'Hoje', jarvis: 'Jarvis', escritorio: 'Escritório', cacada: 'Caçada', whatsapp: 'WhatsApp', clientes: 'Clientes', estudio: 'Estúdio', ofertas: 'Ofertas', valor: 'Value Intelligence', rede: 'Rede de agentes', financeiro: 'Financeiro', ajustes: 'Ajustes' };
 const telaRede = montaRede({ $, poe, esc, pede, recado, ocupado });
 const telaFinanceiro = montaFinanceiro({ $, poe, esc, pede, recado, ocupado, abreFicha: (id) => carrega().then(() => abreFicha(id)) });
 // O caminho das telas (para o "volta" do Jarvis voltar para onde você estava, e não para fora do painel).
@@ -1903,6 +1965,7 @@ function vaiPara() {
   if (tela === 'jarvis') abreJarvis();
   if (tela === 'whatsapp') { zapEstado(); claudeCarrega(); }
   if (tela === 'clientes') desenha();
+  if (tela === 'estudio') carregaEstudio().catch((e) => recado(e.message, 'ruim'));
   if (tela === 'ofertas') carrega().then(() => telaOfertas.abre(subPedida)).catch((e) => recado(e.message, 'ruim'));
   if (tela === 'rede') telaRede.abre().catch((e) => recado(e.message, 'ruim'));
   if (tela === 'valor') telaValor.abre().catch((e) => recado(e.message, 'ruim'));
@@ -2099,6 +2162,7 @@ setInterval(() => {
   // Nas outras telas, o estado do topo também se mexe, só que mais devagar.
   else if (voltas % 3 === 0) fluxoPede('').then(desenhaFluxo).catch(() => {});
   else if (telaAtual === 'clientes' && !$('#ficha').open) carrega().then(desenha).catch(() => {});
+  else if (telaAtual === 'estudio') carregaEstudio().catch(() => {});
   else if (telaAtual === 'ofertas') telaOfertas.atualiza().catch(() => {});
   else if (telaAtual === 'rede') telaRede.atualiza().catch(() => {});
   else if (telaAtual === 'valor') telaValor.atualiza().catch(() => {});

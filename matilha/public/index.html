@@ -70,6 +70,7 @@
     <a class="nav-item" href="#whatsapp" data-tela="whatsapp"><svg class="ic"><use href="#i-whatsapp"/></svg>WhatsApp
       <span class="nav-sinal" id="nav-sinal-zap" hidden></span></a>
     <a class="nav-item" href="#clientes" data-tela="clientes"><svg class="ic"><use href="#i-clientes"/></svg>Clientes</a>
+    <a class="nav-item" href="#estudio" data-tela="estudio"><svg class="ic"><use href="#i-escrever"/></svg>Estúdio</a>
     <a class="nav-item" href="#rede" data-tela="rede"><svg class="ic"><use href="#i-rede"/></svg>Rede de agentes</a>
     <a class="nav-item" href="#financeiro" data-tela="financeiro"><svg class="ic"><use href="#i-financeiro"/></svg>Financeiro</a>
     <a class="nav-item" href="#ofertas" data-tela="ofertas"><svg class="ic"><use href="#i-ofertas"/></svg>Ofertas
@@ -488,6 +489,37 @@
   </div>
   <div id="lista" class="clientes" role="list"></div>
   <p class="vazio vazio-grande" id="vazio" hidden>Nenhum cliente ainda. Solte a matilha em Hoje, ou ponha um à mão.</p>
+</section>
+
+<!-- ══ O ESTÚDIO ═══════════════════════════════════════════════════
+     A pergunta desta tela: de quem eu quero o site de demonstração agora?
+     O automático continua (quem topa ver ganha a demo sozinho); aqui é o
+     botão para fazer na hora, do lado de cada cliente. -->
+<section class="tela" id="tela-estudio" hidden aria-labelledby="h-estudio">
+  <div class="titulo-linha">
+    <div>
+      <h1 id="h-estudio">Estúdio</h1>
+      <p class="titulo-sub" id="estudio-sub">—</p>
+    </div>
+  </div>
+  <p class="nota estudio-como">A ficha do Google Maps e os prints do Instagram vão para o Claude Code com o
+    <b>Sonnet, esforço alto</b>, que escreve o prompt master; o prompt master e os prints vão para o
+    <b>Opus 5.5, esforço alto</b>, que faz o site. Depois o publicador põe no ar. O automático continua:
+    quem topa ver a demonstração na conversa ganha o site sozinho.</p>
+  <div class="ferramentas estudio-ferramentas">
+    <input id="estudio-busca" type="search" placeholder="Procurar por nome, ramo ou cidade" autocomplete="off"
+      aria-label="Procurar cliente no estúdio">
+    <select id="estudio-filtro" aria-label="Mostrar">
+      <option value="todos">Todos</option>
+      <option value="sem">Sem site</option>
+      <option value="com">Com site no ar</option>
+      <option value="andando">Sendo feitos</option>
+      <option value="falhou">Que falharam</option>
+    </select>
+    <span class="contagem num" id="estudio-total"></span>
+  </div>
+  <div id="estudio-lista" class="clientes" role="list"></div>
+  <p class="vazio vazio-grande" id="estudio-vazio" hidden>Nenhum cliente ainda. Solte a matilha em Hoje, ou ponha um à mão em Clientes.</p>
 </section>
 
 <!-- ══ OFERTAS INTELIGENTES: o AGENTE 4, OFFER ARCHITECT ═══════════
@@ -981,6 +1013,7 @@
   <a href="#cacada" data-tela="cacada"><svg class="ic"><use href="#i-cacada"/></svg>Caçada</a>
   <a href="#whatsapp" data-tela="whatsapp"><svg class="ic"><use href="#i-whatsapp"/></svg>WhatsApp</a>
   <a href="#clientes" data-tela="clientes"><svg class="ic"><use href="#i-clientes"/></svg>Clientes</a>
+  <a href="#estudio" data-tela="estudio"><svg class="ic"><use href="#i-escrever"/></svg>Estúdio</a>
   <a href="#ofertas" data-tela="ofertas"><svg class="ic"><use href="#i-ofertas"/></svg>Ofertas</a>
   <a href="#valor" data-tela="valor"><svg class="ic"><use href="#i-valor"/></svg>Valor</a>
   <a href="#rede" data-tela="rede"><svg class="ic"><use href="#i-rede"/></svg>Rede</a>

@@ -976,6 +976,13 @@ async function rota(pedido, caminho, local) {
     if (!ids.length) return json({ erro: 'Nenhum cliente selecionado.' }, 400);
     return json(await fluxo.liberaPrimeiroContato(ids));
   }
+  // A TELA ESTÚDIO: cada cliente com o site dele, e o botão de fazer a demo.
+  if (caminho === '/api/fluxo/estudio') return json(fluxo.estadoDoEstudio());
+  if (caminho === '/api/fluxo/demo') {
+    if (pedido.method !== 'POST') return json({ erro: 'Use POST.' }, 405);
+    const corpo = await pedido.json().catch(() => ({}));
+    try { return json(await fluxo.pedeDemo(String(corpo.id || ''))); } catch (e) { return json({ erro: e.message.slice(0, 300) }, 400); }
+  }
   // O rascunho do site oficial que o estúdio fez, para você conferir.
   if (caminho === '/api/fluxo/rascunho') {
     const lead = (dados.tudo().leads || []).find((l) => l.id === url.searchParams.get('id'));

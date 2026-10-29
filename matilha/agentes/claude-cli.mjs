@@ -56,6 +56,9 @@ let comando = null;
  * programa é o Node). Nulo quando não está instalado.
  */
 export function comoChamar() {
+  // Para os testes (testes/estudio.mjs): um Claude Code falso, em Node,
+  // que roda igual no Windows e no Linux e não gasta a sua conta.
+  if (process.env.MATILHA_CLAUDE_FALSO) return { arquivo: process.execPath, antes: [process.env.MATILHA_CLAUDE_FALSO] };
   if (comando) return comando;
   if (process.platform !== 'win32') {
     comando = { arquivo: 'claude', antes: [] };

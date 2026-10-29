@@ -253,7 +253,10 @@ const SEM_PRECO = ['abordagem', 'abordagem_b', 'demo_enviada', 'lembrete_sem_res
  */
 export function momentoDo(lead = {}) {
   if (['fechado', 'com_voce', 'entregue'].includes(lead.estagio)) return 'cliente';
-  if (lead.sites?.demo?.url && !lead.sites.demo.expirada) return 'depois_da_demo';
+  // Demo feita pelo botão do estúdio antes de ele falar com você: existe,
+  // mas ele ainda não viu. Até o link sair, a conversa é de antes da demo.
+  const naoViu = lead.sites?.demo?.antes_do_contato && !lead.sites.demo.avisado_em;
+  if (lead.sites?.demo?.url && !lead.sites.demo.expirada && !naoViu) return 'depois_da_demo';
   if (lead.estagio === 'fazendo_demo') return 'demo_sendo_feita';
   return 'antes_da_demo';
 }
