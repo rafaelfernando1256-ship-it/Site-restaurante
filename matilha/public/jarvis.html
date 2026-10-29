@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#121826">
+<title>Jarvis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/jarvis.css">
+<link rel="manifest" href="/jarvis.webmanifest">
+<link rel="apple-touch-icon" href="/jarvis-icone-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<style>html,body{margin:0;background:#121826}</style>
+</head>
+<body>
+<div id="raiz"></div>
+<script type="module">
+import { montaJarvis } from '/jarvis.js';
+import { ligaControleDeTela } from '/ui-controle.js';
+async function pede(caminho, corpo) {
+  const r = await fetch(caminho, {
+    method: corpo === undefined ? 'GET' : 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: corpo === undefined ? undefined : JSON.stringify(corpo),
+  });
+  if (r.status === 401) { location.href = '/'; throw new Error('Precisa entrar com o PIN.'); }
+  const saida = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(saida.erro || `erro ${r.status}`);
+  return saida;
+}
+// O Jarvis sozinho também obedece aos comandos de tela dele ("fecha isso", "fecha o projeto"), conferindo o estado.
+let jv = null;
+const controle = ligaControleDeTela({
+  pede, tipo: 'jarvis',
+  estado: () => ({ tela: 'jarvis', palco: jv?.palco() || null, gaveta: jv?.gaveta() || null, soltos: jv?.soltos() || 0, dialogos: [...document.querySelectorAll('dialog[open]')].map((d) => d.id) }),
+  acoes: {
+    'panel.close': async ({ qual = 'auto' }) => {
+      const d = [...document.querySelectorAll('dialog[open]')].at(-1);
+      if ((qual === 'auto' || qual === 'dialogo') && d) { d.close(); return { ok: !d.open, fechou: 'a janela' }; }
+      const p = jv.palco();
+      if ((qual === 'auto' || qual === 'palco' || qual === 'ficha') && p?.tipo) { jv.fechaVisual(); return { ok: !jv.palco(), fechou: p.tipo === 'projeto' ? `o projeto ${p.titulo} que estava na tela` : (p.titulo || 'o que estava na tela') }; }
+      if ((qual === 'auto' || qual === 'janelas') && jv.soltos()) { const n = jv.soltos(); jv.fechaSoltos(); return { ok: true, fechou: n === 1 ? 'a janela solta' : `as ${n} janelas soltas` }; }
+      if ((qual === 'auto' || qual === 'gaveta') && jv.gaveta()) { jv.fechaGaveta(); return { ok: true, fechou: 'a gaveta' }; }
+      return { ok: false, erro: 'não há nenhuma janela aberta para fechar' };
+    },
+    'jarvis.projeto': async ({ id, titulo, url }) => { await jv.mostraVisual({ tipo: 'projeto', titulo, url, id }); return { ok: jv.palco()?.id === id }; },
+  },
+});
+jv = montaJarvis(document.getElementById('raiz'), { pede, cheio: true, cliente: controle.cliente });
+</script>
+</body>
+</html>

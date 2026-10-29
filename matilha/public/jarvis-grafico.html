@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gráfico do Jarvis</title>
+<link rel="icon" href="/jarvis-icone-192.png">
+<link rel="stylesheet" href="/jarvis.css">
+<style>html, body { margin: 0; height: 100%; background: #121826; }</style>
+</head>
+<body>
+<div class="jv jv-janela">
+  <h1 id="titulo">Carregando…</h1>
+  <div class="jv-solto-corpo" id="corpo"></div>
+</div>
+<script type="module">
+// Uma janela só com o gráfico: você põe onde quiser na tela (até em outro monitor).
+import { desenhaVisual } from '/jarvis-visual.js';
+const titulo = document.getElementById('titulo');
+const id = new URLSearchParams(location.search).get('id') || '';
+try {
+  const r = await fetch(`/api/jarvis/visual?id=${encodeURIComponent(id)}`);
+  const v = await r.json();
+  if (!r.ok || !v.visual) throw new Error(v.erro || 'não achei');
+  document.title = v.visual.titulo;
+  titulo.textContent = v.visual.titulo;
+  desenhaVisual(document.getElementById('corpo'), v.visual, { compacto: true });
+} catch {
+  titulo.textContent = 'Este gráfico não existe mais (a Matilha foi reiniciada). Peça de novo ao Jarvis.';
+}
+</script>
+</body>
+</html>

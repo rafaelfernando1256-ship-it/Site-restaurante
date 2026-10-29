@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#12151c">
+<title>Escritório · Matilha</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M3 27 9.5 7 16 27Z M10 27 16.5 4 23 27Z M17 27 22.5 9 29 27Z' fill='%23f2600c' stroke='%2312151c' stroke-width='1.6' stroke-linejoin='round'/></svg>">
+<link rel="stylesheet" href="/estilo.css">
+<style>
+  /* A tela cheia: só o escritório, para um monitor ou uma TV. */
+  body{background:#0d1016;padding:14px}
+  .cheia-topo{display:flex;align-items:center;gap:12px;color:#e8eaf0;margin:0 4px 12px}
+  .cheia-topo svg{width:22px;height:22px;fill:#f2600c;stroke:#0d1016;stroke-width:1.6;stroke-linejoin:round}
+  .cheia-topo b{font-size:16px}
+  .cheia-topo span{color:#9aa1b0;font-size:13px}
+  .cheia-topo a{margin-left:auto;color:#9aa1b0;font-size:13px}
+  .esc{min-height:calc(100dvh - 70px);grid-template-rows:minmax(0,1fr) auto}
+  .esc-svg,.esc-lado{max-height:none}
+</style>
+</head>
+<body>
+<header class="cheia-topo">
+  <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M3 27 9.5 7 16 27Z M10 27 16.5 4 23 27Z M17 27 22.5 9 29 27Z"/></svg>
+  <b>Matilha</b><span>Escritório</span>
+  <a href="/#hoje">Voltar ao painel</a>
+</header>
+<main id="raiz"></main>
+<script type="module">
+import { montaEscritorio } from '/escritorio.js';
+async function pede(caminho, corpo) {
+  const r = await fetch(caminho, { method: corpo === undefined ? 'GET' : 'POST',
+    headers: { 'content-type': 'application/json' }, body: corpo === undefined ? undefined : JSON.stringify(corpo) });
+  if (r.status === 401) { location.href = '/'; throw new Error('Precisa entrar com o PIN.'); }
+  const saida = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(saida.erro || `erro ${r.status}`);
+  return saida;
+}
+montaEscritorio(document.getElementById('raiz'), { pede, irPara: (t) => { location.href = `/#${t}`; } });
+</script>
+</body>
+</html>

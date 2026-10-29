@@ -1,0 +1,16 @@
+{
+  "name": "matilha",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Matilha — quatro agentes rodando no seu notebook, com WhatsApp Web pelo navegador.",
+  "scripts": {
+    "start": "node INSTALAR.mjs",
+    "painel": "node servidor.mjs",
+    "testar-caçador": "node testes/cacador-google.mjs"
+  },
+  "dependencies": {
+    "playwright": "^1.49.0",
+    "ws": "^8.22.0"
+  }
+}

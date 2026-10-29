@@ -1,0 +1,1010 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#f8f9fa">
+<title>Matilha</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M3 27 9.5 7 16 27Z M10 27 16.5 4 23 27Z M17 27 22.5 9 29 27Z' fill='%23f2600c' stroke='%23f8f9fa' stroke-width='1.6' stroke-linejoin='round'/></svg>">
+<link rel="preload" href="/fontes/dm-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/estilo.css">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/jarvis.css">
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" hidden aria-hidden="true">
+  <!-- Ícones: Lucide (ISC), em public/fontes/LICENCA-ICONES-LUCIDE.txt -->
+  <symbol id="i-jarvis" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><circle cx="12" cy="12" r="7.5" stroke-dasharray="3 2.4"/><circle cx="12" cy="12" r="10.5" opacity=".5"/></symbol>
+  <symbol id="i-escritorio" viewBox="0 0 24 24"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z" /><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2" /><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2" /><path d="M10 6h4" /><path d="M10 10h4" /><path d="M10 14h4" /><path d="M10 18h4" /></symbol>
+  <symbol id="i-tela-cheia" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3" /><path d="M21 8V5a2 2 0 0 0-2-2h-3" /><path d="M3 16v3a2 2 0 0 0 2 2h3" /><path d="M16 21h3a2 2 0 0 0 2-2v-3" /></symbol>
+  <symbol id="i-comecar" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></symbol>
+  <symbol id="i-hoje" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /> <path d="M12 2v2" /> <path d="M12 20v2" /> <path d="m4.93 4.93 1.41 1.41" /> <path d="m17.66 17.66 1.41 1.41" /> <path d="M2 12h2" /> <path d="M20 12h2" /> <path d="m6.34 17.66-1.41 1.41" /> <path d="m19.07 4.93-1.41 1.41" /></symbol>
+  <symbol id="i-cacada" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <line x1="22" x2="18" y1="12" y2="12" /> <line x1="6" x2="2" y1="12" y2="12" /> <line x1="12" x2="12" y1="6" y2="2" /> <line x1="12" x2="12" y1="22" y2="18" /></symbol>
+  <symbol id="i-whatsapp" viewBox="0 0 24 24"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719" /></symbol>
+  <symbol id="i-ofertas" viewBox="0 0 24 24"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z" /> <circle cx="7.5" cy="7.5" r=".5" fill="currentColor" /></symbol>
+  <symbol id="i-valor" viewBox="0 0 24 24"><path d="M6 3h12l4 6-10 12L2 9z" /> <path d="M11 3 8 9l4 12 4-12-3-6" /> <path d="M2 9h20" /></symbol>
+  <symbol id="i-rede" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2.5" /> <circle cx="5" cy="18" r="2.5" /> <circle cx="19" cy="18" r="2.5" /> <path d="M10.8 7.2 6.2 15.8" /> <path d="m13.2 7.2 4.6 8.6" /> <path d="M7.5 18h9" /></symbol>
+  <symbol id="i-financeiro" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2" /> <path d="M2 10h20" /> <path d="M6 15h4" /></symbol>
+  <symbol id="i-clientes" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /> <path d="M16 3.128a4 4 0 0 1 0 7.744" /> <path d="M22 21v-2a4 4 0 0 0-3-3.87" /> <circle cx="9" cy="7" r="4" /></symbol>
+  <symbol id="i-ajustes" viewBox="0 0 24 24"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915" /> <circle cx="12" cy="12" r="3" /></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z" /></symbol>
+  <symbol id="i-parar" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" /></symbol>
+  <symbol id="i-atualizar" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" /> <path d="M21 3v5h-5" /> <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" /> <path d="M8 16H3v5" /></symbol>
+  <symbol id="i-abrir" viewBox="0 0 24 24"><path d="M15 3h6v6" /> <path d="M10 14 21 3" /> <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /></symbol>
+  <symbol id="i-escrever" viewBox="0 0 24 24"><path d="M13 21h8" /> <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /></symbol>
+  <symbol id="i-ok" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></symbol>
+  <symbol id="i-fechar" viewBox="0 0 24 24"><path d="M18 6 6 18" /> <path d="m6 6 12 12" /></symbol>
+  <symbol id="i-alerta" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <line x1="12" x2="12" y1="8" y2="12" /> <line x1="12" x2="12.01" y1="16" y2="16" /></symbol>
+  <symbol id="i-seta" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6" /></symbol>
+  <symbol id="i-qr" viewBox="0 0 24 24"><rect width="5" height="5" x="3" y="3" rx="1" /> <rect width="5" height="5" x="16" y="3" rx="1" /> <rect width="5" height="5" x="3" y="16" rx="1" /> <path d="M21 16h-3a2 2 0 0 0-2 2v3" /> <path d="M21 21v.01" /> <path d="M12 7v3a2 2 0 0 1-2 2H7" /> <path d="M3 12h.01" /> <path d="M12 3h.01" /> <path d="M12 16v.01" /> <path d="M16 12h1" /> <path d="M21 12v.01" /> <path d="M12 21v-1" /></symbol>
+  <symbol id="i-celular" viewBox="0 0 24 24"><rect width="14" height="20" x="5" y="2" rx="2" ry="2" /> <path d="M12 18h.01" /></symbol>
+  <symbol id="i-entrar" viewBox="0 0 24 24"><path d="m10 17 5-5-5-5" /> <path d="M15 12H3" /> <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" /></symbol>
+  <symbol id="i-girando" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></symbol>
+  <symbol id="i-mais" viewBox="0 0 24 24"><path d="M5 12h14" /> <path d="M12 5v14" /></symbol>
+  <symbol id="i-fila" viewBox="0 0 24 24"><path d="M13 5h8" /> <path d="M13 12h8" /> <path d="M13 19h8" /> <path d="m3 17 2 2 4-4" /> <path d="m3 7 2 2 4-4" /></symbol>
+  <symbol id="i-janela" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2" /> <path d="M10 4v4" /> <path d="M2 8h20" /> <path d="M6 4v4" /></symbol>
+  <symbol id="i-relogio" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <path d="M12 6v6l4 2" /></symbol>
+</svg>
+
+<a class="pular" href="#conteudo">Pular para o conteúdo</a>
+
+<div class="app">
+
+<!-- ══ A LATERAL: o nome, as telas, e os ajustes no pé ═══════════ -->
+<aside class="lateral" aria-label="Telas da Matilha">
+  <a class="marca" href="#hoje" aria-label="Matilha, ir para Hoje">
+    <svg class="marca-simbolo" viewBox="0 0 32 32" aria-hidden="true">
+      <path d="M3 27 9.5 7 16 27Z M10 27 16.5 4 23 27Z M17 27 22.5 9 29 27Z"/>
+    </svg>
+    <span>Matilha</span>
+  </a>
+  <nav class="nav" aria-label="Principal">
+    <a class="nav-item" href="#comecar" data-tela="comecar" id="nav-comecar"><svg class="ic"><use href="#i-comecar"/></svg>Começar
+      <span class="nav-conta" id="nav-comecar-conta" hidden></span></a>
+    <a class="nav-item" href="#hoje" data-tela="hoje"><svg class="ic"><use href="#i-hoje"/></svg>Hoje</a>
+    <a class="nav-item" href="#jarvis" data-tela="jarvis"><svg class="ic"><use href="#i-jarvis"/></svg>Jarvis</a>
+    <a class="nav-item" href="#escritorio" data-tela="escritorio"><svg class="ic"><use href="#i-escritorio"/></svg>Escritório</a>
+    <a class="nav-item" href="#cacada" data-tela="cacada"><svg class="ic"><use href="#i-cacada"/></svg>Caçada</a>
+    <a class="nav-item" href="#whatsapp" data-tela="whatsapp"><svg class="ic"><use href="#i-whatsapp"/></svg>WhatsApp
+      <span class="nav-sinal" id="nav-sinal-zap" hidden></span></a>
+    <a class="nav-item" href="#clientes" data-tela="clientes"><svg class="ic"><use href="#i-clientes"/></svg>Clientes</a>
+    <a class="nav-item" href="#rede" data-tela="rede"><svg class="ic"><use href="#i-rede"/></svg>Rede de agentes</a>
+    <a class="nav-item" href="#financeiro" data-tela="financeiro"><svg class="ic"><use href="#i-financeiro"/></svg>Financeiro</a>
+    <a class="nav-item" href="#ofertas" data-tela="ofertas"><svg class="ic"><use href="#i-ofertas"/></svg>Ofertas
+      <span class="nav-conta" id="nav-ofertas-conta" hidden></span></a>
+    <a class="nav-item" href="#valor" data-tela="valor"><svg class="ic"><use href="#i-valor"/></svg>Value Intelligence</a>
+  </nav>
+  <nav class="nav nav-pe" aria-label="Ajustes">
+    <a class="nav-item" href="#ajustes" data-tela="ajustes"><svg class="ic"><use href="#i-ajustes"/></svg>Ajustes</a>
+    <p class="lateral-nota">Os seus dados ficam neste computador, em <code>dados/</code>.</p>
+  </nav>
+</aside>
+
+<!-- ══ A BARRA DE CIMA: o estado, de qualquer tela ═══════════════ -->
+<header class="topo">
+  <a class="marca marca-celular" href="#hoje" aria-label="Matilha, ir para Hoje">
+    <svg class="marca-simbolo" viewBox="0 0 32 32" aria-hidden="true">
+      <path d="M3 27 9.5 7 16 27Z M10 27 16.5 4 23 27Z M17 27 22.5 9 29 27Z"/>
+    </svg>
+    <span>Matilha</span>
+  </a>
+  <div class="pulso" id="pulso" role="status">
+    <span class="ponto" aria-hidden="true"></span><span id="pulso-texto">conferindo…</span>
+  </div>
+  <div class="topo-direita">
+    <span class="carimbo num" id="carimbo"></span>
+    <button class="bt bt-texto bt-icone" id="f-agora" aria-label="Atualizar agora"><svg class="ic"><use href="#i-atualizar"/></svg><span>Atualizar</span></button>
+    <a class="bt bt-contorno topo-aovivo" href="/ao-vivo" target="_blank" rel="noopener"><svg class="ic"><use href="#i-celular"/></svg>Ver ao vivo</a>
+    <span class="topo-conta" id="topo-conta"></span>
+  </div>
+</header>
+
+<main class="tela-area" id="conteudo">
+
+<!-- ══ HOJE ═══════════════════════════════════════════════════════
+     A pergunta desta tela: a matilha está trabalhando, e quanto falta
+     para a meta de hoje? Tudo o que depende de você fica à direita. -->
+<!-- COMEÇAR: o que falta configurar, numa lista só. Abre sozinha na primeira vez. -->
+<section class="tela" id="tela-comecar" hidden aria-labelledby="h-comecar">
+  <div class="titulo-linha">
+    <div>
+      <h1 id="h-comecar">Começar</h1>
+      <p class="titulo-sub" id="c-sub">Uma vez só. Cada passo diz para que serve e tem o botão que resolve.</p>
+    </div>
+    <div class="titulo-acoes">
+      <button class="bt bt-contorno" id="c-conferir">Conferir de novo</button>
+      <button class="bt bt-texto" id="c-depois">Depois eu termino</button>
+    </div>
+  </div>
+  <div class="c-progresso" aria-hidden="true"><i id="c-barra"></i></div>
+  <ol class="passos" id="c-passos" aria-live="polite"></ol>
+</section>
+
+<section class="tela" id="tela-hoje" aria-labelledby="h-hoje">
+  <div class="titulo-linha">
+    <div>
+      <h1 id="h-hoje">Hoje</h1>
+      <p class="titulo-sub" id="motor-linha">Conferindo o que a matilha está fazendo…</p>
+    </div>
+    <div class="titulo-acoes">
+      <button class="bt bt-primario" id="o-comecar"><svg class="ic"><use href="#i-play"/></svg>Soltar a matilha</button>
+      <button class="bt bt-contorno" id="o-parar" hidden><svg class="ic"><use href="#i-parar"/></svg>Recolher a matilha</button>
+    </div>
+  </div>
+
+  <div class="kpis" id="motor">
+    <div class="kpi kpi-meta">
+      <span class="kpi-rotulo">Vendas hoje</span>
+      <span class="kpi-valor kpi-lider num"><b id="motor-vendas">0</b><span class="unidade" id="motor-de"> de 1</span></span>
+      <div class="trilho" aria-hidden="true"><i id="motor-barra"></i></div>
+      <span class="kpi-nota" id="o-estado">Clientes que disseram "quero o site".</span>
+    </div>
+    <div class="kpi">
+      <span class="kpi-rotulo">Caçados hoje</span>
+      <span class="kpi-valor num" id="n-cacados">0</span>
+      <span class="kpi-nota" id="n-cacados-nota">negócios sem site</span>
+    </div>
+    <div class="kpi">
+      <span class="kpi-rotulo">Abordados hoje</span>
+      <span class="kpi-valor num" id="n-abordados">0</span>
+      <span class="kpi-nota" id="n-abordados-nota">primeiros contatos</span>
+    </div>
+    <div class="kpi">
+      <span class="kpi-rotulo">Conversando</span>
+      <span class="kpi-valor num" id="n-conversando">0</span>
+      <span class="kpi-nota">no WhatsApp agora</span>
+    </div>
+    <div class="kpi">
+      <span class="kpi-rotulo">Esperando você</span>
+      <span class="kpi-valor num" id="n-suavez">0</span>
+      <span class="kpi-nota">sites finais para fazer</span>
+    </div>
+  </div>
+
+  <div class="grade-lado">
+    <div class="coluna">
+      <section class="painel" aria-labelledby="h-agora">
+        <header class="painel-topo">
+          <h2 id="h-agora">A matilha agora</h2>
+          <span class="painel-meta" id="f-horarios"></span>
+        </header>
+        <div id="f-setores" class="trilhas"></div>
+      </section>
+
+      <section class="painel" aria-labelledby="h-feito">
+        <header class="painel-topo">
+          <h2 id="h-feito">O que já foi feito</h2>
+          <span class="painel-meta" id="f-ultimo-quando"></span>
+        </header>
+        <ol id="f-recentes" class="feitos"></ol>
+        <div id="f-ultimo" class="observador"></div>
+      </section>
+    </div>
+
+    <aside class="rail" aria-labelledby="h-voce">
+      <h2 class="rail-titulo" id="h-voce">Precisa de você</h2>
+      <p class="vazio" id="f-precisa-vazio">Nada esperando por você agora.</p>
+
+      <section class="painel" id="cartao-chamados" hidden aria-labelledby="h-chamados">
+        <header class="painel-topo"><h3 id="h-chamados">Chamaram você</h3><span class="pilula pilula-acento" id="conta-chamados"></span></header>
+        <p class="ajuda">O vendedor respondeu, mas daqui em diante é com você: alguém pediu ligação, ou fechou e precisa dos dados do pagamento.</p>
+        <div id="f-chamados" class="linhas"></div>
+      </section>
+
+      <section class="painel" id="cartao-retidas" hidden aria-labelledby="h-retidas">
+        <header class="painel-topo"><h3 id="h-retidas">Mensagens seguradas</h3><span class="pilula" id="conta-retidas"></span></header>
+        <p class="ajuda">O conferidor reprovou duas vezes, então não saíram. Abra, corrija o rascunho e envie você.</p>
+        <div id="f-retidas" class="linhas"></div>
+      </section>
+
+      <section class="painel" id="cartao-cardapio" hidden aria-labelledby="h-cardapio">
+        <header class="painel-topo"><h3 id="h-cardapio">Conferir cardápio</h3><span class="pilula pilula-acento" id="conta-cardapio"></span></header>
+        <p class="ajuda">Restaurantes que fecharam. O estúdio leu os pratos e os preços das fotos (a que o cliente mandou no WhatsApp vale mais que as do Instagram e do Maps). Confira, corrija o que precisar e dê o OK: só então o oficial é feito.</p>
+        <div id="f-cardapio" class="linhas"></div>
+      </section>
+
+      <section class="painel" id="cartao-suavez" hidden aria-labelledby="h-suavez">
+        <header class="painel-topo"><h3 id="h-suavez">Fazer o site final</h3><span class="pilula pilula-acento" id="conta-suavez"></span></header>
+        <p class="ajuda">Fecharam. O estúdio faz o oficial a partir da demo, com os pedidos do cliente. Você confere e publica; o vendedor manda o link e pede a aprovação. O cliente só paga depois de aprovar.</p>
+        <div id="f-suavez" class="linhas"></div>
+      </section>
+
+      <section class="painel" id="cartao-mensalidades" hidden aria-labelledby="h-mensalidades">
+        <header class="painel-topo"><h3 id="h-mensalidades">Mensalidades</h3><span class="pilula pilula-acento" id="conta-mensalidades"></span></header>
+        <p class="ajuda">Venceram e ainda não estão marcadas como pagas. O cobrador avisa no dia e lembra uma vez; o extrato é você quem confere.</p>
+        <div id="f-mensalidades" class="linhas"></div>
+      </section>
+
+      <section class="painel" id="cartao-pendencias" hidden aria-labelledby="h-pendencias">
+        <header class="painel-topo"><h3 id="h-pendencias">Depois da venda</h3></header>
+        <p class="ajuda">Depois do "fechou": o que só você pode fazer. O domínio .com.br (a compra exige o seu CPF ou CNPJ; o agente do domínio sugere o nome, liga e confere), o Pix e a ficha do Google.</p>
+        <div id="f-pendencias" class="linhas"></div>
+      </section>
+
+      <section class="painel" id="cartao-fila" hidden aria-labelledby="h-fila">
+        <header class="painel-topo"><h3 id="h-fila">Liberar o primeiro contato</h3><span class="pilula pilula-acento" id="conta-fila"></span></header>
+        <p class="ajuda">Com a matilha solta, estes saem sozinhos. Com ela recolhida, você libera um a um.</p>
+        <div id="f-fila" class="linhas"></div>
+        <div class="acoes">
+          <button class="bt bt-texto" id="f-marcar-todos">Marcar todos</button>
+          <button class="bt bt-contorno" id="f-liberar">Liberar os marcados</button>
+        </div>
+      </section>
+
+      <section class="painel" id="cartao-adiadas" hidden aria-labelledby="h-adiadas">
+        <header class="painel-topo"><h3 id="h-adiadas">Esperando a hora</h3></header>
+        <div id="f-adiadas" class="linhas"></div>
+      </section>
+
+      <section class="painel" id="cartao-travadas" hidden aria-labelledby="h-travadas">
+        <header class="painel-topo"><h3 id="h-travadas">Tarefas que desistiram</h3></header>
+        <p class="ajuda">Depois de várias tentativas. Nada é descartado em silêncio: veja o motivo e mande tentar de novo.</p>
+        <div id="f-travadas" class="linhas"></div>
+      </section>
+    </aside>
+  </div>
+</section>
+
+<!-- ══ JARVIS ═════════════════════════════════════════════════════ -->
+<section class="tela tela-jarvis" id="tela-jarvis" hidden aria-label="Jarvis">
+  <div id="jarvis-raiz"></div>
+</section>
+
+<!-- ══ ESCRITÓRIO ════════════════════════════════════════════════ -->
+<section class="tela" id="tela-escritorio" hidden aria-labelledby="h-escritorio">
+  <div class="titulo-linha">
+    <div>
+      <h1 id="h-escritorio">Escritório</h1>
+      <p class="titulo-sub">Cada agente da Matilha numa mesa. Quem está trabalhando agora acende; clique numa mesa para ver o que ela fez. O chefe, embaixo, entende pedidos em português.</p>
+    </div>
+    <div class="titulo-acoes">
+      <a class="bt bt-contorno" href="/escritorio" target="_blank" rel="noopener"><svg class="ic"><use href="#i-tela-cheia"/></svg>Tela cheia</a>
+    </div>
+  </div>
+  <div id="escritorio-raiz" class="escritorio-raiz"></div>
+</section>
+
+<!-- ══ CAÇADA ═════════════════════════════════════════════════════ -->
+<section class="tela" id="tela-cacada" hidden aria-labelledby="h-cacada">
+  <div class="titulo-linha">
+    <div>
+      <h1 id="h-cacada">Caçada</h1>
+      <p class="titulo-sub">Onde a matilha procura e até onde ela vai hoje. Vale a partir da próxima vez que você soltar a matilha.</p>
+    </div>
+    <div class="titulo-acoes">
+      <button class="bt bt-primario" id="o-comecar-cacada"><svg class="ic"><use href="#i-play"/></svg>Soltar a matilha</button>
+    </div>
+  </div>
+
+  <div class="secoes">
+    <section class="secao" aria-labelledby="h-onde">
+      <div class="secao-rotulo">
+        <h2 id="h-onde">Onde caçar</h2>
+        <p>Cada ramo em cada cidade vira uma busca no Google Maps. Os caçadores repartem as buscas entre si.</p>
+      </div>
+      <div class="secao-painel">
+        <div class="campos dois">
+          <label class="campo"><span>Ramos</span>
+            <input id="o-ramos" placeholder="pizzaria, barbearia, pousada" autocomplete="off">
+            <small>Separe por vírgula.</small></label>
+          <label class="campo"><span>Cidades</span>
+            <input id="o-cidades" placeholder="Sarandi, Maringá" autocomplete="off">
+            <small>Separe por vírgula.</small></label>
+        </div>
+        <p class="previa" id="o-buscas-previa"></p>
+      </div>
+    </section>
+
+    <section class="secao" aria-labelledby="h-cacadores">
+      <div class="secao-rotulo">
+        <h2 id="h-cacadores">Os caçadores</h2>
+        <p>Cada caçador abre a própria janela do Chrome e trabalha nela, ao mesmo tempo que os outros. Mais janelas terminam antes e pesam mais no notebook: cada uma usa uns 200 MB.</p>
+      </div>
+      <div class="secao-painel">
+        <div class="campos dois">
+          <label class="campo"><span>Caçadores ao mesmo tempo</span>
+            <select id="o-cacadores"></select>
+            <small id="o-janelas-agora">Nenhuma janela aberta agora.</small></label>
+          <div class="campo campo-acao">
+            <span>Janelas dos caçadores</span>
+            <button class="bt bt-contorno" id="o-fechar-navegador"><svg class="ic"><use href="#i-fechar"/></svg>Fechar as janelas</button>
+            <small>Elas abrem de novo sozinhas na próxima caçada.</small>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="secao" aria-labelledby="h-freios">
+      <div class="secao-rotulo">
+        <h2 id="h-freios">Meta e freios</h2>
+        <p>A meta diz quando parar. Os freios seguram o dia em que ela não vem: sem eles, a matilha caçaria a madrugada inteira e o seu número seria bloqueado.</p>
+      </div>
+      <div class="secao-painel">
+        <div class="campos dois">
+          <label class="campo"><span>Meta de hoje</span>
+            <input id="o-vendas" type="number" min="1" max="50" value="1" inputmode="numeric">
+            <small>Clientes que precisam dizer "quero o site".</small></label>
+          <label class="campo"><span>Máximo de primeiros contatos hoje</span>
+            <input id="o-teto-contatos" type="number" min="1" max="200" value="30" inputmode="numeric">
+            <small>Batido, ninguém novo é abordado. Quem já conversa continua sendo respondido.</small></label>
+          <label class="campo"><span>Espaço entre um contato e outro</span>
+            <span class="com-unidade"><input id="o-espera" type="number" min="10" max="3600" value="90" inputmode="numeric"><span>segundos</span></span>
+            <small>Mensagens em sequência são o retrato do disparo em massa.</small></label>
+          <label class="campo"><span>Máximo de negócios caçados hoje</span>
+            <input id="o-teto-achados" type="number" min="10" max="2000" value="300" inputmode="numeric">
+            <small>O Google também conta.</small></label>
+        </div>
+      </div>
+    </section>
+
+    <section class="secao" aria-labelledby="h-resultados">
+      <div class="secao-rotulo">
+        <h2 id="h-resultados">O que está funcionando</h2>
+        <p>O analista: de cada ramo, cidade e jeito de abrir a conversa, quantos responderam, viram a demonstração e fecharam. Com pouco contato, o número engana: ele só aponta um vencedor a partir de 10 contatos.</p>
+        <p class="dica-analista" id="r-dica"></p>
+      </div>
+      <div class="secao-painel">
+        <label class="troca">
+          <input type="checkbox" id="r-teste-ab" checked>
+          <span><b>Testar duas aberturas no primeiro contato</b>
+            <small>A: começa pela nota do Google. B: começa com uma pergunta sobre o dia a dia dele. Metade recebe cada uma.</small></span>
+        </label>
+        <div id="r-tabelas" class="tabelas-analista"></div>
+      </div>
+    </section>
+
+    <section class="secao" aria-labelledby="h-agora-so">
+      <div class="secao-rotulo">
+        <h2 id="h-agora-so">Caçar agora, sem abordar</h2>
+        <p>Usa os ramos, as cidades e os caçadores de cima, e traz a lista para você olhar. Ninguém recebe mensagem.</p>
+      </div>
+      <div class="secao-painel">
+        <div class="campos dois">
+          <label class="campo"><span>Fonte</span>
+            <select id="o-fonte">
+              <option value="navegador">Google Maps, nas janelas dos caçadores</option>
+              <option value="openstreetmap">OpenStreetMap, grátis e sem chave</option>
+              <option value="places">Google Places, a API oficial (exige chave)</option>
+            </select></label>
+          <label class="campo"><span>Negócios por busca</span>
+            <input id="o-porbusca" type="number" min="5" max="40" value="20" inputmode="numeric"></label>
+        </div>
+        <div class="acoes">
+          <button class="bt bt-contorno" id="o-cacar"><svg class="ic"><use href="#i-cacada"/></svg>Caçar agora</button>
+        </div>
+        <p class="andamento" id="m-andamento" aria-live="polite"></p>
+        <div id="m-achados" class="linhas"></div>
+      </div>
+    </section>
+
+    <section class="secao" aria-labelledby="h-risco">
+      <div class="secao-rotulo">
+        <h2 id="h-risco">O que soltar a matilha faz</h2>
+        <p>Escrito para não virar surpresa.</p>
+      </div>
+      <div class="secao-painel">
+        <p class="aviso">Ela manda mensagem para gente que nunca falou com você, sozinha, sem você ver antes. Isso é contra os termos do WhatsApp, e ler o Google Maps por automação é contra os termos do Google: o risco é do seu número e da sua conta. A meta não é promessa, ninguém controla quem compra. Fora do horário de falar, a matilha caça e monta site, mas não manda mensagem.</p>
+      </div>
+    </section>
+  </div>
+</section>
+
+<!-- ══ WHATSAPP ═══════════════════════════════════════════════════ -->
+<section class="tela" id="tela-whatsapp" hidden aria-labelledby="h-whatsapp">
+  <div class="titulo-linha">
+    <div>
+      <h1 id="h-whatsapp">WhatsApp</h1>
+      <p class="titulo-sub" id="zap-estado">Conferindo a conexão…</p>
+    </div>
+    <span class="pilula" id="selo-zap">conferindo</span>
+  </div>
+
+  <section class="painel painel-claude" id="cartao-claude" aria-labelledby="h-claude">
+    <header class="painel-topo">
+      <h2 id="h-claude"><svg class="ic"><use href="#i-escrever"/></svg>Conectar Claude para WhatsApp</h2>
+      <span class="pilula" id="cz-selo">conferindo</span>
+    </header>
+    <p class="ajuda">O Claude escreve a primeira mensagem e as respostas aos clientes, com a sua assinatura, pelo Claude Code instalado neste computador. As regras de preço e de honestidade continuam valendo: mensagem reprovada não sai.</p>
+
+    <div class="claude-grade">
+      <ol class="checagem" id="cz-passos" aria-live="polite">
+        <li data-passo="instalado"><span class="marca-passo" aria-hidden="true"></span>
+          <div><b>Claude Code instalado</b><span class="passo-detalhe">conferindo…</span></div></li>
+        <li data-passo="conectado"><span class="marca-passo" aria-hidden="true"></span>
+          <div><b>Conectado à sua conta</b><span class="passo-detalhe">conferindo…</span></div></li>
+        <li data-passo="testado"><span class="marca-passo" aria-hidden="true"></span>
+          <div><b>Uma mensagem de teste</b><span class="passo-detalhe">ainda não testado</span></div></li>
+      </ol>
+      <div class="claude-previa" id="cz-teste">
+        <span class="previa-rotulo">Como a mensagem chega no WhatsApp do cliente</span>
+        <div class="bolha bolha-vazia">Teste para ver uma abordagem escrita pelo Claude. Nada é enviado.</div>
+      </div>
+    </div>
+
+    <div class="campos dois">
+      <label class="campo"><span>Modelo</span>
+        <select id="cz-modelo"></select>
+        <small>O Haiku responde em uns 6 segundos; o Opus escreve melhor e gasta mais do limite do plano.</small></label>
+      <label class="troca">
+        <input type="checkbox" id="cz-reserva" checked>
+        <span><b>Se o limite do plano acabar, o Groq escreve até ele voltar</b>
+          <small id="cz-reserva-nota">Desmarcado, o vendedor espera o plano voltar.</small></span>
+      </label>
+    </div>
+
+    <div class="acoes">
+      <button class="bt bt-primario" id="cz-ligar"><svg class="ic"><use href="#i-escrever"/></svg>Conectar Claude para WhatsApp</button>
+      <button class="bt bt-contorno" id="cz-testar">Testar com uma abordagem</button>
+      <button class="bt bt-contorno" id="cz-login" hidden><svg class="ic"><use href="#i-entrar"/></svg>Abrir o login do Claude</button>
+      <button class="bt bt-texto" id="cz-conferir">Conferir de novo</button>
+      <button class="bt bt-texto bt-perigo" id="cz-desligar" hidden>Desligar o Claude</button>
+    </div>
+    <p class="nota" id="cz-uso"></p>
+  </section>
+
+  <div class="grade-dois">
+    <section class="painel" aria-labelledby="h-conexao">
+      <header class="painel-topo"><h2 id="h-conexao">Conexão com o WhatsApp Web</h2></header>
+      <p class="ajuda">Da primeira vez, leia o QR Code na janela que abrir. A sessão fica guardada em <code>dados/navegador/</code>, e a janela fica visível de propósito: você vê cada mensagem sair.</p>
+      <div class="acoes">
+        <button class="bt bt-contorno" data-zap="ligar">Abrir o WhatsApp Web</button>
+        <button class="bt bt-texto" data-zap="estado">Conferir</button>
+        <button class="bt bt-texto bt-perigo" data-zap="desligar">Fechar</button>
+      </div>
+      <div class="acoes">
+        <button class="bt bt-texto" id="zap-diagnostico">Conferir se a ponte funciona</button>
+        <button class="bt bt-texto" id="zap-copiar" hidden>Copiar o relatório</button>
+      </div>
+      <pre id="zap-relatorio" class="relatorio" hidden></pre>
+    </section>
+
+    <section class="painel" aria-labelledby="h-responderam">
+      <header class="painel-topo">
+        <h2 id="h-responderam">Quem respondeu</h2>
+        <button class="bt bt-texto" data-zap="novidades">Ver agora</button>
+      </header>
+      <div id="zap-novidades"><p class="vazio">As conversas não lidas aparecem aqui quando você pede. Com a matilha solta, o vendedor já lê sozinho.</p></div>
+    </section>
+  </div>
+</section>
+
+<!-- ══ CLIENTES ═══════════════════════════════════════════════════ -->
+<section class="tela" id="tela-clientes" hidden aria-labelledby="h-clientes">
+  <div class="titulo-linha">
+    <div>
+      <h1 id="h-clientes">Clientes</h1>
+      <p class="titulo-sub" id="clientes-sub">—</p>
+    </div>
+    <div class="titulo-acoes">
+      <button class="bt bt-contorno" id="novo"><svg class="ic"><use href="#i-mais"/></svg>Pôr cliente à mão</button>
+    </div>
+  </div>
+  <div class="abas-linha" id="quadro" role="tablist" aria-label="Estágios do funil"></div>
+  <div class="ferramentas">
+    <input id="busca" type="search" placeholder="Procurar por nome" autocomplete="off" aria-label="Procurar cliente por nome">
+    <span class="contagem num" id="clientes-total"></span>
+  </div>
+  <div id="lista" class="clientes" role="list"></div>
+  <p class="vazio vazio-grande" id="vazio" hidden>Nenhum cliente ainda. Solte a matilha em Hoje, ou ponha um à mão.</p>
+</section>
+
+<!-- ══ OFERTAS INTELIGENTES: o AGENTE 4, OFFER ARCHITECT ═══════════
+     A pergunta desta tela: que proposta cada cliente vai receber, e você
+     aprova? Nada vai para o vendedor sem passar por aqui. -->
+<section class="tela" id="tela-ofertas" hidden aria-labelledby="h-ofertas">
+  <div class="titulo-linha">
+    <div>
+      <h1 id="h-ofertas">Ofertas inteligentes</h1>
+      <p class="titulo-sub"><b>Offer Architect</b>, o especialista em ofertas: monta a proposta de cada cliente a partir do que se sabe dele, com nota e objeções previstas. Nenhuma oferta vai para o vendedor antes da sua aprovação.</p>
+    </div>
+    <div class="titulo-acoes">
+      <span class="pilula" id="of-trabalhador"></span>
+      <button class="bt bt-contorno" id="of-esperando">Gerar para quem espera o primeiro contato</button>
+    </div>
+  </div>
+  <nav class="abas-linha" aria-label="Partes das ofertas">
+    <a class="aba-linha" href="#ofertas/propostas" data-ofsub="propostas">Propostas <span class="conta" id="of-conta-propostas"></span></a>
+    <a class="aba-linha" href="#ofertas/catalogo" data-ofsub="catalogo">Pacotes e preços <span class="conta" id="of-conta-catalogo"></span></a>
+    <a class="aba-linha" href="#ofertas/resultados" data-ofsub="resultados">Resultados</a>
+  </nav>
+
+  <div class="ofsub" data-ofsub="propostas">
+    <div class="of-gerar">
+      <label class="campo"><span>Cliente</span><select id="of-lead"></select></label>
+      <label class="campo"><span>Produto</span>
+        <select id="of-produto">
+          <option value="">O agente escolhe</option>
+          <option value="cardapio">Cardápio digital</option>
+          <option value="site">Site completo</option>
+        </select></label>
+      <button class="bt bt-primario" id="of-gerar">Gerar oferta</button>
+    </div>
+    <div class="abas-linha of-filtros" id="of-filtros" role="tablist" aria-label="Filtrar propostas"></div>
+    <div id="of-lista" class="of-lista"></div>
+    <p class="vazio vazio-grande" id="of-vazio" hidden>Nenhuma proposta aqui. Escolha um cliente acima e gere a primeira.</p>
+  </div>
+
+  <div class="secoes ofsub" data-ofsub="catalogo">
+    <section class="secao" aria-labelledby="h-of-regras">
+      <div class="secao-rotulo">
+        <h2 id="h-of-regras">Como o agente trabalha</h2>
+        <p>Quem decide é você. A nota de 0 a 100 é uma heurística para priorizar a revisão, não uma previsão de venda.</p>
+      </div>
+      <div class="secao-painel">
+        <label class="troca"><input type="checkbox" id="of-ligado">
+          <span><b>O vendedor só aborda com a oferta aprovada</b>
+            <small>Desligado, o caçador passa direto para o vendedor, como antes.</small></span></label>
+        <div class="campos tres">
+          <label class="campo"><span>Aprovação</span>
+            <select id="of-aprovacao">
+              <option value="sempre">Sempre por você</option>
+              <option value="score">Automática só para oferta impecável</option>
+            </select>
+            <small>Impecável: sem nenhum problema, pacote aprovado e nota acima do limite.</small></label>
+          <label class="campo"><span>Abaixo desta nota, revisar</span>
+            <input id="of-limite" type="number" min="0" max="100" inputmode="numeric"></label>
+          <label class="campo"><span>Versões por oferta</span>
+            <select id="of-versoes"><option value="1">1</option><option value="2">2</option><option value="3">3</option></select>
+            <small>Até 3. Cada versão a mais gasta mais do seu plano.</small></label>
+        </div>
+        <div class="campos dois">
+          <label class="campo"><span>Taxas obrigatórias</span>
+            <input id="of-taxas" placeholder="Domínio .com.br: R$ 40 por ano, pago ao Registro.br">
+            <small>Se houver, toda apresentação de preço tem de citar.</small></label>
+          <label class="campo"><span>Garantia que você oferece de verdade</span>
+            <input id="of-garantia" placeholder="em branco: a palavra garantia é proibida"></label>
+        </div>
+        <h3 class="subtitulo">Pesos da nota</h3>
+        <div class="campos tres" id="of-pesos"></div>
+      </div>
+    </section>
+    <section class="secao" aria-labelledby="h-of-pacotes">
+      <div class="secao-rotulo">
+        <h2 id="h-of-pacotes">Pacotes</h2>
+        <p>Os preços do cardápio vieram de exemplo, não de pesquisa de mercado. Confira preço, mínimo e funcionalidades e aprove só o que você vai cobrar: oferta com pacote não aprovado não pode ser aprovada.</p>
+        <p>Mexer no preço, no mínimo ou nas funcionalidades de um pacote aprovado tira a aprovação dele.</p>
+      </div>
+      <div class="secao-painel" id="of-pacotes"></div>
+    </section>
+    <section class="secao" aria-labelledby="h-of-bonus">
+      <div class="secao-rotulo">
+        <h2 id="h-of-bonus">Bônus autorizados</h2>
+        <p>Só o que estiver marcado pode aparecer numa oferta. Grátis, desconto ou teste fora daqui fazem a versão ser reescrita ou bloqueada. Desconto que leva um pacote abaixo do mínimo é barrado.</p>
+      </div>
+      <div class="secao-painel" id="of-bonus"></div>
+    </section>
+    <div class="acoes acoes-fim"><button class="bt bt-primario" id="of-salvar">Salvar pacotes e regras</button></div>
+  </div>
+
+  <div class="secoes ofsub" data-ofsub="resultados">
+    <section class="secao" aria-labelledby="h-of-res">
+      <div class="secao-rotulo">
+        <h2 id="h-of-res">O que está funcionando</h2>
+        <p id="of-res-aviso"></p>
+        <p class="dica-analista" id="of-comparacao"></p>
+      </div>
+      <div class="secao-painel"><div id="of-tabelas" class="tabelas-analista"></div></div>
+    </section>
+    <section class="secao" aria-labelledby="h-of-sug">
+      <div class="secao-rotulo">
+        <h2 id="h-of-sug">Sugestões do agente</h2>
+        <p>Ele sugere; você decide. Nada muda no preço nem nas promessas sem você mexer em Pacotes e preços.</p>
+      </div>
+      <div class="secao-painel" id="of-sugestoes"></div>
+    </section>
+  </div>
+</section>
+
+<!-- ══ REDE DE AGENTES (Agent Network) ═════════════════════════════
+     Quem é quem, o que cada agente faz agora, o que está na caixa de
+     cada um, e o Jarvis no centro, com cada comando rastreado. -->
+<section class="tela" id="tela-rede" hidden aria-labelledby="h-rede">
+  <div class="titulo-linha">
+    <div>
+      <h1 id="h-rede">Rede de agentes</h1>
+      <p class="titulo-sub" id="rd-sub">—</p>
+    </div>
+  </div>
+  <div class="abas-linha" id="rd-filtros" role="tablist" aria-label="Filtrar a rede"></div>
+  <div class="rd-topo">
+    <div class="rd-grafo" id="rd-grafo"></div>
+    <aside class="rd-detalhe" id="rd-no" aria-live="polite"></aside>
+  </div>
+  <div class="secoes">
+    <section class="secao" aria-labelledby="h-rd-exec">
+      <div class="secao-rotulo">
+        <h2 id="h-rd-exec">O que o Jarvis executou</h2>
+        <p>Cada comando ganha um correlation id e vira uma execução: as ações, o agente acionado, a tarefa criada no mural, o tempo, o resultado e o erro. Clique para ver o histórico completo.</p>
+      </div>
+      <div class="secao-painel" id="rd-execucoes"></div>
+    </section>
+    <section class="secao" id="rd-sec-tarefas" aria-labelledby="h-rd-tarefas">
+      <div class="secao-rotulo">
+        <h2 id="h-rd-tarefas">Tarefas no mural</h2>
+        <p>O que está na caixa de cada agente agora. Travada é a que desistiu depois de tentar várias vezes.</p>
+      </div>
+      <div class="secao-painel" id="rd-tarefas"></div>
+    </section>
+  </div>
+</section>
+
+<!-- ══ VALUE INTELLIGENCE ═════════════════════════════════════════
+     O que cada produto realmente entrega e por que isso importa para
+     cada restaurante, com a evidência. É daqui que sai o argumento do
+     vendedor, e nada aqui existe sem estar na base de produtos. -->
+<section class="tela vi" id="tela-valor" hidden aria-labelledby="h-valor">
+  <header class="vi-cab">
+    <div>
+      <h1 id="h-valor">Value Intelligence</h1>
+      <p class="vi-sub">Por que cada restaurante precisaria do que vendemos, só com o que o produto faz de verdade. Funcionalidade, vantagem, benefício, valor e evidência; o que não existe aparece como limitação.</p>
+    </div>
+    <p class="vi-estado">Agente: <b id="vi-trabalhador">—</b></p>
+  </header>
+  <nav class="vi-nav" aria-label="Seções da página">
+    <a href="#produto">Produto</a><a href="#mapa">Mapa de valor</a><a href="#restaurante">Restaurante</a><a href="#pontos">Pontuação</a><a href="#brief">Value Brief</a><a href="#historico">Histórico</a>
+  </nav>
+  <section class="vi-sec" id="vi-sec-produto" aria-labelledby="h-vi-produto"><h2 id="h-vi-produto">Product value</h2><div id="vi-produto"></div></section>
+  <section class="vi-sec" id="vi-sec-mapa" aria-labelledby="h-vi-mapa"><h2 id="h-vi-mapa">Value map</h2><div id="vi-mapa"></div></section>
+  <section class="vi-sec" id="vi-sec-restaurante" aria-labelledby="h-vi-lead"><h2 id="h-vi-lead">Lead value analysis</h2><div class="vi-lead-campos" id="vi-lead-campos"></div><div id="vi-lead-corpo"></div></section>
+  <section class="vi-sec" id="vi-sec-pontos" aria-labelledby="h-vi-pontos"><h2 id="h-vi-pontos">Value scoring</h2><div id="vi-pontos"></div></section>
+  <section class="vi-sec" id="vi-sec-brief" aria-labelledby="h-vi-brief"><h2 id="h-vi-brief">Sales brief</h2><div id="vi-brief"></div></section>
+  <section class="vi-sec" id="vi-sec-historico" aria-labelledby="h-vi-hist"><h2 id="h-vi-hist">Value history</h2><div id="vi-historico"></div>
+    <details class="vi-eventos-caixa"><summary>Eventos recentes do agente</summary><ul class="vi-eventos" id="vi-eventos"></ul></details></section>
+</section>
+
+<!-- ══ FINANCEIRO (Revenue Guardian) ══════════════════════════════ -->
+<section class="tela" id="tela-financeiro" hidden aria-labelledby="h-financeiro">
+  <div class="titulo-linha">
+    <div>
+      <h1 id="h-financeiro">Financeiro</h1>
+      <p class="titulo-sub">Revenue Guardian: as mensalidades dos seus clientes, com o que está pendente.</p>
+    </div>
+  </div>
+  <div class="fn-numeros" id="fn-numeros"></div>
+  <p class="ajuda fn-cobrador" id="fn-cobrador"></p>
+  <div class="abas-linha" id="fn-filtros" role="tablist" aria-label="Filtrar as mensalidades"></div>
+  <div class="fn-lista" id="fn-lista"></div>
+</section>
+
+<!-- ══ AJUSTES ════════════════════════════════════════════════════ -->
+<section class="tela" id="tela-ajustes" hidden aria-labelledby="h-ajustes">
+  <div class="titulo-linha">
+    <div>
+      <h1 id="h-ajustes">Ajustes</h1>
+      <p class="titulo-sub">O que os agentes sabem do seu negócio, e como a Matilha roda neste computador.</p>
+    </div>
+  </div>
+  <nav class="abas-linha" aria-label="Partes dos ajustes">
+    <a class="aba-linha" href="#ajustes/negocio" data-sub="negocio">Negócio e preços</a>
+    <a class="aba-linha" href="#ajustes/horarios" data-sub="horarios">Horários</a>
+    <a class="aba-linha" href="#ajustes/chaves" data-sub="chaves">Chaves</a>
+    <a class="aba-linha" href="#ajustes/celular" data-sub="celular">Celular</a>
+    <a class="aba-linha" href="#ajustes/avancado" data-sub="avancado">Avançado</a>
+    <a class="aba-linha" href="#ajustes/dados" data-sub="dados">Seus dados</a>
+  </nav>
+
+  <!-- negócio e preços -->
+  <div class="secoes sub" data-sub="negocio">
+    <section class="secao" aria-labelledby="h-negocio">
+      <div class="secao-rotulo">
+        <h2 id="h-negocio">O seu negócio</h2>
+        <p>É daqui que o vendedor tira o que pode dizer.</p>
+      </div>
+      <div class="secao-painel">
+        <div class="campos dois">
+          <label class="campo"><span>Seu nome</span><input id="a-autor" placeholder="Rafael" autocomplete="name"></label>
+          <label class="campo"><span>Prazo que você promete</span><input id="a-prazo" placeholder="até sexta"></label>
+          <label class="campo"><span>Sites oficiais por semana</span>
+            <input id="a-vagas" type="number" min="0" max="50" value="3" inputmode="numeric">
+            <small>A escassez que o vendedor pode citar, porque é cumprida: a Matilha conta as vendas da semana, e quem fecha depois de bater o número começa na segunda seguinte. Em 0, ele não fala em vaga.</small></label>
+          <label class="campo"><span>Chave Pix</span>
+            <input id="a-pix" placeholder="CPF, CNPJ, e-mail ou celular" autocomplete="off">
+            <small>Só vai para o cliente depois que ele aprovar o site oficial. Em branco, você manda à mão.</small></label>
+          <label class="campo"><span>Dias que a prévia fica no ar</span>
+            <input id="a-dias" type="number" min="1" max="60" value="7" inputmode="numeric">
+            <small>A Matilha tira do ar de verdade no dia marcado.</small></label>
+          <label class="campo"><span>Senha do painel (opcional)</span>
+            <input id="a-senha" type="password" autocomplete="current-password">
+            <small>Só se você pôs <code>PAINEL_SENHA</code> no <code>.env</code>.</small></label>
+        </div>
+        <input id="a-preco" type="hidden"><input id="a-mensalidade" type="hidden">
+        <div class="acoes"><button class="bt bt-contorno" id="a-salvar">Salvar</button></div>
+      </div>
+    </section>
+
+    <section class="secao" aria-labelledby="h-precos">
+      <div class="secao-rotulo">
+        <h2 id="h-precos">Preços e o que oferecer</h2>
+        <p>Os únicos valores que o vendedor pode dizer. Qualquer outro número em reais faz a mensagem ser reprovada e reescrita antes de sair.</p>
+        <div class="previa-oferta">
+          <span class="previa-rotulo">O que o cliente vai ouvir</span>
+          <div id="p-previa-comida"></div>
+          <div id="p-previa-outro"></div>
+        </div>
+      </div>
+      <div class="secao-painel">
+        <label class="campo"><span>Como você cobra</span>
+          <select id="p-cobranca">
+            <option value="setup_mais_mensal">Para fazer + manutenção por mês</option>
+            <option value="mensal">Só mensalidade (fazer está incluído)</option>
+          </select>
+          <small>No modo "só mensalidade", o vendedor diz que fazer o site está incluído e não cita preço de entrada.</small></label>
+        <h3 class="subtitulo">Site completo</h3>
+        <div class="campos dois">
+          <label class="campo"><span>Para fazer (uma vez)</span><input id="p-site-setup" placeholder="R$ 350">
+            <small class="so-setup">Ignorado no modo "só mensalidade".</small></label>
+          <label class="campo"><span>Por mês</span><input id="p-site-mensal" placeholder="R$ 127 por mês"></label>
+        </div>
+        <h3 class="subtitulo">Cardápio digital</h3>
+        <p class="ajuda">Oferecido só para quem vende comida, junto com o site completo: o vendedor apresenta as duas opções e deixa o dono escolher. Em branco, não oferece. A demonstração de restaurante já sai com o cardápio lido das fotos do Instagram e do Google Maps dele; quando ele fecha, o vendedor pede a foto do cardápio de hoje, e você confere os preços antes de ir ao ar.</p>
+        <div class="campos dois">
+          <label class="campo"><span>Para fazer (uma vez)</span><input id="p-card-setup" placeholder="R$ 150">
+            <small class="so-setup">Ignorado no modo "só mensalidade".</small></label>
+          <label class="campo"><span>Por mês</span><input id="p-card-mensal" placeholder="R$ 59 por mês"></label>
+        </div>
+        <label class="campo"><span>Quais ramos contam como "comida"</span>
+          <textarea id="p-nichos" rows="2" placeholder="restaurante, pizzaria, lanchonete, hamburgueria, açaí…"></textarea>
+          <small>Separe por vírgula. Em branco, vale a lista padrão (restaurante, pizzaria, lanchonete, hamburgueria, açaí, padaria, bar, sushi…).</small></label>
+        <h3 class="subtitulo">O que acompanha o preço</h3>
+        <label class="campo"><span>O que a mensalidade cobre</span>
+          <textarea id="p-inclui" rows="2" placeholder="domínio próprio (.com.br), alterações sem limite de texto, foto, preço e cardápio, e o site ligado à ficha do Google"></textarea>
+          <small>É a pergunta que todo dono faz: "pago por mês pelo quê?". Em branco, vale o que você escolheu: domínio próprio (.com.br), alterações sem limite de texto, foto, preço e cardápio, e o site ligado à ficha do Google.</small></label>
+        <label class="campo"><span>Como o cliente paga</span>
+          <input id="p-pagamento" placeholder="só paga depois de ver o site oficial pronto e aprovar: o valor de fazer no Pix, e a mensalidade a partir de quando o site entra no ar">
+          <small>Em branco, vale o que está escrito aqui em cinza, que foi o que você escolheu: o cliente só paga depois de aprovar. É o gatilho de risco zero.</small></label>
+        <div class="acoes"><button class="bt bt-contorno" id="p-salvar">Salvar preços</button></div>
+      </div>
+    </section>
+
+    <section class="secao" aria-labelledby="h-lembretes">
+      <div class="secao-rotulo">
+        <h2 id="h-lembretes">Lembretes</h2>
+        <p>A maioria das respostas vem no segundo contato. Mas lembrete demais é spam, e spam derruba o número: por isso são poucos, com hora certa, e param no primeiro sinal do cliente.</p>
+      </div>
+      <div class="secao-painel">
+        <label class="troca">
+          <input type="checkbox" id="l-sem-resposta" checked>
+          <span><b>Um lembrete para quem não respondeu o primeiro contato</b>
+            <small>Dois dias depois, curto, com a porta aberta para dizer não. Só um.</small></span>
+        </label>
+        <label class="troca">
+          <input type="checkbox" id="l-demo" checked>
+          <span><b>Dois lembretes para quem recebeu a demonstração e ficou calado</b>
+            <small>Um dia depois do link, e um dia antes de a demonstração sair do ar, com a data de verdade.</small></span>
+        </label>
+        <label class="troca">
+          <input type="checkbox" id="l-cobrador" checked>
+          <span><b>Cobrar a mensalidade pelo WhatsApp</b>
+            <small>Todo mês, no dia em que o cliente aprovou o site: o valor e a sua chave Pix. Três dias depois, se não aparecer o pagamento, um lembrete gentil. Aos sete dias, nenhuma mensagem a mais: chama você. Quem marca "Pagou" é você.</small></span>
+        </label>
+        <label class="troca">
+          <input type="checkbox" id="l-relatorio" checked>
+          <span><b>Relatório do mês para o cliente</b>
+            <small>Nos três primeiros dias do mês: quantas pessoas clicaram em pedir pelo WhatsApp no site dele, as mudanças feitas e o cardápio atualizado. Os cliques são contados no Netlify Forms da sua conta (até 100 por mês por site no plano grátis).</small></span>
+        </label>
+        <div class="acoes"><button class="bt bt-contorno" id="l-salvar">Salvar lembretes</button></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- horários -->
+  <div class="secoes sub" data-sub="horarios" hidden>
+    <section class="secao" aria-labelledby="h-falar">
+      <div class="secao-rotulo">
+        <h2 id="h-falar">Falar com cliente</h2>
+        <p>Mandar mensagem às 3 da manhã é a melhor forma de ser bloqueado. O relógio é o deste computador.</p>
+      </div>
+      <div class="secao-painel">
+        <div class="campos tres">
+          <label class="campo"><span>Começa</span><input id="h-falar-inicio" type="time" value="09:00"></label>
+          <label class="campo"><span>Para</span><input id="h-falar-fim" type="time" value="19:00"></label>
+          <label class="campo"><span>Dias</span><input id="h-falar-dias" placeholder="seg, ter, qua, qui, sex, sab"></label>
+        </div>
+      </div>
+    </section>
+    <section class="secao" aria-labelledby="h-trab">
+      <div class="secao-rotulo">
+        <h2 id="h-trab">Caçar, montar site e publicar</h2>
+        <p>Isto não incomoda ninguém, então a janela pode ser larga. Se o horário de parar for menor que o de começar (22:00 às 06:00), ela atravessa a madrugada.</p>
+      </div>
+      <div class="secao-painel">
+        <div class="campos tres">
+          <label class="campo"><span>Começa</span><input id="h-trab-inicio" type="time" value="07:00"></label>
+          <label class="campo"><span>Para</span><input id="h-trab-fim" type="time" value="23:00"></label>
+          <label class="campo"><span>Dias</span><input id="h-trab-dias" placeholder="dom, seg, ter, qua, qui, sex, sab"></label>
+        </div>
+        <div class="acoes"><button class="bt bt-contorno" id="h-salvar">Salvar horários</button></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- chaves -->
+  <div class="secoes sub" data-sub="chaves" hidden>
+    <section class="secao" aria-labelledby="h-chaves">
+      <div class="secao-rotulo">
+        <h2 id="h-chaves">Chaves</h2>
+        <p>Cole aqui e a Matilha escreve no <code>.env</code> por você. Campo em branco não apaga o que já está lá. O painel nunca recebe uma chave de volta: só mostra os quatro últimos caracteres.</p>
+      </div>
+      <div class="secao-painel">
+        <div class="campos" id="k-campos"></div>
+        <div class="acoes"><button class="bt bt-contorno" id="k-salvar">Gravar chaves</button></div>
+        <p class="nota" id="k-recado"></p>
+      </div>
+    </section>
+  </div>
+
+  <!-- celular -->
+  <div class="secoes sub" data-sub="celular" hidden>
+    <section class="secao" id="cartao-ao-vivo" aria-labelledby="h-aovivo">
+      <div class="secao-rotulo">
+        <h2 id="h-aovivo">Acompanhar pelo celular</h2>
+        <p>Uma tela só de olhar: a meta, o que cada agente está fazendo e as últimas falas. Atualiza sozinha a cada 5 segundos.</p>
+      </div>
+      <div class="secao-painel">
+        <div class="qr-linha">
+          <div id="v-qr" class="qr">gerando…</div>
+          <div class="qr-texto">
+            <p>Aponte a câmera, ou abra no celular:</p>
+            <p class="endereco" id="v-url">—</p>
+            <p class="nota" id="v-onde"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="secao" id="cartao-celular" aria-labelledby="h-painelcel">
+      <div class="secao-rotulo">
+        <h2 id="h-painelcel">O painel inteiro no celular</h2>
+        <p>O mesmo painel, com os botões, dentro do seu wi-fi. Quem estiver no seu wi-fi chega na porta, e sem o PIN não passa. Oito PINs errados deixam o aparelho 15 minutos de fora.</p>
+      </div>
+      <div class="secao-painel">
+        <div class="qr-linha">
+          <div id="c-qr" class="qr">gerando…</div>
+          <div class="qr-texto">
+            <p>Ou digite no navegador do celular:</p>
+            <p class="endereco" id="c-endereco">—</p>
+            <p>e use o PIN</p>
+            <p class="pin num" id="c-pin">······</p>
+            <p class="nota" id="c-aparelhos"></p>
+            <div class="acoes"><button class="bt bt-texto" id="c-novo-pin">Trocar o PIN</button></div>
+            <p class="nota">Trocar o PIN desconecta todos os celulares que já entraram.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="secao" id="cartao-tunel" aria-labelledby="h-tunel">
+      <div class="secao-rotulo">
+        <h2 id="h-tunel">Ver de fora de casa</h2>
+        <p>Os QRs acima só funcionam no seu wi-fi. Isto abre um caminho de dentro para fora, pela Cloudflare, e devolve um endereço https que funciona de qualquer lugar. Aberto, o PIN é a única tranca. O endereço muda a cada reinício.</p>
+      </div>
+      <div class="secao-painel">
+        <div class="acoes">
+          <button class="bt bt-contorno" id="t-ligar">Abrir para fora</button>
+          <button class="bt bt-texto bt-perigo" id="t-desligar" hidden>Fechar</button>
+        </div>
+        <p class="nota" id="t-estado">Fechado.</p>
+        <div class="qr-linha" id="t-pronto" hidden>
+          <div id="t-qr" class="qr"></div>
+          <div class="qr-texto">
+            <p>Guarde este endereço antes de sair:</p>
+            <p class="endereco" id="t-url">—</p>
+            <p>e o PIN</p>
+            <p class="pin num" id="t-pin">······</p>
+          </div>
+        </div>
+        <label class="troca">
+          <input type="checkbox" id="t-sempre">
+          <span><b>Abrir sozinho toda vez que a Matilha ligar</b>
+            <small>É o que faz o painel estar lá quando você já está na rua. Na primeira vez ele baixa uns 40 MB da Cloudflare.</small></span>
+        </label>
+      </div>
+    </section>
+  </div>
+
+  <!-- avançado -->
+  <div class="secoes sub" data-sub="avancado" hidden>
+    <section class="secao" aria-labelledby="h-refs">
+      <div class="secao-rotulo">
+        <h2 id="h-refs">Sites de referência do estúdio</h2>
+        <p>Antes de montar cada demonstração, o Claude Code olha prints de sites de marcas grandes do mesmo ramo, para saber o nível que se espera. É referência: nada delas (logo, texto, foto, cor) entra no site do cliente. Os prints são guardados e refeitos a cada 30 dias.</p>
+      </div>
+      <div class="secao-painel">
+        <div id="r-lista" class="campos"></div>
+        <div class="acoes">
+          <button class="bt bt-contorno" id="r-salvar">Salvar as listas</button>
+          <button class="bt bt-contorno" id="r-prints">Tirar os prints agora</button>
+        </div>
+        <p class="nota" id="r-estado"></p>
+      </div>
+    </section>
+
+    <section class="secao" aria-labelledby="h-estudio">
+      <div class="secao-rotulo">
+        <h2 id="h-estudio">O estúdio de sites</h2>
+        <p>Quem monta os sites de demonstração é o Claude Code, aqui no computador, com a sua assinatura. É o mesmo que escreve no WhatsApp quando o Claude está conectado.</p>
+      </div>
+      <div class="secao-painel">
+        <div class="acoes"><button class="bt bt-contorno" id="cc-conferir">Conferir se está pronto</button></div>
+        <p class="nota" id="cc-estado"></p>
+      </div>
+    </section>
+    <section class="secao" aria-labelledby="h-motor">
+      <div class="secao-rotulo">
+        <h2 id="h-motor">Ligar e desligar tudo</h2>
+        <p>"Soltar a matilha" já liga os agentes. Isto aqui para tudo, inclusive as respostas de quem já está conversando.</p>
+      </div>
+      <div class="secao-painel">
+        <p class="nota" id="f-estado">—</p>
+        <div class="acoes">
+          <button class="bt bt-contorno" id="f-ligar">Ligar os agentes</button>
+          <button class="bt bt-texto bt-perigo" id="f-desligar">Desligar tudo</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- seus dados -->
+  <div class="secoes sub" data-sub="dados" hidden>
+    <section class="secao" aria-labelledby="h-dados">
+      <div class="secao-rotulo">
+        <h2 id="h-dados">Os seus dados</h2>
+        <p>Tudo em <code>dados/dados.json</code>, neste computador. Cada gravação guarda a anterior em <code>dados/antes.json</code>. Mesmo assim, exporte de vez em quando e guarde fora da pasta.</p>
+      </div>
+      <div class="secao-painel">
+        <p class="nota" id="a-conta"></p>
+        <div class="acoes">
+          <button class="bt bt-contorno" id="a-exportar">Exportar tudo</button>
+          <label class="bt bt-contorno arquivo">Importar<input id="a-importar" type="file" accept="application/json" hidden></label>
+        </div>
+      </div>
+    </section>
+    <section class="secao" aria-labelledby="h-apagar">
+      <div class="secao-rotulo">
+        <h2 id="h-apagar">Apagar os clientes</h2>
+        <p>Tira todos os clientes do funil. Os ajustes ficam. Não tem volta: exporte antes.</p>
+      </div>
+      <div class="secao-painel">
+        <div class="acoes"><button class="bt bt-texto bt-perigo" id="a-limpar">Apagar todos os clientes</button></div>
+      </div>
+    </section>
+  </div>
+</section>
+
+</main>
+
+<!-- ══ NO CELULAR: as telas embaixo ═══════════════════════════════ -->
+<nav class="abas-baixo" aria-label="Telas">
+  <a href="#hoje" data-tela="hoje"><svg class="ic"><use href="#i-hoje"/></svg>Hoje</a>
+  <a href="#jarvis" data-tela="jarvis"><svg class="ic"><use href="#i-jarvis"/></svg>Jarvis</a>
+  <a href="#escritorio" data-tela="escritorio"><svg class="ic"><use href="#i-escritorio"/></svg>Escritório</a>
+  <a href="#cacada" data-tela="cacada"><svg class="ic"><use href="#i-cacada"/></svg>Caçada</a>
+  <a href="#whatsapp" data-tela="whatsapp"><svg class="ic"><use href="#i-whatsapp"/></svg>WhatsApp</a>
+  <a href="#clientes" data-tela="clientes"><svg class="ic"><use href="#i-clientes"/></svg>Clientes</a>
+  <a href="#ofertas" data-tela="ofertas"><svg class="ic"><use href="#i-ofertas"/></svg>Ofertas</a>
+  <a href="#valor" data-tela="valor"><svg class="ic"><use href="#i-valor"/></svg>Valor</a>
+  <a href="#rede" data-tela="rede"><svg class="ic"><use href="#i-rede"/></svg>Rede</a>
+  <a href="#financeiro" data-tela="financeiro"><svg class="ic"><use href="#i-financeiro"/></svg>Financeiro</a>
+  <a href="#ajustes" data-tela="ajustes"><svg class="ic"><use href="#i-ajustes"/></svg>Ajustes</a>
+</nav>
+</div>
+
+<dialog id="ficha" aria-labelledby="ficha-titulo">
+  <form method="dialog" class="ficha-fechar"><button class="bt bt-texto bt-icone" aria-label="Fechar a ficha"><svg class="ic"><use href="#i-fechar"/></svg></button></form>
+  <div id="ficha-corpo"></div>
+</dialog>
+
+<dialog id="rd-exec" class="rd-exec" aria-labelledby="rd-exec-titulo">
+  <form method="dialog" class="ficha-fechar"><button class="bt bt-texto bt-icone" aria-label="Fechar o histórico"><svg class="ic"><use href="#i-fechar"/></svg></button></form>
+  <div id="rd-exec-corpo"></div>
+</dialog>
+
+<dialog id="vi-hist" class="rd-exec vi-dialogo" aria-labelledby="vi-hist-titulo">
+  <form method="dialog" class="ficha-fechar"><button class="bt bt-texto bt-icone" aria-label="Fechar o histórico"><svg class="ic"><use href="#i-fechar"/></svg></button></form>
+  <div id="vi-hist-corpo"></div>
+</dialog>
+
+<div id="recado" class="recado" role="status" hidden></div>
+<script src="/app.js" type="module"></script>
+</body>
+</html>

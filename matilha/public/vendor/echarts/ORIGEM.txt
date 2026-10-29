@@ -1,0 +1,2 @@
+Apache ECharts 6.1.0 — https://github.com/apache/echarts (licença Apache 2.0)
+Arquivo: dist/echarts.esm.min.js do pacote npm "echarts" 6.1.0, sem mudanças.

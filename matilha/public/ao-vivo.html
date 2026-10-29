@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#f8f9fa">
+<title>Matilha ao vivo</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M3 27 9.5 7 16 27Z M10 27 16.5 4 23 27Z M17 27 22.5 9 29 27Z' fill='%23f2600c' stroke='%23f8f9fa' stroke-width='1.6' stroke-linejoin='round'/></svg>">
+<style>
+  /* Uma tela para olhar de longe, no celular, com uma mão só. Número
+     grande, texto curto, nada em que clicar. As mesmas cores e a mesma
+     letra do painel: duas telas do mesmo programa não podem parecer
+     de aplicativos diferentes. */
+  @font-face{font-family:"DM Sans";font-weight:400 700;font-display:swap;src:url("/fontes/dm-sans-latin.woff2") format("woff2")}
+  :root{--ground:#f8f9fa;--surface:#fff;--raised:#f3f4f6;--border:#e5e7eb;--rule:#eef0f2;
+    --text:#111827;--muted:#5f6672;--faint:#9aa1ab;--accent:#f2600c;--accent-soft:#fff3ea;
+    --accent-track:#ffdcc4;--accent-ink:#8a3204;--positive:#247b50;--positive-soft:#dcfce7;--positive-ink:#14532d;
+    --warning:#b45309;--warning-soft:#fffbeb;--warning-ink:#92400e}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--ground);color:var(--text);padding:0 16px 40px;
+    font:400 15px/1.5 "DM Sans",Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+    -webkit-font-smoothing:antialiased;overflow-x:hidden}
+  .env{width:min(100%,640px);margin-inline:auto}
+  .topo{display:flex;align-items:center;justify-content:space-between;gap:10px;height:56px;margin-bottom:8px}
+  .marca{display:flex;align-items:center;gap:9px;font-weight:700;font-size:16px;letter-spacing:-.02em}
+  .marca svg{width:22px;height:22px;fill:var(--accent);stroke:var(--ground);stroke-width:1.6;stroke-linejoin:round}
+  .marca span{font-weight:500;color:var(--muted)}
+  .pulso{display:inline-flex;align-items:center;gap:7px;height:28px;padding:0 11px 0 9px;border-radius:999px;
+    background:var(--raised);color:#374151;font-size:13px;font-weight:500}
+  .pulso i{width:8px;height:8px;border-radius:50%;background:var(--faint)}
+  .pulso.no-ar{background:var(--positive-soft);color:var(--positive-ink)}
+  .pulso.no-ar i{background:var(--positive)}
+  .cartao{background:var(--surface);border:1px solid var(--border);border-radius:8px}
+  .placar{padding:20px;margin-bottom:12px}
+  .rotulo{font-size:13px;font-weight:500;color:var(--muted)}
+  .conta{font-size:clamp(3rem,16vw,4.2rem);font-weight:700;line-height:1.05;letter-spacing:-.04em;
+    margin:4px 0 2px;font-variant-numeric:tabular-nums}
+  .conta small{font-size:.36em;font-weight:500;color:var(--muted);letter-spacing:0}
+  .barra{height:8px;background:var(--accent-track);border-radius:999px;overflow:hidden;margin-top:12px}
+  .barra i{display:block;height:100%;width:0;background:var(--accent);border-radius:999px;transition:width .4s}
+  .estado{margin-top:10px;font-size:14px;color:var(--muted)}
+  .estado.batida{color:var(--positive-ink);font-weight:600}
+  .numeros{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);
+    border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:8px}
+  .numeros div{background:var(--surface);padding:12px 12px 14px}
+  .numeros b{display:block;font-size:24px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.2}
+  .numeros span{display:block;font-size:12px;color:var(--muted)}
+  h2{font-size:15px;font-weight:600;margin:22px 0 8px}
+  .setores{padding:2px 14px}
+  .setor{padding:11px 0;border-top:1px solid var(--rule)}
+  .setor:first-child{border-top:0}
+  .setor-cab{display:flex;align-items:baseline;gap:10px}
+  .setor b{font-weight:600;white-space:nowrap}
+  .setor .agora{font-size:13px;color:var(--muted);margin-left:auto;text-align:right;min-width:0;overflow-wrap:anywhere}
+  .ponto{width:8px;height:8px;border-radius:50%;background:#d1d5db;flex:none;align-self:center}
+  .ponto.trabalhando{background:var(--positive)}
+  .ponto.dormindo{background:var(--warning)}
+  .janelas{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 0 18px;list-style:none}
+  .janelas li{display:flex;align-items:center;gap:6px;max-width:100%;height:28px;padding:0 8px 0 4px;border-radius:6px;
+    border:1px solid var(--border);font-size:12px;color:var(--muted)}
+  .janelas li span{display:grid;place-items:center;width:20px;height:20px;border-radius:4px;background:var(--raised);
+    font-weight:600;font-size:11px;color:#374151;flex:none}
+  .janelas li.ativa{background:var(--accent-soft);border-color:var(--accent-track);color:var(--accent-ink)}
+  .janelas li.ativa span{background:var(--accent);color:#1b0b02}
+  .janelas li em{font-style:normal;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .falas{display:grid;gap:8px}
+  .fala{padding:11px 14px}
+  .fala .quem{font-size:12px;color:var(--muted);margin-bottom:3px}
+  .fala .quem b{color:var(--text);font-weight:600}
+  .fala.dono{border-left:3px solid var(--faint)}
+  .fala.voce{border-left:3px solid var(--accent)}
+  .fala p{font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere}
+  .vazio{color:var(--muted);font-size:14px;padding:12px 0}
+  @media (prefers-reduced-motion:reduce){.barra i{transition:none}}
+</style>
+</head>
+<body>
+<div class="env">
+  <header class="topo">
+    <div class="marca"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M3 27 9.5 7 16 27Z M10 27 16.5 4 23 27Z M17 27 22.5 9 29 27Z"/></svg>Matilha <span>ao vivo</span></div>
+    <div class="pulso" id="pulso" role="status"><i></i><span>ligando…</span></div>
+  </header>
+
+  <main>
+    <section class="cartao placar" aria-label="Meta de hoje">
+      <div class="rotulo">Vendas hoje</div>
+      <div class="conta"><span id="vendas">—</span><small id="de-quantas"></small></div>
+      <div class="barra"><i id="barra"></i></div>
+      <p class="estado" id="estado-meta">—</p>
+    </section>
+
+    <div class="numeros">
+      <div><b id="achados">—</b><span>caçados hoje</span></div>
+      <div><b id="contatos">—</b><span>abordados hoje</span></div>
+      <div><b id="conversando">—</b><span>conversando</span></div>
+    </div>
+
+    <h2>A matilha agora</h2>
+    <div class="cartao setores" id="setores"></div>
+
+    <h2>Últimas falas</h2>
+    <div class="falas" id="falas"></div>
+  </main>
+</div>
+
+<script type="module">
+const $ = (s) => document.querySelector(s);
+const esc = (t) => String(t ?? '').replace(/[&<>"]/g, (c) =>
+  ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+const quando = (ms) => {
+  if (!ms) return '';
+  const s = Math.round((Date.now() - ms) / 1000);
+  if (s < 60) return `há ${s} s`;
+  if (s < 3600) return `há ${Math.round(s / 60)} min`;
+  return `há ${Math.round(s / 3600)} h`;
+};
+
+// Os setores têm nome de pasta. Na tela, como se fala.
+const NOMES = { cacador: 'Os caçadores', vendedor: 'O vendedor', estudio: 'O estúdio', publicador: 'O publicador' };
+
+async function gira() {
+  try {
+    const resposta = await fetch('/api/ao-vivo');
+    if (!resposta.ok) throw new Error(resposta.status);
+    const v = await resposta.json();
+
+    const op = v.operacao || { meta: { vendas: 0 }, hoje: {}, batida: false };
+    $('#vendas').textContent = op.hoje?.vendas ?? 0;
+    $('#de-quantas').textContent = ` de ${op.meta?.vendas ?? 0}`;
+    const parte = op.meta?.vendas ? Math.min(1, (op.hoje?.vendas || 0) / op.meta.vendas) : 0;
+    $('#barra').style.width = `${parte * 100}%`;
+
+    const estado = $('#estado-meta');
+    estado.classList.toggle('batida', Boolean(op.batida));
+    estado.textContent = op.batida
+      ? 'Meta batida. A matilha parou de caçar e de abordar; as conversas abertas continuam.'
+      : op.ligada
+        ? `Matilha solta, caçando e abordando. Faltam ${op.faltam} venda(s).`
+        : `Matilha recolhida${op.parou_por ? `: ${op.parou_por}` : '.'}`;
+
+    $('#achados').textContent = op.hoje?.achados ?? 0;
+    $('#contatos').textContent = op.hoje?.contatos ?? 0;
+    $('#conversando').textContent = (v.funil?.conversando || 0) + (v.funil?.abordado || 0);
+
+    const m = v.matilha || {};
+    const andando = Array.isArray(m.emAndamento) ? m.emAndamento : [];
+    $('#setores').innerHTML = (v.setores || []).map((s) => {
+      const classe = s.fazendo ? 'trabalhando' : s.dormindoAte ? 'dormindo' : '';
+      const agora = s.fazendo ? esc(s.fazendo) : s.dormindoAte ? 'fora do horário' : `${s.feitas || 0} feitas`;
+      const janelas = s.setor === 'cacador' && andando.some(Boolean)
+        ? `<ol class="janelas">${andando.map((b, i) => `<li class="${b ? 'ativa' : ''}"><span>${i + 1}</span><em>${esc(b || 'parada')}</em></li>`).join('')}</ol>`
+        : '';
+      return `<div class="setor"><div class="setor-cab"><i class="ponto ${classe}"></i><b>${esc(NOMES[s.setor] || s.setor)}</b>
+        <span class="agora">${agora}</span></div>${janelas}</div>`;
+    }).join('') || '<div class="vazio">Os agentes estão desligados.</div>';
+
+    $('#falas').innerHTML = (v.falas || []).map((f) => `
+      <div class="cartao fala ${f.quem === 'dono' ? 'dono' : 'voce'}">
+        <div class="quem"><b>${esc(f.nome)}</b> · ${f.quem === 'dono' ? 'cliente' : 'vendedor'} · ${quando(f.quando)}</div>
+        <p>${esc(f.texto)}</p>
+      </div>`).join('') || '<div class="vazio">Nenhuma conversa ainda.</div>';
+
+    const pulso = $('#pulso');
+    pulso.className = `pulso${op.ligada ? ' no-ar' : ''}`;
+    pulso.querySelector('span').textContent = op.ligada ? 'Matilha solta' : 'Matilha recolhida';
+  } catch (e) {
+    // 401: a ficha do celular venceu. A porta do PIN está na raiz.
+    if (String(e.message) === '401') { location.href = '/'; return; }
+    $('#pulso').className = 'pulso';
+    $('#pulso span').textContent = 'sem resposta';
+  }
+}
+
+await gira();
+setInterval(gira, 5000);
+</script>
+</body>
+</html>

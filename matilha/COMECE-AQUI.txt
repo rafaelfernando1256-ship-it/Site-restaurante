@@ -1,0 +1,73 @@
+MATILHA + JARVIS — INSTALAR (OU ATUALIZAR)
+==========================================
+
+Três passos. Serve para instalar pela primeira vez e para atualizar.
+
+
+1. DEIXE O ZIP EM DOWNLOADS
+---------------------------
+
+O matilha.zip só precisa estar na pasta Downloads, que é onde o
+navegador já salva. Não precisa extrair nem desbloquear nada.
+
+
+2. ABRA O POWERSHELL
+--------------------
+
+Aperte as teclas  Windows + X  e clique em  Terminal
+(no Windows 10: Windows PowerShell).
+
+
+3. COLE ESTA LINHA E APERTE ENTER
+---------------------------------
+
+$z=(Get-ChildItem "$((New-Object -ComObject Shell.Application).NameSpace('shell:Downloads').Self.Path)\matilha*.zip"|Sort-Object LastWriteTime|Select-Object -Last 1).FullName;if(!$z){Write-Host 'Nao achei o matilha.zip na pasta Downloads.' -ForegroundColor Red}else{$t="$env:TEMP\matilha-novo";Remove-Item $t -Recurse -Force -ErrorAction SilentlyContinue;Expand-Archive $z $t;$MatilhaOrigem="$t\matilha";Invoke-Expression (Get-Content -Raw -Encoding UTF8 "$t\matilha\instalar.ps1")}
+
+(Para copiar: clique três vezes na linha, Ctrl+C. No Terminal, clique
+com o botão direito para colar, e Enter.)
+
+Ela faz tudo sozinha:
+  · acha o zip mais novo em Downloads e extrai;
+  · se você já tem a Matilha, atualiza no mesmo lugar, sem mexer nos
+    seus clientes, nas chaves e no WhatsApp; senão, instala na pasta
+    Matilha, dentro da sua pasta de usuário;
+  · instala o Node.js e o Claude Code se faltarem (o Windows pede
+    permissão uma vez: clique em Sim);
+  · cria o atalho "Matilha" na área de trabalho e abre o painel.
+
+O painel abre na tela COMEÇAR: a lista do que falta configurar (as
+chaves, a sua conta do Claude, o WhatsApp, o celular), com o botão de
+cada passo e o link de onde pegar cada chave.
+
+
+DAÍ EM DIANTE
+-------------
+
+Duplo clique no atalho "Matilha" da área de trabalho. A janela preta
+que abre É a Matilha rodando: para desligar, feche ela.
+
+
+POR QUE COLAR UMA LINHA, E NÃO CLICAR NUM INSTALADOR
+----------------------------------------------------
+
+O Windows 11 (Controle de Aplicativo Inteligente) bloqueia instalador,
+.bat, .cmd e roteiro que vieram da internet, e não tem como liberar um
+só. Uma linha colada não "veio da internet": é você digitando. Ela não
+desliga proteção nenhuma do Windows.
+
+
+JÁ TINHA EXTRAÍDO O ZIP?
+------------------------
+
+Também dá: abra a pasta extraída (a que tem o instalar.ps1), clique na
+barra de endereço lá em cima, digite  powershell  e Enter. Na janela
+que abrir, cole:
+
+Invoke-Expression (Get-Content -Raw -Encoding UTF8 .\instalar.ps1)
+
+
+SE DER ERRO
+-----------
+
+A janela mostra o motivo em português e o que fazer. Se não der para
+entender, tire uma foto da janela e me mande.

@@ -1,0 +1,357 @@
+/* O JARVIS — núcleo vivo.
+   Uma coisa só chama atenção: o núcleo de luz. A cor dele é informação
+   (o que o Jarvis está fazendo agora); o resto da tela fica quieto.
+   Tudo em azul: cada estado é um tom diferente da mesma família. */
+.jv{
+  --noite:#121826; --painel:#182033; --painel-2:#1e2840; --linha:#28324c;
+  --texto:#e6eefc; --suave:#9aa8c2; --apagado:#6b7792;
+  --azul:#4da3ff; --indigo:#8f9cff; --celeste:#7cc8ff; --ciano:#4fd6e8; --gelo:#c3e4ff; --erro:#ff6b6b;
+  --estado:var(--azul);
+  /* dados: as 4 primeiras cores da paleta categórica para fundo escuro, validadas contra #121826 */
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500;
+  --grade:#222b40; --eixo:#39445e; --apagado-dado:#46506a;
+  --serifa:"Newsreader", Georgia, "Times New Roman", serif;
+  --sans:"Manrope", "DM Sans", system-ui, sans-serif;
+  position:relative; display:grid; grid-template-columns:250px minmax(0,1fr) 300px; gap:0;
+  height:calc(100vh - var(--topo, 64px)); min-height:560px; background:var(--noite); color:var(--texto);
+  font:15px/1.5 var(--sans); border-radius:12px; overflow:hidden;
+}
+.jv[data-estado="ouvindo"]{--estado:var(--azul)}
+.jv[data-estado="pensando"]{--estado:var(--indigo)}
+.jv[data-estado="falando"]{--estado:var(--celeste)}
+.jv[data-estado="executando"]{--estado:var(--ciano)}
+.jv[data-estado="confirmar"]{--estado:var(--gelo)}
+.jv.cheio{height:100vh; height:100svh; border-radius:0}
+.jv *{box-sizing:border-box}
+.jv button{font:inherit; color:inherit; cursor:pointer}
+.jv :focus-visible{outline:2px solid var(--estado); outline-offset:2px}
+
+/* laterais */
+.jv-lado{padding:22px 20px; display:flex; flex-direction:column; gap:22px; border-color:var(--linha); border-style:solid; border-width:0; min-width:0; overflow:auto}
+.jv-esq{border-right-width:1px}
+.jv-dir{border-left-width:1px}
+.jv-marca{display:flex; align-items:baseline; gap:10px}
+.jv-marca b{font:500 26px/1 var(--serifa); letter-spacing:.01em}
+.jv-marca span{color:var(--suave); font-size:13px}
+.jv-bloco h3{margin:0 0 10px; font:600 13px/1.3 var(--sans); color:var(--suave)}
+.jv-lista{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:2px}
+.jv-lista li{display:grid; grid-template-columns:10px 1fr; gap:10px; align-items:baseline; padding:7px 0; border-bottom:1px solid var(--linha)}
+.jv-lista li:last-child{border-bottom:0}
+.jv-ponto{width:8px; height:8px; border-radius:50%; background:var(--apagado); transform:translateY(-1px)}
+.jv-ponto.ok{background:var(--ciano)} .jv-ponto.anda{background:var(--azul)} .jv-ponto.ruim{background:var(--erro)}
+.jv-lista b{font-weight:600; font-size:14px}
+.jv-lista small{display:block; color:var(--suave); font-size:12.5px; line-height:1.4; overflow-wrap:anywhere}
+.jv-texto-suave{color:var(--suave); font-size:13px; margin:0}
+.jv-bt{border:1px solid var(--linha); background:var(--painel); border-radius:8px; padding:8px 12px; font-size:13.5px}
+.jv-bt:hover{background:var(--painel-2)}
+.jv-bt[disabled]{opacity:.55; cursor:default}
+.jv-acoes{display:flex; flex-wrap:wrap; gap:6px; margin-top:8px}
+.jv-link{color:var(--texto); text-underline-offset:3px}
+
+/* o pedido esperando confirmação */
+.jv-pede{border:1px solid var(--gelo); border-radius:10px; padding:14px; background:rgba(195,228,255,.07)}
+.jv-pede p{margin:0 0 6px; overflow-wrap:anywhere}
+.jv-pede strong{color:var(--gelo); font-weight:600}
+
+/* o centro */
+.jv-centro{display:grid; grid-template-columns:minmax(0,1fr); grid-template-rows:auto auto minmax(0,1fr) auto; min-width:0; min-height:0}
+.jv-nucleo{position:relative; height:min(46vh,440px); display:grid; place-items:center}
+.jv-nucleo canvas{width:100%; max-width:100%; height:100%; display:block; position:absolute; inset:0}
+.jv-estado{position:absolute; bottom:6px; left:0; right:0; text-align:center; color:var(--estado); font-size:13.5px; transition:color .4s}
+.jv-fala{padding:4px clamp(20px,6vw,72px) 0; text-align:center}
+.jv-fala p{margin:0 auto; max-width:30ch; font:400 clamp(22px,2.4vw,32px)/1.3 var(--serifa); letter-spacing:-.005em; text-wrap:balance}
+.jv-fala .voce{font:500 14px/1.4 var(--sans); color:var(--suave); margin-bottom:10px; max-width:60ch}
+.jv-historico{overflow:auto; padding:18px clamp(20px,5vw,64px) 8px; display:flex; flex-direction:column; gap:12px; mask-image:linear-gradient(to bottom, transparent, #000 28px)}
+.jv-msg{max-width:68ch; font-size:14.5px; line-height:1.55}
+.jv-msg.voce{align-self:flex-end; color:var(--suave); text-align:right}
+.jv-msg.jarvis{align-self:flex-start}
+.jv-msg .feito{display:block; color:var(--ciano); font-size:12.5px; margin-top:2px}
+.jv-msg .pede{display:block; color:var(--gelo); font-size:12.5px; margin-top:2px}
+.jv-barra{display:flex; gap:10px; align-items:center; padding:14px clamp(16px,4vw,48px) 20px}
+.jv-mic{flex:none; width:52px; height:52px; border-radius:50%; border:1px solid var(--linha); background:var(--painel); display:grid; place-items:center; transition:background .2s, border-color .2s}
+.jv-mic svg{width:22px; height:22px}
+.jv .jv-mic.ligado{background:var(--estado); border-color:var(--estado); color:#0a1424}
+.jv input.jv-campo:not([type=checkbox]):not([type=radio]):not([type=file]){flex:1; min-width:0; height:52px; border-radius:26px; border:1px solid var(--linha); background:var(--painel); color:var(--texto); padding:0 20px; font:15px var(--sans)}
+.jv-campo::placeholder{color:var(--apagado)}
+.jv input.jv-campo:not([type=checkbox]):focus{outline:none; border-color:var(--estado); box-shadow:none}
+.jv .jv-enviar{flex:none; height:52px; padding:0 18px; border-radius:26px; border:0; background:var(--texto); color:var(--noite); font-weight:600}
+.jv-opcoes{display:flex; flex-wrap:wrap; gap:14px; justify-content:center; padding:0 16px 14px; color:var(--suave); font-size:13px}
+.jv-opcoes label{display:flex; gap:6px; align-items:center; cursor:pointer}
+.jv-opcoes input{accent-color:var(--azul)}
+
+.jv .jv-entrar{background:none; border:0; padding:0; font-size:13px; color:var(--texto); text-decoration:underline; text-underline-offset:3px}
+
+/* ── A IMERSÃO: tela cheia, núcleo no centro; com algo para mostrar, o palco abre ao lado ── */
+html.jv-imerso, html.jv-imerso body{overflow:hidden}
+.jv-palco, .jv-sair{display:none}
+.jv.imersao{position:fixed; inset:0; z-index:1000; height:100vh; height:100dvh; min-height:0; border-radius:0;
+  grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1fr) auto auto; grid-template-areas:"nucleo" "fala" "baixo"}
+.jv.imersao .jv-lado, .jv.imersao .jv-historico, .jv.imersao .jv-opcoes{display:none}
+.jv.imersao .jv-centro{display:contents}
+.jv.imersao .jv-nucleo{grid-area:nucleo; height:auto; min-height:160px}
+.jv.imersao .jv-fala{grid-area:fala}
+.jv.imersao .jv-fala p:not(.voce){font-size:clamp(26px,3vw,40px)}
+.jv.imersao .jv-baixo{grid-area:baixo; width:min(760px,100%); justify-self:center; padding-bottom:12px}
+.jv.imersao .jv-sair{display:flex; position:absolute; top:16px; right:18px; z-index:3; align-items:center; gap:10px; padding:7px 9px 7px 14px;
+  border-radius:20px; border:1px solid var(--linha); background:rgba(18,24,38,.72); color:var(--suave); font-size:13.5px}
+.jv .jv-sair:hover{color:var(--texto)}
+.jv-sair kbd{font:600 11.5px var(--sans); border:1px solid var(--linha); border-radius:5px; padding:1px 6px}
+
+.jv.imersao.com-visual{grid-template-columns:minmax(300px,30%) minmax(0,1fr); grid-template-areas:"nucleo palco" "fala palco" "baixo palco"}
+.jv.imersao.com-visual[data-visual="projeto"]{grid-template-columns:minmax(260px,22%) minmax(0,1fr)}
+.jv.imersao.com-visual .jv-fala p:not(.voce){font-size:clamp(19px,1.6vw,24px); max-width:26ch}
+.jv.imersao.com-visual .jv-sair{right:auto; left:18px}
+.jv.imersao.com-visual .jv-barra{padding-left:20px; padding-right:20px}
+.jv.imersao.com-visual .jv-palco{display:flex}
+.jv-palco{grid-area:palco; position:relative; flex-direction:column; gap:22px; min-width:0; min-height:0; overflow:auto;
+  padding:clamp(28px,4vw,64px) clamp(24px,4vw,72px); border-left:1px solid var(--linha)}
+.jv-palco.entra{animation:jv-palco .45s cubic-bezier(.2,.7,.2,1)}
+@keyframes jv-palco{from{opacity:0; transform:translateX(18px)}}
+.jv-palco-topo h2{margin:0; font:600 clamp(26px,2.6vw,40px)/1.15 var(--sans); letter-spacing:-.015em; max-width:28ch; text-wrap:balance}
+.jv-palco-topo p{margin:10px 0 0; color:var(--suave); font-size:15px; max-width:70ch}
+.jv-palco-topo.linha{display:flex; justify-content:space-between; align-items:baseline; gap:16px}
+.jv-palco-corpo{flex:1; min-height:0; display:flex; flex-direction:column; justify-content:center; gap:24px}
+.jv-palco-pe{display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:12px; color:var(--suave); font-size:13.5px}
+.jv-fontes{margin:0; overflow-wrap:anywhere} .jv-fontes a{color:var(--texto); text-underline-offset:3px}
+
+/* números de destaque */
+.jv-numeros{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:clamp(24px,3.5vw,56px)}
+.jv-numero{display:flex; flex-direction:column; gap:8px; min-width:0}
+.jv-numero .rotulo{color:var(--suave); font-size:16px}
+.jv-numero.principal .rotulo{color:var(--texto); font-weight:600}
+.jv-numero .valor{font:600 clamp(48px,6.5vw,112px)/1 var(--sans); letter-spacing:-.03em}
+.jv-numero .medidor{height:8px; border-radius:4px; background:var(--grade); overflow:hidden; margin-top:4px}
+.jv-numero .medidor i{display:block; height:100%; background:var(--apagado-dado); border-radius:0 4px 4px 0}
+.jv-numero.principal .medidor i{background:var(--s1)}
+.jv-numero .detalhe{color:var(--suave); font-size:14px}
+
+/* os gráficos (Apache ECharts) */
+.jv-echart{width:100%; height:clamp(260px,52vh,520px); min-width:0}
+.jv-echart.t-pizza, .jv-echart.t-medidor, .jv-echart.t-radar{height:clamp(280px,56vh,520px)}
+.jv-slide .jv-echart{height:clamp(220px,42vh,420px)}
+
+/* a dica */
+.jv-dica i{flex:none; display:block}
+.jv-dica i.bloco{width:10px; height:10px; border-radius:2px}
+.jv-dica i.traco{width:14px; height:2px; border-radius:1px}
+.jv-dica{position:absolute; z-index:5; pointer-events:none; background:#0d1220; border:1px solid var(--linha); border-radius:8px;
+  padding:8px 10px; font-size:13px; box-shadow:0 8px 24px rgba(0,0,0,.35); display:flex; flex-direction:column; gap:3px}
+.jv-dica[hidden]{display:none}
+.jv-dica-linha{display:flex; align-items:center; gap:8px; white-space:nowrap}
+.jv-dica strong{font-weight:600; color:var(--texto)}
+.jv-dica span{color:var(--suave)}
+
+/* tabela */
+.jv-tabela{border-collapse:collapse; width:100%; font-size:14.5px; font-variant-numeric:tabular-nums}
+.jv-tabela th, .jv-tabela td{padding:9px 12px; border-bottom:1px solid var(--linha); text-align:right}
+.jv-tabela th[scope=row], .jv-tabela thead th:first-child, .jv-tabela td.nota{text-align:left}
+.jv-tabela th[scope=row]{font-weight:500}
+.jv-tabela thead th{color:var(--suave); font-weight:600; font-size:13px}
+.jv-tabela td.nota{color:var(--suave)}
+.jv-tabela-caixa{overflow:auto}
+
+/* slides */
+.jv-slide-deck{color:var(--suave); font-size:14px; margin:0}
+.jv-slide{flex:1; min-height:0; display:flex; flex-direction:column; justify-content:center; gap:26px}
+.jv-slide.entra{animation:jv-slide .35s ease-out}
+@keyframes jv-slide{from{opacity:0; transform:translateY(8px)}}
+.jv-slide h3{margin:0; font:600 clamp(30px,3.4vw,52px)/1.1 var(--sans); letter-spacing:-.02em; max-width:22ch; text-wrap:balance}
+.jv-slide ul{margin:0; padding:0 0 0 1.1em; display:flex; flex-direction:column; gap:12px; font-size:clamp(17px,1.5vw,22px); line-height:1.45; max-width:60ch}
+.jv-slide li::marker{color:var(--suave)}
+.jv-slide[data-layout="capa"]{align-items:flex-start}
+.jv-slide[data-layout="capa"] h3{font-size:clamp(40px,5vw,76px); max-width:16ch}
+.jv-slide[data-layout="capa"] ul{font-size:clamp(18px,1.7vw,24px); color:var(--suave); list-style:none; padding:0}
+.jv-slide[data-layout="grafico"] .jv-slide-grafico, .jv-slide[data-layout="numeros"] .jv-slide-grafico{width:100%}
+.jv-slide[data-layout="numeros"] h3{font-size:clamp(26px,2.6vw,38px)}
+.jv-slide-lado{display:grid; grid-template-columns:minmax(0,2fr) minmax(0,3fr); gap:clamp(24px,4vw,64px); align-items:center}
+.jv-slide-lado ul{font-size:clamp(16px,1.35vw,20px)}
+.jv-slide-lado .jv-echart{height:clamp(200px,40vh,380px)}
+@media (max-width:900px){ .jv-slide-lado{grid-template-columns:minmax(0,1fr)} }
+/* o gráfico cresce quando aparece: um movimento só, no momento em que ele entra */
+.jv-palco.entra .jv-numero .medidor i, .jv-slide.entra .jv-numero .medidor i{animation:jv-cresce-x .9s cubic-bezier(.2,.7,.2,1) both; transform-origin:left center}
+@keyframes jv-cresce-x{from{transform:scaleX(0)}}
+.jv-slide-nav{display:flex; align-items:center; gap:12px; margin-left:auto}
+.jv-slide-conta{min-width:6ch; text-align:center; color:var(--suave); font-variant-numeric:tabular-nums}
+
+/* o 3D */
+.jv.imersao.com-visual[data-visual="cena3d"]{grid-template-columns:minmax(260px,22%) minmax(0,1fr)}
+.jv-palco[data-tipo="cena3d"]{padding:22px 24px 20px; gap:14px}
+.jv-palco[data-tipo="cena3d"] .jv-palco-topo h2{font-size:clamp(22px,2vw,30px)}
+.jv-3d{position:relative; flex:1; min-height:260px; border-radius:10px; overflow:hidden; background:#0e1320; border:1px solid var(--linha)}
+.jv-3d canvas{display:block; cursor:grab}
+.jv-3d canvas:active{cursor:grabbing}
+.jv-3d-pe{flex-direction:column; align-items:flex-start; gap:4px}
+.jv-3d-pe p{margin:0}
+.jv-3d-conta{color:var(--texto)}
+.jv-3d-aviso{color:var(--gelo)}
+.jv-3d-erro{padding:24px; color:var(--suave)}
+
+/* o palestrante */
+.jv-narrador{display:none}
+.jv.imersao.com-visual .jv-narrador{display:flex; gap:8px; position:absolute; right:22px; bottom:20px; z-index:4}
+.jv.imersao.com-visual[data-visual="slides"] .jv-narrador{bottom:72px}
+.jv .jv-bt-forte{background:var(--texto); color:var(--noite); border-color:var(--texto); font-weight:600}
+.jv.narrando .jv-palco{box-shadow:inset 0 0 0 1px rgba(124,200,255,.25)}
+
+/* um print da tela do notebook */
+.jv-imagem{flex:1; min-height:0; display:grid; place-items:center; background:#0e1320; border:1px solid var(--linha); border-radius:10px; overflow:hidden}
+.jv-imagem img{max-width:100%; max-height:100%; object-fit:contain; display:block}
+.jv-imagem-legenda{margin:0; font-size:15.5px; line-height:1.55; max-width:72ch}
+
+/* a página de um projeto */
+.jv-palco[data-tipo="projeto"]{padding:18px 24px 24px; gap:12px}
+.jv-palco[data-tipo="projeto"] .jv-palco-topo h2{font-size:18px}
+.jv-projeto{flex:1; width:100%; min-height:0; border:1px solid var(--linha); border-radius:10px; background:#fff}
+
+/* ligar o celular */
+.jv-dialogo{border:1px solid var(--linha); border-radius:14px; background:var(--painel); color:var(--texto); padding:22px; max-width:min(440px,92vw); font:15px/1.5 var(--sans)}
+.jv-dialogo::backdrop{background:rgba(8,11,18,.7)}
+.jv-dialogo h3{margin:0 0 14px; font:600 18px/1.3 var(--sans)}
+.jv-qr{background:#fff; border-radius:10px; padding:12px; width:fit-content; margin:0 auto 14px}
+.jv-qr svg{display:block; width:220px; height:220px}
+.jv-passos{margin:0 0 12px; padding-left:20px; display:flex; flex-direction:column; gap:6px}
+.jv-topo-celular, .jv-fecha-folha{display:none}
+
+@media (max-width:1100px){
+  .jv{grid-template-columns:minmax(0,1fr); height:auto}
+  .jv.cheio{height:auto}
+  .jv-historico{max-height:40vh}
+  .jv-centro{order:-1; min-height:100svh}
+  .jv-esq,.jv-dir{border-width:1px 0 0 0}
+  .jv-nucleo{height:34vh}
+}
+@media (max-width:900px){
+  .jv.imersao.com-visual, .jv.imersao.com-visual[data-visual="projeto"], .jv.imersao.com-visual[data-visual="cena3d"]{grid-template-columns:minmax(0,1fr);
+    grid-template-rows:auto auto minmax(0,1fr) auto; grid-template-areas:"nucleo" "fala" "palco" "baixo"}
+  .jv.imersao.com-visual .jv-nucleo{height:17vh; min-height:110px}
+  .jv.imersao.com-visual .jv-fala p:not(.voce){font-size:18px; max-width:none}
+  .jv.imersao.com-visual .jv-fala .voce{display:none}
+  .jv.imersao.com-visual .jv-estado{display:none}
+  .jv.imersao.com-visual .jv-sair{left:auto; right:12px; top:10px}
+  .jv-palco{border-left:0; border-top:1px solid var(--linha); padding:22px 16px}
+}
+/* O MODO CELULAR: a conversa ocupa a tela; agentes e projetos sobem de baixo */
+@media (max-width:700px){
+  .jv:not(.imersao) .jv-lado{display:none}
+  .jv:not(.imersao)[data-folha="esq"] .jv-esq, .jv:not(.imersao)[data-folha="dir"] .jv-dir{display:flex; position:fixed; left:0; right:0; bottom:0;
+    max-height:78vh; z-index:30; background:var(--painel); border:1px solid var(--linha); border-radius:16px 16px 0 0; box-shadow:0 -12px 40px rgba(0,0,0,.45); padding-top:14px}
+  .jv-fecha-folha{display:block; align-self:flex-end; background:none; border:0; color:var(--suave); font-size:14px; padding:4px 0}
+  .jv:not(.imersao) .jv-topo-celular{display:flex; justify-content:space-between; align-items:center; padding:12px 16px 0}
+  .jv-topo-nome{font:500 20px/1 var(--serifa)}
+  .jv:not(.imersao) .jv-centro{min-height:100svh; grid-template-rows:auto auto auto minmax(0,1fr) auto}
+  .jv-nucleo{height:32vh}
+  .jv-barra{padding-bottom:calc(14px + env(safe-area-inset-bottom))}
+  .jv-mic{width:60px; height:60px}
+  .jv .jv-enviar{padding:0 14px}
+}
+@media (prefers-reduced-motion:reduce){ .jv *{transition:none!important; animation:none!important} }
+
+/* escolher a voz e quem pensa */
+.jv-dialogo-voz{max-width:min(620px,94vw); width:620px; max-height:88vh; overflow:auto}
+.jv-dialogo-voz h4{margin:20px 0 8px; font:600 14px/1.3 var(--sans)}
+.jv-dialogo-voz h4 small{font-weight:400; color:var(--suave); margin-left:6px}
+.jv-cerebro{border:1px solid var(--linha); border-radius:10px; padding:10px 12px 12px; margin:0 0 6px; display:grid; gap:8px}
+.jv-cerebro legend{padding:0 6px; color:var(--suave); font-size:13px}
+.jv-cerebro label{display:flex; gap:10px; align-items:flex-start; cursor:pointer}
+.jv-cerebro input{margin-top:4px; accent-color:var(--texto)}
+.jv-cerebro small{display:block; color:var(--suave); font-size:12.5px; line-height:1.4}
+.jv-ajuste{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin:0; font-size:13px; color:var(--suave)}
+.jv-ajuste label{display:grid; grid-template-columns:auto 1fr auto; gap:8px; align-items:center}
+.jv-ajuste input{width:100%; accent-color:var(--texto)}
+.jv-ajuste output{min-width:3.5ch; text-align:right; color:var(--texto); font-variant-numeric:tabular-nums}
+.jv-vozes{list-style:none; margin:0; padding:0; display:grid; gap:6px}
+.jv-voz{display:flex; justify-content:space-between; gap:12px; align-items:center; flex-wrap:wrap; padding:10px 12px; border:1px solid var(--linha); border-radius:10px}
+.jv-voz.escolhida{border-color:var(--texto)}
+.jv-voz small{display:block; color:var(--suave); font-size:12.5px; line-height:1.4}
+.jv-voz > div:first-child{flex:1 1 220px; min-width:0}
+.jv-voz-bts{display:flex; gap:6px; align-items:center}
+.jv-voz-marca{font-size:12.5px; color:var(--suave); padding:0 8px}
+.jv-voz-erro{flex-basis:100%}
+.jv-dialogo-voz details{margin-top:14px}
+.jv-dialogo-voz summary{cursor:pointer; color:var(--suave); font-size:13.5px; margin-bottom:8px}
+.jv-dialogo-voz > .jv-vozes:last-of-type{margin-top:14px}
+@media (max-width:520px){ .jv-ajuste{grid-template-columns:1fr} }
+.jv-modo{display:grid; gap:8px; margin:2px 0 4px 26px}
+.jv-modo[hidden]{display:none}
+.jv-modo-grupo{display:flex; flex-wrap:wrap; align-items:center; gap:6px}
+.jv-modo-grupo > span{font-size:12.5px; color:var(--suave); min-width:62px}
+.jv-cerebro .jv-modo-grupo label{display:inline-flex; gap:0; align-items:center}
+.jv-modo-grupo input{position:absolute; opacity:0; pointer-events:none}
+.jv-modo-grupo label span{border:1px solid var(--linha); border-radius:999px; padding:5px 12px; font-size:13px; cursor:pointer}
+.jv-modo-grupo input:checked + span{background:var(--texto); color:var(--noite); border-color:var(--texto); font-weight:600}
+.jv-modo-grupo input:focus-visible + span{outline:2px solid var(--texto); outline-offset:2px}
+.jv-modo-dica{color:var(--suave); font-size:12.5px; line-height:1.4}
+
+/* as janelas soltas: um gráfico que você arrasta e muda de tamanho */
+.jv-soltos{position:fixed; inset:0; pointer-events:none; z-index:60}
+.jv-solto{position:fixed; pointer-events:auto; display:flex; flex-direction:column; min-width:280px; min-height:200px;
+  background:var(--painel); border:1px solid var(--linha); border-radius:12px; box-shadow:0 18px 50px rgba(4,7,14,.55); overflow:hidden;
+  animation:jv-solto-entra .25s ease-out both}
+@keyframes jv-solto-entra{from{opacity:0; transform:scale(.97)}}
+.jv-solto.mexendo{user-select:none; box-shadow:0 24px 70px rgba(4,7,14,.7)}
+.jv-solto-barra{display:flex; align-items:center; gap:10px; padding:8px 8px 8px 16px; border-bottom:1px solid var(--linha); cursor:grab; touch-action:none}
+.jv-solto.mexendo .jv-solto-barra{cursor:grabbing}
+.jv-solto-barra h3{flex:1; min-width:0; margin:0; font:600 14.5px/1.3 var(--sans); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.jv-solto-bts{display:flex; gap:4px; flex:none}
+.jv-solto-bts .jv-bt{padding:5px 9px; font-size:12.5px}
+.jv-solto-corpo{flex:1; min-height:0; display:flex; flex-direction:column; gap:10px; padding:12px 16px 14px; overflow:auto}
+.jv-solto-corpo .jv-palco-topo p{margin:0; font-size:13px}
+.jv-solto-corpo .jv-palco-corpo{flex:1; min-height:0; justify-content:stretch; gap:12px}
+.jv-solto-corpo .jv-echart{flex:1; height:auto; min-height:150px}
+.jv-solto-corpo .jv-palco-pe{font-size:12.5px}
+.jv-solto-corpo .jv-numero .valor{font-size:clamp(32px,7vw,56px)}
+.jv-solto-corpo .jv-slide h3{font-size:20px}
+.jv-solto-canto{position:absolute; right:0; bottom:0; width:22px; height:22px; cursor:nwse-resize; touch-action:none;
+  background:linear-gradient(135deg, transparent 50%, var(--eixo) 50%, var(--eixo) 58%, transparent 58%, transparent 70%, var(--eixo) 70%, var(--eixo) 78%, transparent 78%)}
+@media (max-width:700px){ .jv-solto-bts [data-solto="cheia"]{display:none} }
+
+/* a janela destacada (jarvis-grafico.html): o gráfico sozinho, numa janela do navegador */
+.jv.jv-janela{display:flex; flex-direction:column; height:100vh; height:100svh; min-height:0; border-radius:0; padding:14px 18px 16px; gap:8px}
+.jv-janela > h1{margin:0; font:600 16px/1.3 var(--sans)}
+.jv-janela .jv-solto-corpo{padding:0}
+.jv-tempo{margin:0; padding:12px 16px; border:1px solid var(--linha); border-radius:10px; font-size:clamp(15px,1.3vw,18px); color:var(--texto); max-width:70ch}
+
+/* ── FORA DA IMERSÃO: só o núcleo. Agentes, projetos e a conversa ficam em gavetas ── */
+.jv:not(.imersao){grid-template-columns:minmax(0,1fr)}
+.jv.cheio:not(.imersao){height:100vh; height:100svh}
+.jv:not(.imersao) .jv-lado, .jv:not(.imersao) .jv-historico{display:none}
+.jv:not(.imersao) .jv-centro{grid-template-rows:auto minmax(0,1fr) auto auto; min-height:0}
+.jv:not(.imersao) .jv-nucleo{height:auto; min-height:200px}
+.jv:not(.imersao) .jv-fala{padding-bottom:6px}
+.jv:not(.imersao) .jv-baixo{width:min(760px,100%); justify-self:center}
+.jv:not(.imersao) .jv-topo-celular{display:flex; justify-content:space-between; align-items:center; padding:12px 16px 0}
+.jv-topo-celular .jv-bt{background:none; border-color:transparent; color:var(--apagado)}
+.jv-topo-celular .jv-bt:hover, .jv-topo-celular .jv-bt[aria-expanded="true"]{color:var(--texto); background:none}
+.jv-topo-nome{visibility:hidden}
+.jv-topo-dir{display:flex; gap:2px}
+/* as gavetas: entram pelo lado, por cima do núcleo */
+.jv:not(.imersao)[data-folha="esq"] .jv-esq, .jv:not(.imersao)[data-folha="dir"] .jv-dir, .jv:not(.imersao)[data-folha="conversa"] .jv-historico{
+  display:flex; position:absolute; top:0; bottom:0; width:min(360px,92%); z-index:30; background:var(--painel);
+  border:0 solid var(--linha); box-shadow:0 0 50px rgba(4,7,14,.55); overflow:auto; animation:jv-gaveta .22s ease-out both}
+.jv:not(.imersao)[data-folha="esq"] .jv-esq{left:0; border-right-width:1px}
+.jv:not(.imersao)[data-folha="dir"] .jv-dir, .jv:not(.imersao)[data-folha="conversa"] .jv-historico{right:0; border-left-width:1px}
+.jv:not(.imersao)[data-folha="conversa"] .jv-historico{width:min(460px,92%); flex-direction:column; mask-image:none; padding:56px 20px 20px}
+.jv:not(.imersao)[data-folha] .jv-fecha-folha{display:block; align-self:flex-end; background:none; border:0; color:var(--suave); font-size:14px; padding:4px 0}
+.jv:not(.imersao)[data-folha] .jv-topo-celular{position:relative; z-index:31}
+@keyframes jv-gaveta{from{opacity:0}}
+@media (max-width:700px){
+  .jv:not(.imersao) .jv-centro{min-height:0; grid-template-rows:auto minmax(0,1fr) auto auto}
+  .jv:not(.imersao){height:100svh}
+  .jv:not(.imersao)[data-folha="esq"] .jv-esq, .jv:not(.imersao)[data-folha="dir"] .jv-dir, .jv:not(.imersao)[data-folha="conversa"] .jv-historico{
+    position:fixed; top:auto; left:0; right:0; bottom:0; width:auto; max-height:78vh; border-width:1px 0 0 0; border-radius:16px 16px 0 0}
+  .jv:not(.imersao)[data-folha="conversa"] .jv-historico{padding-top:18px}
+}
+@media (prefers-reduced-motion:reduce){ .jv-solto{animation:none} }
+.jv button.jv-link{background:none; border:0; padding:0; font-size:13px; color:var(--texto); text-decoration:underline; text-underline-offset:3px}
+
+/* sem legendas: a fala e o estado somem da tela, mas continuam para o leitor de tela */
+.jv.sem-legenda .jv-fala, .jv.sem-legenda .jv-estado{position:absolute!important; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); clip-path:inset(50%); white-space:nowrap; border:0}
+
+/* o sinal: o Jarvis pede licença, você toca em Sim ou Não */
+.jv-sinal{display:flex; align-items:center; gap:8px; margin:0 clamp(16px,4vw,48px) -4px; padding:8px 8px 8px 14px; border:1px solid var(--gelo);
+  border-radius:12px; background:rgba(195,228,255,.07); animation:jv-solto-entra .2s ease-out both}
+.jv-sinal[hidden]{display:none}
+.jv-sinal-texto{flex:1; min-width:0; font-size:13.5px; color:var(--texto); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.jv-sinal .jv-bt{padding:7px 16px}
+.jv-kokoro-anda{margin:0 0 8px; font-size:13px; color:var(--texto)}
+.jv-dialogo-voz [data-kokoro]{margin:4px 0 10px}
